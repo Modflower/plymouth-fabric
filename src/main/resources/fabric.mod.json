@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sodium",
+  "version": "${version}",
+  "name": "sodium",
+  "description": "An anti-cheat engine that may give clients a performance boost.",
+  "authors": ["Ampflower"],
+  "contact": {
+    "sources": "https://github.com/Modflower/plymouth-fabric"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": ["gay.ampflower.sodium.Main"]
+  },
+  "mixins":  ["sodium.mixins.json"],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=${loader_version}",
+    "fabric": ">=${loader_version}"
+  }
+}

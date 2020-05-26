@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "gay.ampflower.sodium.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "MixinBlockEntity",
+    "MixinPlayerEntity",
+    "MixinEntity",
+    "MixinTntMinecartEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
