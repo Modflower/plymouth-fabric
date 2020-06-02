@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "coal_ore",
+    "iron_ore",
+    "#gold_ores",
+    "redstone_ore",
+    "lapis_ore",
+    "emerald_ore",
+    "diamond_ore",
+    "nether_quartz_ore",
+    "ancient_debris"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "lever",
+    "#pressure_plates",
+    "redstone_torch",
+    "#buttons",
+    "tripwire_hook",
+    "tripwire",
+    "#trapdoors",
+    "repeater",
+    "comparator",
+    "redstone_wire",
+    "#doors",
+    "daylight_detector",
+    "#rails"
+  ]
+}

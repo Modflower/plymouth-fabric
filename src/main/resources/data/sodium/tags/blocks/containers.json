@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#sodium:furnaces",
+    "#sodium:redstone_containers",
+    "#shulker_boxes",
+    "chest",
+    "ender_chest"
+  ]
+}

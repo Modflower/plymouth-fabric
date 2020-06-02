@@ -1,6 +1,6 @@
-package gay.ampflower.sodium.mixins;
+package gay.ampflower.sodium.mixins.entities;
 
-import gay.ampflower.sodium.helpers.IProtectBlock;
+import gay.ampflower.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -24,7 +24,7 @@ public abstract class MixinTntMinecartEntity extends AbstractMinecartEntity {
 
     @Inject(method="canExplosionDestroyBlock(Lnet/minecraft/world/explosion/Explosion;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;F)Z", at=@At("HEAD"), cancellable = true)
     public void sodium$canExplosionDestroyBlock(Explosion explosion, BlockView blockView, BlockPos pos, BlockState blockState, float power, CallbackInfoReturnable<Boolean> cbir) {
-        var blockEntity = (IProtectBlock) blockView.getBlockEntity(pos);
+        var blockEntity = (IShadowBlockEntity) blockView.getBlockEntity(pos);
         if(blockEntity != null && !blockEntity.sodium$canBreakBlock(getUuid())) cbir.setReturnValue(false);
     }
 }
