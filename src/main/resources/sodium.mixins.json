@@ -4,9 +4,11 @@
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "MixinBlockEntity",
-    "MixinPlayerEntity",
-    "MixinEntity",
-    "MixinTntMinecartEntity"
+    "MixinWorld",
+    "entities.MixinEnderDragon",
+    "entities.MixinEntity",
+    "entities.MixinPlayerEntity",
+    "entities.MixinTntMinecartEntity"
   ],
   "injectors": {
     "defaultRequire": 1

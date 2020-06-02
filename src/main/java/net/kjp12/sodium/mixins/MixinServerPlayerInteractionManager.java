@@ -1,6 +1,6 @@
 package net.kjp12.sodium.mixins;
 
-import net.kjp12.sodium.helpers.IProtectBlock;
+import net.kjp12.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -33,7 +33,7 @@ public abstract class MixinServerPlayerInteractionManager {
     )
     public void sodium$tryBreakBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cbir,
                                      BlockState blockState, BlockEntity blockEntity, Block block) {
-        if(!((IProtectBlock) blockEntity).sodium$canBreakBlock(player)) {
+        if (!((IShadowBlockEntity) blockEntity).sodium$canBreakBlock(player)) {
             cbir.setReturnValue(false);
         }
     }
@@ -49,7 +49,7 @@ public abstract class MixinServerPlayerInteractionManager {
     public void sodium$interactBlock(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult bhr, CallbackInfoReturnable<ActionResult> cbir,
                                      BlockPos blockPos, BlockState blockState, boolean bl, boolean bl2) {
         var blockEntity = world.getBlockEntity(blockPos);
-        if(blockEntity != null && !((IProtectBlock) blockEntity).sodium$canOpenBlock(player)) {
+        if (blockEntity != null && !((IShadowBlockEntity) blockEntity).sodium$canOpenBlock(player)) {
             cbir.setReturnValue(ActionResult.FAIL);
         }
     }

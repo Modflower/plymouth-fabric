@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "piston",
+    "sticky_piston",
+    "piston_head",
+    "moving_piston"
+  ]
+}

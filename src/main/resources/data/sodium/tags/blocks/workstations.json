@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "#anvil",
+    "#sodium:furnaces",
+    "grindstone",
+    "smithing_table",
+    "fletching_table",
+    "cartography_table",
+    "loom",
+    "composter",
+    "stonecutter",
+    "lectern",
+    "enchanting_table"
+  ]
+}

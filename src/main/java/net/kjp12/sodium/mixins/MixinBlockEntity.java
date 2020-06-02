@@ -2,7 +2,7 @@ package net.kjp12.sodium.mixins;
 
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
-import net.kjp12.sodium.helpers.IProtectBlock;
+import net.kjp12.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.UUID;
 
 @Mixin(BlockEntity.class)
-public abstract class MixinBlockEntity implements IProtectBlock {
+public abstract class MixinBlockEntity implements IShadowBlockEntity {
+    protected boolean visible;
     protected UUID sodium$owner;
     // Bits:
     // 1 - Read
@@ -24,7 +25,7 @@ public abstract class MixinBlockEntity implements IProtectBlock {
     // 4 - Destroy
     protected Object2ByteMap<UUID> sodium$access;
 
-    @Inject(method="fromTag(Lnet/minecraft/block/BlockState;Lnet/minecraft/nbt/CompoundTag;)V", at = @At("RETURN"))
+    @Inject(method = "fromTag(Lnet/minecraft/block/BlockState;Lnet/minecraft/nbt/CompoundTag;)V", at = @At("RETURN"))
     public void sodium$fromTag(BlockState state, CompoundTag nbt, CallbackInfo cbi) {
         var sodium = nbt.getCompound("sodium");
         if(sodium != null) {
@@ -83,5 +84,13 @@ public abstract class MixinBlockEntity implements IProtectBlock {
 
     public boolean sodium$canBreakBlock(UUID uuid) {
         return sodium$owner == null || sodium$owner.equals(uuid) || (sodium$access != null && (sodium$access.getByte(uuid) & 4) == 4);
+    }
+
+    public boolean sodium$isVisible() {
+        return visible;
+    }
+
+    public void sodium$setVisible(boolean visibility) {
+        visible = visibility;
     }
 }

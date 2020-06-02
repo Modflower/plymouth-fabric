@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#beehives",
+    "trapped_chest",
+    "hopper",
+    "dropper",
+    "dispenser"
+  ]
+}

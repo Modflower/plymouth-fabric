@@ -1,6 +1,7 @@
-package net.kjp12.sodium.mixins;
+package net.kjp12.sodium.mixins.entities;
 
-import net.kjp12.sodium.helpers.IProtectBlock;
+import net.kjp12.sodium.BlockHelper;
+import net.kjp12.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,8 +21,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
 
     @Inject(method="isBlockBreakingRestricted(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/GameMode;)Z", at=@At("HEAD"), cancellable = true)
     public void sodium$isBlockBreakingRestricted(World world, BlockPos pos, GameMode gameMode, CallbackInfoReturnable<Boolean> cbir) {
-        if(world.isClient) return; // This doesn't apply here.
-        var blockEntity = (IProtectBlock) world.getBlockEntity(pos);
-        if(blockEntity != null && !blockEntity.sodium$canBreakBlock((PlayerEntity)(Object)this)) cbir.setReturnValue(true);
+        if (!world.isClient && !BlockHelper.canBreak((IShadowBlockEntity) world.getBlockEntity(pos), this))
+            cbir.setReturnValue(true);
     }
 }
