@@ -241,11 +241,13 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 (!(state = sodium$getShadowBlock(bp.set(pos, Direction.WEST))).isAir() && !state.isIn(SodiumHelper.NO_SMEAR_BLOCKS)))
             return state;
         Main.log.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(pos), pos);
-        if (world.method_27983().equals(DimensionType.OVERWORLD_REGISTRY_KEY)) Blocks.STONE.getDefaultState();
+        if (world.getDimensionRegistryKey().equals(DimensionType.OVERWORLD_REGISTRY_KEY))
+            Blocks.STONE.getDefaultState();
         return biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getSurfaceConfig().getUnderMaterial();
     }
 
     public BlockState sodium$getShadowBlock(BlockPos pos) {
+        if (sodium$shadowSections == null) return Blocks.VOID_AIR.getDefaultState();
         int i = pos.getX(), j = pos.getY(), k = pos.getZ();
         try {
             if (j >= 0 && j >> 4 < sodium$shadowSections.length) {

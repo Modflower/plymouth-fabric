@@ -29,7 +29,7 @@ public abstract class MixinBlockEntity implements IShadowBlockEntity {
     public void sodium$fromTag(BlockState state, CompoundTag nbt, CallbackInfo cbi) {
         var sodium = nbt.getCompound("sodium");
         if(sodium != null) {
-            sodium$owner = sodium.containsUuidNew("owner") ? sodium.getUuidNew("owner") : null;
+            sodium$owner = sodium.containsUuid("owner") ? sodium.getUuid("owner") : null;
             if (sodium$owner != null) {
                 var publicAccess = sodium.getByte("public");
                 sodium$access = new Object2ByteOpenHashMap<>();
@@ -38,8 +38,8 @@ public abstract class MixinBlockEntity implements IShadowBlockEntity {
                 if (al != null) {
                     for (var a : al) {
                         var access = (CompoundTag) a;
-                        if(access.containsUuidNew("t") && access.contains("p"))
-                        sodium$access.put(access.getUuidNew("t"), access.getByte("p"));
+                        if (access.containsUuid("t") && access.contains("p"))
+                            sodium$access.put(access.getUuid("t"), access.getByte("p"));
                     }
                 }
             }
@@ -50,13 +50,13 @@ public abstract class MixinBlockEntity implements IShadowBlockEntity {
     public void sodium$toTag(CompoundTag nbt, CallbackInfoReturnable<CompoundTag> cbi) {
         if(sodium$owner != null) {
             var sodium = new CompoundTag();
-            sodium.putUuidNew("owner", sodium$owner);
+            sodium.putUuid("owner", sodium$owner);
             if (sodium$access != null) {
                 sodium.putByte("public", sodium$access.defaultReturnValue());
                 var access = new ListTag();
                 for (var e : sodium$access.object2ByteEntrySet()) {
                     var tmp = new CompoundTag();
-                    tmp.putUuidNew("t", e.getKey());
+                    tmp.putUuid("t", e.getKey());
                     tmp.putByte("p", e.getByteValue());
                     access.add(tmp);
                 }
