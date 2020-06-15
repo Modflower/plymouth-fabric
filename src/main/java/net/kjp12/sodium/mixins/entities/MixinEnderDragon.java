@@ -30,7 +30,7 @@ public abstract class MixinEnderDragon extends MobEntity {
         int x1 = MathHelper.floor(box.minX), y1 = MathHelper.floor(box.minY), z1 = MathHelper.floor(box.minZ),
                 x2 = MathHelper.floor(box.maxX), y2 = MathHelper.floor(box.maxY), z2 = MathHelper.floor(box.maxZ);
         // Moved grief to not call it a hundred times, it only needs to be called once.
-        boolean grief = world.getGameRules().getBoolean(GameRules.MOB_GRIEFING), b1 = false, b2 = false;
+        boolean grief = world.getGameRules().getBoolean(GameRules.field_19388), b1 = false, b2 = false;
         for (int x = x1; x <= x2; x++)
             for (int y = y1; y <= y2; y++)
                 for (int z = z1; z <= z2; z++) {

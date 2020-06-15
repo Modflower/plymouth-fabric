@@ -50,7 +50,7 @@ public class SodiumHelper {
             ENTITY_HEADER = ((long) SODIUM_HASH) << 32L | ((long) ENTITY_HASH),
             BLOCK_HEADER = ((long) SODIUM_HASH) << 32L | ((long) BLOCK_HASH);
     public static final UUID
-            ANONYMOUS_UUID = Util.field_25140,
+            ANONYMOUS_UUID = Util.NIL_UUID,
             HOPPER_UUID = new UUID(BLOCK_HEADER, "TheHopper".hashCode()),
             TNT_UUID = new UUID(ENTITY_HEADER, "ThePrimedTNT".hashCode()),
             CREEPER_UUID = new UUID(ENTITY_HEADER, "TheCreeper".hashCode()),
