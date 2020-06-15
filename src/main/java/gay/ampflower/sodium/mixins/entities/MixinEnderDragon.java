@@ -1,6 +1,6 @@
 package gay.ampflower.sodium.mixins.entities;
 
-import gay.ampflower.sodium.BlockHelper;
+import gay.ampflower.sodium.SodiumHelper;
 import gay.ampflower.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.Material;
 import net.minecraft.entity.EntityType;
@@ -38,7 +38,7 @@ public abstract class MixinEnderDragon extends MobEntity {
                     var state = world.getBlockState(pos);
                     if (!state.isAir() && state.getMaterial() != Material.FIRE) {
                         var block = state.getBlock();
-                        if (grief && !BlockTags.DRAGON_IMMUNE.contains(block) && (!block.hasBlockEntity() || BlockHelper.canBreak((IShadowBlockEntity) world.getBlockEntity(pos), this))) {
+                        if (grief && !BlockTags.DRAGON_IMMUNE.contains(block) && (!block.hasBlockEntity() || SodiumHelper.canBreak((IShadowBlockEntity) world.getBlockEntity(pos), this))) {
                             b2 = world.removeBlock(pos, false) || b2;
                         } else {
                             b1 = true;

@@ -4,11 +4,16 @@
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "MixinBlockEntity",
-    "MixinWorld",
+    "MixinCommandManager",
     "entities.MixinEnderDragon",
     "entities.MixinEntity",
     "entities.MixinPlayerEntity",
-    "entities.MixinTntMinecartEntity"
+    "entities.MixinTntMinecartEntity",
+    "packets.s2c.MixinBlockUpdate",
+    "packets.s2c.MixinChunkData",
+    "packets.s2c.MixinChunkDeltaUpdateRecord",
+    "world.MixinWorld",
+    "world.MixinWorldChunk"
   ],
   "injectors": {
     "defaultRequire": 1

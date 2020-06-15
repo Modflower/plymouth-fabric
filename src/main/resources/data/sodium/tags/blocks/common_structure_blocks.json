@@ -8,6 +8,8 @@
     "mossy_stone_bricks",
     "stone_bricks",
     "cobblestone",
-    "#sodium:containers"
+    "mossy_cobblestone",
+    "#sodium:containers",
+    "tnt"
   ]
 }
