@@ -3,8 +3,13 @@ version = "0.0.0"
 
 dependencies {
     modImplementation("net.fabricmc.fabric-api", "fabric-api", property("fabric_version")?.toString())
+    implementation("org.postgresql", "postgresql", property("postgres_version")?.toString())
 }
 
+minecraft {
+    //accessWidener = projectDir.resolve("src/main/resources/sodium.accesswidener")
+}
+/*
 // Required due to being a module.
 // This is primarily for those who want to build this *without* building the entire stack at once.
 // This also means that this project's version of Yarn, Fabric and Minecraft may not always reflect what it's developed for.

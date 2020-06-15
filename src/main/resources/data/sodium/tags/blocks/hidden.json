@@ -4,6 +4,7 @@
     "#sodium:precious_blocks",
     "#sodium:redstone",
     "#sodium:operator_blocks",
-    "#sodium:common_structure_blocks"
+    "#sodium:common_structure_blocks",
+    "dragon_egg"
   ]
 }

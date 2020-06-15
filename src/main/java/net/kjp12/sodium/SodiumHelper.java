@@ -12,6 +12,11 @@ import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.UUID;
 
@@ -20,7 +25,15 @@ import java.util.UUID;
  * by the time that it's called, all blocks would have been
  * registered.
  */
-public class BlockHelper {
+public class SodiumHelper {
+    public static final Logger LOGGER = LogManager.getLogger("Sodium");
+    public static final VoxelShape
+            NORTH_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.NORTH),
+            SOUTH_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.SOUTH),
+            EAST_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.EAST),
+            WEST_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.WEST),
+            UP_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.UP),
+            DOWN_FACE = VoxelShapes.extrudeFace(VoxelShapes.fullCube(), Direction.DOWN);
     /**
      * Anonymous Header Hashes, used for generating a UUID for blocks and entities
      * to interact with locked blocks. Most will be cached here, but there will be
@@ -44,7 +57,13 @@ public class BlockHelper {
             DRAGON_UUID = new UUID(ENTITY_HEADER, "TheEnderDragon".hashCode()),
             WITHER_UUID = new UUID(ENTITY_HEADER, "TheWither".hashCode());
 
-    public static final Tag<Block> HIDDEN_BLOCKS = BlockTags.getContainer().get(new Identifier("sodium", "hidden"));
+    public static final Tag<Block>
+            HIDDEN_BLOCKS = BlockTags.getContainer().get(new Identifier("sodium", "hidden")),
+            NO_SMEAR_BLOCKS = BlockTags.getContainer().get(new Identifier("sodium", "no_smear"));
+
+    public static int wrapIndex(int index, int limit) {
+        return index < 0 ? (index % limit) + limit : index % limit;
+    }
 
     public static UUID getUUID(Entity breaker) {
         if (breaker == null) {

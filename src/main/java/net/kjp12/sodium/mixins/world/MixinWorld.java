@@ -1,6 +1,6 @@
-package net.kjp12.sodium.mixins;
+package net.kjp12.sodium.mixins.world;
 
-import net.kjp12.sodium.BlockHelper;
+import net.kjp12.sodium.SodiumHelper;
 import net.kjp12.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,7 +27,7 @@ public abstract class MixinWorld {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION
     )
     public void sodium$breakBlock(BlockPos pos, boolean drop, Entity breaker, CallbackInfoReturnable<Boolean> cbir, BlockState blockState) {
-        if (blockState.getBlock().hasBlockEntity() && !BlockHelper.canBreak((IShadowBlockEntity) getBlockEntity(pos), breaker))
+        if (blockState.getBlock().hasBlockEntity() && !SodiumHelper.canBreak((IShadowBlockEntity) getBlockEntity(pos), breaker))
             cbir.setReturnValue(false);
     }
 }

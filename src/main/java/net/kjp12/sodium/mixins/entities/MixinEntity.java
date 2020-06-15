@@ -1,6 +1,6 @@
 package net.kjp12.sodium.mixins.entities;
 
-import net.kjp12.sodium.BlockHelper;
+import net.kjp12.sodium.SodiumHelper;
 import net.kjp12.sodium.helpers.IShadowBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -17,7 +17,7 @@ public abstract class MixinEntity {
 
     @Inject(method="canExplosionDestroyBlock(Lnet/minecraft/world/explosion/Explosion;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;F)Z", at=@At("HEAD"), cancellable = true)
     public void sodium$canExplosionDestroyBlock(Explosion explosion, BlockView blockView, BlockPos pos, BlockState blockState, float power, CallbackInfoReturnable<Boolean> cbir) {
-        if (!BlockHelper.canBreak((IShadowBlockEntity) blockView.getBlockEntity(pos), (Entity) (Object) this))
+        if (!SodiumHelper.canBreak((IShadowBlockEntity) blockView.getBlockEntity(pos), (Entity) (Object) this))
             cbir.setReturnValue(false);
     }
 }
