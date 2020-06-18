@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "helium",
+  "version": "${version}",
+  "name": "Helium",
+  "description": "Helium Anti-Cheat",
+  "authors": [
+    "KJP12"
+  ],
+  "contact": {
+    "sources": "https://github.com/KJP12/helium-fabric"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.kjp12.helium.Main"
+    ]
+  },
+  "mixins": [
+    "helium.mixins.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=${loader_version}",
+    "fabric": ">=${loader_version}"
+  }
+}

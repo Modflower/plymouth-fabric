@@ -1,0 +1,36 @@
+/**
+x - X Coordinate
+y - Y Coordinate
+z - Z Coordinate
+d - Dimension it originated from.
+*/
+CREATE TYPE pos AS ("x" int, "y" int, "z" int, "d" int);
+CREATE TYPE double pos AS ("x" double precision, "y" double precision, "z" double precision, "d" int);
+CREATE TYPE inventory action AS ENUM ('TAKE', 'PUT');
+CREATE TABLE block ("block" int PRIMARY KEY, "name" varchar [255])
+/**
+when - When did this happen?
+cause - Who or what was the cause?
+  - Player UUID if player caused.
+    - Entity UUID if entity caused. Note: This also applies to TNT. Any destruction from TNT will be logged by its UUID, any lit by the player will be logged.
+    - HELIUM-generated UUID if it was caused by non-entity means, ie. fire.
+      - HELIUM-generated UUIDs will be a 32-bit hash of "HELIUM" and the name of the cause (ie. fire, lightning), followed by the X, Z and Y << 16 | D coordinates.
+undone - Was this action undone?
+*/
+CREATE TABLE mutation ("cause" uuid, "when" timestamp NOT NULL DEFAULT now() AT TIME ZONE 'utc', "undone" boolean DEFAULT false);
+/**
+pos - Where was this block?
+block - What was this block?
+action - What happened to it?
+*/
+CREATE TABLE blocks ("pos" pos, "block" int REFERENCES block, "action" block action) INHERITS mutation;
+CREATE TABLE modify ("new" int) INHERITS blocks;
+/**
+entity - What was this entity?
+pos - Where was this entity when it was dropped/picked up?
+data - Was was on the entity before it was killed or picked up?
+*/
+CREATE TABLE deaths ("entity" uuid, "pos" double pos, "data" jsonb) INHERITS mutation;
+CREATE TABLE drops ("entity" uuid, "pos" double pos, "data" jsonb) INHERITS mutation;
+
+INSERT INTO blocks ("user", "pos", "block", "action") VALUES (now() AT TIME ZONE 'utc', )
