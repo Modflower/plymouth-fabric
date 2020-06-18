@@ -7,7 +7,7 @@ dependencies {
 }
 
 minecraft {
-    //accessWidener = projectDir.resolve("src/main/resources/sodium.accesswidener")
+    //accessWidener = projectDir.resolve("src/main/resources/helium.accesswidener")
 }
 /*
 // Required due to being a module.

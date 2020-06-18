@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#helium:redstone_non_full",
+    "#helium:redstone_containers",
+    "#helium:pistons",
+    "redstone_block",
+    "note_block",
+    "redstone_lamp",
+    "observer",
+    "target"
+  ]
+}
