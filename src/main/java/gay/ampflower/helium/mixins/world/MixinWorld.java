@@ -26,13 +26,7 @@ public abstract class MixinWorld {
     @Shadow
     public native BlockEntity getBlockEntity(BlockPos pos);
 
-    /**
-     * Break Block, dual-purpose injection.
-     * <p>
-     * - Prevention of breaking owned tile entities.
-     * - Logging of broken blocks if succeeds.
-     */
-    @Inject(method = "method_30093(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;I)Z",
+    @Inject(method = "breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;I)Z",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/World;getFluidState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/fluid/FluidState;",
                     shift = At.Shift.BEFORE

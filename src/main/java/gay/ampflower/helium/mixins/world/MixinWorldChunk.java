@@ -184,7 +184,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                                      final Direction from,
                                      final BlockPos bp) {
         var fluid = state.getFluidState();
-        return (fluid.matches(FluidTags.LAVA) && from != Direction.UP && (from == Direction.DOWN || getBlock(bp.up()).getFluidState().matches(FluidTags.LAVA))) ||
+        return (fluid.isIn(FluidTags.LAVA) && from != Direction.UP && (from == Direction.DOWN || getBlock(bp.up()).getFluidState().isIn(FluidTags.LAVA))) ||
                 (state.isOpaque() && Block.isFaceFullSquare(state.getCollisionShape(world, bp), from));
     }
 
