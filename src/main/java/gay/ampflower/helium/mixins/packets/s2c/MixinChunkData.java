@@ -31,7 +31,7 @@ public class MixinChunkData {
         return ((IShadowChunk) chunk).helium$getShadowSections();
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;I)V",
+    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;IZ)V",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/chunk/WorldChunk;getBlockEntities()Ljava/util/Map;"
             ))

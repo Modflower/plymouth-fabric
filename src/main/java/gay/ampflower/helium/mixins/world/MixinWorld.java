@@ -3,11 +3,13 @@ package gay.ampflower.helium.mixins.world;
 import gay.ampflower.helium.Helium;
 import gay.ampflower.helium.helpers.IShadowBlockEntity;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(World.class)
 public abstract class MixinWorld {
     @Shadow
-    public abstract BlockEntity getBlockEntity(BlockPos pos);
+    @Final
+    private RegistryKey<DimensionType> dimensionRegistryKey;
+
+    @Shadow
+    public native BlockEntity getBlockEntity(BlockPos pos);
 
     /**
      * Break Block, dual-purpose injection.
@@ -37,8 +43,6 @@ public abstract class MixinWorld {
     public void helium$breakBlock(BlockPos pos, boolean drop, Entity breaker, int i, CallbackInfoReturnable<Boolean> cbir, BlockState blockState) {
         if (blockState.getBlock().hasBlockEntity() && !Helium.canBreak((IShadowBlockEntity) getBlockEntity(pos), breaker)) {
             cbir.setReturnValue(false);
-        } else {
-            Helium.database.replaceBlock(pos, blockState, Blocks.AIR.getDefaultState(), breaker);
         }
     }
 }

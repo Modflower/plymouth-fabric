@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "gay.ampflower.plymouth.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "AccessorServerWorld",
+    "MixinAnvilScreenHandler",
+    "MixinBlockItem",
+    "MixinFireCharge",
+    "MixinFlintAndSteel",
+    "MixinHybridLPEntity",
+    "MixinMinecraftServer",
+    "MixinPlayerInteractionManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
