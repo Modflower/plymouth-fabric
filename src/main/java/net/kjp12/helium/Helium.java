@@ -65,12 +65,12 @@ public class Helium {
         try {
             var properties = new Properties();
             var conf = Path.of(".", "config");
-            var props = conf.resolve("helium.plymouth.properties");
+            var props = conf.resolve("helium.db.properties");
             if (Files.notExists(props)) {
                 Files.createDirectories(conf);
                 Files.createFile(props);
                 try (var os = Files.newOutputStream(props)) {
-                    properties.put("helium$url", "jdbc:postgresql://127.0.0.1:5432/plymouth");
+                    properties.put("helium$url", "jdbc:postgresql://127.0.0.1:5432/helium");
                     properties.put("user", "username");
                     properties.put("password", "password");
                     properties.store(os, "Please fill out these properties to your needs. Supported drivers: PostgreSQL");
