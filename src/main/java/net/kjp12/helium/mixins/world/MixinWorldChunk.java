@@ -126,7 +126,8 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     }
 
     private void helium$setIfHidden(final BlockPos.Mutable bp) {
-        if (World.isHeightInvalid(bp)) return;
+        // This is called by other chunks, shadowMask check is required.
+        if (World.isHeightInvalid(bp) || helium$shadowMasks == null) return;
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
                 cx = x >> 4, cy = y >> 4, cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {

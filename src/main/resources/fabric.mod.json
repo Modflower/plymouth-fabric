@@ -17,7 +17,8 @@
     ]
   },
   "mixins": [
-    "helium.mixins.json"
+    "helium.mixins.json",
+    "plymouth.mixins.json"
   ],
   "depends": {
     "minecraft": ">=${minecraft_required}",

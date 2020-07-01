@@ -23,10 +23,10 @@ public abstract class MixinEnderDragon extends MobEntity {
 
     /**
      * @author kjp12
-     * @reason Cancelling removeBlock when locked container.
+     * @reason Cancelling removeBlock when locked container, and moving the griefing check to before the entire loop.
      */
     @Overwrite
-    public boolean destroyBlocks(Box box) {
+    private boolean destroyBlocks(Box box) {
         int x1 = MathHelper.floor(box.minX), y1 = MathHelper.floor(box.minY), z1 = MathHelper.floor(box.minZ),
                 x2 = MathHelper.floor(box.maxX), y2 = MathHelper.floor(box.maxY), z2 = MathHelper.floor(box.maxZ);
         // Moved grief to not call it a hundred times, it only needs to be called once.
