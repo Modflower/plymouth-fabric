@@ -27,14 +27,14 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static net.kjp12.plymouth.PlymouthHelper.toJson;
 
 /**
  * Driver Adaptor for PostgreSQL. Due to how many features that Postgres has that standard SQL does not,
  * this adaptor is made to take advantage of those features.
- * <p>
- * //TODO: NOT THREAD SAFE, IMPLEMENT LOCKING AND QUEUE
  *
  * @author kjp12
  * @since 0.0.0
@@ -43,6 +43,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     private static final Logger log = LogManager.getLogger(PlymouthPostgres.class);
     // We don't need reverse lookup, this is perfectly acceptable.
     // In case we do need reverse lookup, we can batch as needed.
+    private Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     private Int2IntMap
             items = new Int2IntOpenHashMap(32),
             blocks = new Int2IntOpenHashMap(32),
@@ -136,15 +137,25 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     }
 
     public void sendBatches() {
-        try {
-            insertBlocks.executeBatch();
-        } catch (SQLException exception) {
-            log.error("Failed to send batch.\n{}", insertBlocks, exception);
-        }
-        try {
-            insertDeaths.executeBatch();
-        } catch (SQLException exception) {
-            log.error("Failed to send batch.\n{}", insertDeaths, exception);
+        if (!queue.isEmpty()) {
+            Runnable r = queue.poll();
+            while (r != null) try {
+                r.run();
+            } catch (PlymouthException exception) {
+                log.error("Failed to send batch. {}", r, exception);
+            } finally {
+                r = queue.poll();
+            }
+            try {
+                insertBlocks.executeBatch();
+            } catch (SQLException exception) {
+                log.error("Failed to send batch.\n{}", insertBlocks, exception);
+            }
+            try {
+                insertDeaths.executeBatch();
+            } catch (SQLException exception) {
+                log.error("Failed to send batch.\n{}", insertDeaths, exception);
+            }
         }
     }
 
@@ -152,7 +163,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         return state == null || state.getEntries().isEmpty() || state.getBlock() instanceof AbstractFireBlock;
     }
 
-    private int getBlockIndex(Block block) throws PlymouthException {
+    protected int getBlockIndex(Block block) throws PlymouthException {
         return blocks.computeIfAbsent(block == null ? 0 : block.hashCode(), $ -> {
             try {
                 getElseInsertBlock.setObject(1, block == null ? null : Registry.BLOCK.getId(block).toString());
@@ -166,7 +177,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         });
     }
 
-    private int getBlockIndex(BlockState state) throws PlymouthException {
+    protected int getBlockIndex(BlockState state) throws PlymouthException {
         return areStatesUnnecessary(state) ? getBlockIndex(state == null ? null : state.getBlock()) :
                 blocks.computeIfAbsent(state.hashCode(), $ -> {
                     try {
@@ -181,7 +192,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
                 });
     }
 
-    private int getUserIndex(DamageSource entity) throws PlymouthException {
+    protected int getUserIndex(DamageSource entity) throws PlymouthException {
         return players.computeIfAbsent(Helium.getHash(entity), $ -> {
             try {
                 getElseInsertUser.setObject(1, Helium.getName(entity));
@@ -195,7 +206,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         });
     }
 
-    private int getUserIndex(Entity entity) throws PlymouthException {
+    protected int getUserIndex(Entity entity) throws PlymouthException {
         return players.computeIfAbsent(Helium.getHash(entity), $ -> {
             try {
                 getElseInsertUser.setObject(1, Helium.getName(entity));
@@ -209,7 +220,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         });
     }
 
-    private int getEntityIndex(Entity entity) throws PlymouthException {
+    protected int getEntityIndex(Entity entity) throws PlymouthException {
         return entities.computeIfAbsent(entity.hashCode(), $ -> {
             try {
                 getElseInsertEntity.setObject(1, entity.getUuid());
@@ -222,7 +233,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         });
     }
 
-    private int getWorldIndex(ServerWorld world) throws PlymouthException {
+    protected int getWorldIndex(ServerWorld world) throws PlymouthException {
         return worlds.computeIfAbsent(Helium.getHash(world), $ -> {
             try {
                 getElseInsertWorld.setObject(1, ((AccessorServerWorld) world).getWorldProperties().getLevelName());
@@ -236,59 +247,46 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         });
     }
 
-    private void commonBlockStatement(ServerWorld world, BlockPos pos, int state, Entity entity, String bpu) throws PlymouthException {
-        try {
-            insertBlocks.setInt(1, getUserIndex(entity));
-            if (!(entity instanceof PlayerEntity) && entity != null)
-                insertBlocks.setInt(2, getEntityIndex(entity));
-            else
-                insertBlocks.setNull(2, Types.INTEGER);
-            insertBlocks.setInt(3, pos.getX());
-            insertBlocks.setInt(4, pos.getY());
-            insertBlocks.setInt(5, pos.getZ());
-            insertBlocks.setInt(6, getWorldIndex(world));
-            insertBlocks.setInt(7, state);
-            insertBlocks.setObject(8, bpu);
-            insertBlocks.addBatch();
-        } catch (SQLException sql) {
-            throw new PlymouthException(insertBlocks, sql);
-        }
+    private void commonBlockStatement(ServerWorld world, BlockPos pos, int state, Entity entity, String bpu) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        queue.offer(() -> {
+            try {
+                insertBlocks.setInt(1, getUserIndex(entity));
+                if (!(entity instanceof PlayerEntity) && entity != null)
+                    insertBlocks.setInt(2, getEntityIndex(entity));
+                else
+                    insertBlocks.setNull(2, Types.INTEGER);
+                insertBlocks.setInt(3, x);
+                insertBlocks.setInt(4, y);
+                insertBlocks.setInt(5, z);
+                insertBlocks.setInt(6, getWorldIndex(world));
+                insertBlocks.setInt(7, state);
+                insertBlocks.setObject(8, bpu);
+                insertBlocks.addBatch();
+            } catch (SQLException sql) {
+                throw new PlymouthException(insertBlocks, sql);
+            }
+        });
     }
 
     @Override
     public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, Entity entity) {
-        try {
-            commonBlockStatement(world, pos, getBlockIndex(state), entity, "BREAK");
-        } catch (PlymouthException ply) {
-            log.error("Failed to commit block breaking", ply);
-        }
+        commonBlockStatement(world, pos, getBlockIndex(state), entity, "BREAK");
     }
 
     @Override
     public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Entity entity) {
-        try {
-            commonBlockStatement(world, pos, getBlockIndex(state), entity, "PLACE");
-        } catch (PlymouthException ply) {
-            log.error("Failed to commit block placing", ply);
-        }
+        commonBlockStatement(world, pos, getBlockIndex(state), entity, "PLACE");
     }
 
     @Override
     public void placeBlock(ServerWorld world, BlockPos pos, Block block, Entity entity) {
-        try {
-            commonBlockStatement(world, pos, getBlockIndex(block), entity, "PLACE");
-        } catch (PlymouthException ply) {
-            log.error("Failed to commit block placing", ply);
-        }
+        commonBlockStatement(world, pos, getBlockIndex(block), entity, "PLACE");
     }
 
     @Override
     public void useBlock(ServerWorld world, BlockPos pos, Item i, Entity entity) {
-        try {
-            commonBlockStatement(world, pos, getBlockIndex((Block) null), entity, "USE");
-        } catch (PlymouthException ply) {
-            log.error("Failed to commit block using", ply);
-        }
+        commonBlockStatement(world, pos, getBlockIndex((Block) null), entity, "USE");
     }
 
     @Override
@@ -301,33 +299,31 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
         assert target != null;
         if (target.isAlive()) return;
-        PreparedStatement statement = null;
-        try {
-            statement = insertDeaths;
-            statement.setInt(3, getUserIndex(target));
-            if (!(target instanceof PlayerEntity))
-                statement.setInt(4, getEntityIndex(target));
-            else
-                statement.setNull(4, Types.INTEGER);
+        queue.offer(() -> {
+            try {
+                insertDeaths.setInt(3, getUserIndex(target));
+                if (!(target instanceof PlayerEntity))
+                    insertDeaths.setInt(4, getEntityIndex(target));
+                else
+                    insertDeaths.setNull(4, Types.INTEGER);
 
-            statement.setInt(1, getUserIndex(source));
-            var ce = source.getSource();
-            if (!(ce instanceof PlayerEntity) && ce != null)
-                statement.setInt(2, getEntityIndex(ce));
-            else
-                statement.setNull(2, Types.INTEGER);
+                insertDeaths.setInt(1, getUserIndex(source));
+                var ce = source.getSource();
+                if (!(ce instanceof PlayerEntity) && ce != null)
+                    insertDeaths.setInt(2, getEntityIndex(ce));
+                else
+                    insertDeaths.setNull(2, Types.INTEGER);
 
-            var pos = target.getPos();
-            statement.setDouble(5, pos.x);
-            statement.setDouble(6, pos.y);
-            statement.setDouble(7, pos.z);
-            statement.setInt(8, getWorldIndex((ServerWorld) target.world));
-            statement.addBatch();
-        } catch (SQLException sql) {
-            log.error("Failed to commit hurt entity.\n{}", statement, sql);
-        } catch (PlymouthException ply) {
-            log.error("Failed to commit hurt entity.", ply);
-        }
+                var pos = target.getPos();
+                insertDeaths.setDouble(5, pos.x);
+                insertDeaths.setDouble(6, pos.y);
+                insertDeaths.setDouble(7, pos.z);
+                insertDeaths.setInt(8, getWorldIndex((ServerWorld) target.world));
+                insertDeaths.addBatch();
+            } catch (SQLException sql) {
+                throw new PlymouthException(insertDeaths, sql);
+            }
+        });
     }
 
     @Override
