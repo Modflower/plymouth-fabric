@@ -2,7 +2,6 @@ package net.kjp12.plymouth;
 
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;

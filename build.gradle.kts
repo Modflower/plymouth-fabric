@@ -13,7 +13,6 @@ group = "net.kjp12"
 version = "0.0.0"
 
 dependencies {
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_version)
     include(implementation("org.postgresql", "postgresql", postgres_version))
 }
 
