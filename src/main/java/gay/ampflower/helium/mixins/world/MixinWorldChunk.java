@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
 import java.util.BitSet;
 
 @Mixin(WorldChunk.class)
@@ -238,7 +237,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
             return state;
         Helium.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(pos), pos);
         if (world.getDimensionRegistryKey().equals(DimensionType.OVERWORLD_REGISTRY_KEY))
-            Blocks.STONE.getDefaultState();
+            return Blocks.STONE.getDefaultState();
         return biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getSurfaceConfig().getUnderMaterial();
     }
 
