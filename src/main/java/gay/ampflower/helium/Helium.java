@@ -23,6 +23,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,9 +91,9 @@ public class Helium {
             database = new PlymouthNoOP();
         }
         //TODO: Replace with Fabric API when it becomes a thing.
-        var accessor = AccessorBlockTag.getAccessor();
-        HIDDEN_BLOCKS = accessor.get("helium:hidden");
-        NO_SMEAR_BLOCKS = accessor.get("helium:no_smear");
+        var accessor = AccessorBlockTag.getRequiredTags();
+        HIDDEN_BLOCKS = accessor.add("helium:hidden");
+        NO_SMEAR_BLOCKS = accessor.add("helium:no_smear");
 
         ANONYMOUS_ENTITY_UUID = new UUID(ENTITY_HEADER, 0L);
         ANONYMOUS_BLOCK_UUID = new UUID(BLOCK_HEADER, 0L);
@@ -144,7 +145,7 @@ public class Helium {
     }
 
     public static int getHash(ServerWorld world) {
-        var id = world.getDimensionRegistryKey().getValue();
+        var id = world.getRegistryKey().getValue();
         return HASHED_WORLD ^ ((AccessorServerWorld) world).getWorldProperties().getLevelName().hashCode() ^ id.getNamespace().hashCode() ^ id.getPath().hashCode();
     }
 

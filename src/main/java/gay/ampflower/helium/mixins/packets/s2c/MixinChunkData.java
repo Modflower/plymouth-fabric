@@ -9,6 +9,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class MixinChunkData {
         return ((IShadowChunk) chunk).helium$getShadowSections();
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;IZ)V",
+    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;I)V",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/chunk/WorldChunk;getBlockEntities()Ljava/util/Map;"
             ))

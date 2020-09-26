@@ -20,6 +20,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.postgresql.Driver;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -236,7 +237,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         return worlds.computeIfAbsent(Helium.getHash(world), $ -> {
             try {
                 getElseInsertWorld.setObject(1, ((AccessorServerWorld) world).getWorldProperties().getLevelName());
-                getElseInsertWorld.setObject(2, world.getDimensionRegistryKey().getValue().toString());
+                getElseInsertWorld.setObject(2, world.getRegistryKey().getValue().toString());
                 var i = getElseInsertWorld.executeQuery();
                 if (!i.next()) throw new SQLException("?!");
                 return i.getInt(1);

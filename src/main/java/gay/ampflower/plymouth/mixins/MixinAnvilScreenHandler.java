@@ -23,6 +23,13 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
         super(type, syncId, playerInventory, context);
     }
 
+    /**
+     * Track when the anvil is broken.
+     *
+     * @author Ampflower
+     * @since 0.0.0
+     */
+    // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z", shift = At.Shift.AFTER),
@@ -31,6 +38,13 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
         if (world instanceof ServerWorld) Helium.database.breakBlock((ServerWorld) world, pos, oldState, player);
     }
 
+    /**
+     * Track when the anvil is damaged.
+     *
+     * @author Ampflower
+     * @since 0.0.0
+     */
+    // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER),

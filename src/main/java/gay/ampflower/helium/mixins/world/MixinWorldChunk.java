@@ -23,7 +23,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.ArrayUtils;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
 import java.util.BitSet;
 
 @Mixin(WorldChunk.class)
@@ -203,7 +203,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
             var shadowMask = helium$shadowMasks[sy];
             for (int x = 0; x < 16; x++)
                 for (int z = 0; z < 16; z++) {
-                    var smear = biomeArray.getBiomeForNoiseGen(x >> 2, sy << 2, z >> 2).getSurfaceConfig().getUnderMaterial();
+                    var smear = biomeArray.getBiomeForNoiseGen(x >> 2, sy << 2, z >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
                     for (int y = 0; y < 16; y++) {
                         var state = section.getBlockState(x, y, z);
                         if (state.isAir()) continue;
@@ -236,9 +236,9 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 (!(state = helium$getShadowBlock(bp.set(pos, Direction.WEST))).isAir() && !state.isIn(Helium.NO_SMEAR_BLOCKS)))
             return state;
         Helium.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(pos), pos);
-        if (world.getDimensionRegistryKey().equals(DimensionType.OVERWORLD_REGISTRY_KEY))
+        if (world.getRegistryKey().equals(World.OVERWORLD))
             return Blocks.STONE.getDefaultState();
-        return biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getSurfaceConfig().getUnderMaterial();
+        return biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
     }
 
     public BlockState helium$getShadowBlock(BlockPos pos) {
