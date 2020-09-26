@@ -1,19 +1,17 @@
 package net.kjp12.helium.mixins.packets.s2c;
 
 import net.kjp12.helium.helpers.IShadowChunk;
-import net.minecraft.block.BlockState;
-import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.WorldChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ChunkDeltaUpdateS2CPacket.ChunkDeltaRecord.class)
+@Mixin(ChunkHolder.class)
 public class MixinChunkDeltaUpdateRecord {
-    @SuppressWarnings("UnresolvedMixinReference")
-    @Redirect(method = "<init>(Lnet/minecraft/network/packet/s2c/play/ChunkDeltaUpdateS2CPacket;SLnet/minecraft/world/chunk/WorldChunk;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/WorldChunk;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
-    private BlockState helium$init$proxyWorldChunk$getBlockState(WorldChunk self, BlockPos pos) {
-        return ((IShadowChunk) self).helium$getShadowBlock(pos);
+    @Redirect(method = "flushUpdates", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/WorldChunk;getSectionArray()[Lnet/minecraft/world/chunk/ChunkSection;"))
+    private ChunkSection[] helium$init$proxyWorldChunk$getBlockState(WorldChunk self) {
+        return ((IShadowChunk) self).helium$getShadowSections();
     }
 }
