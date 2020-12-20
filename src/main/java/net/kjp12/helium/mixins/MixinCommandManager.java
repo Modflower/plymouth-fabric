@@ -1,7 +1,7 @@
 package net.kjp12.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.kjp12.helium.Helium;
+import net.kjp12.helium.HeliumEarlyRiser;
 import net.kjp12.helium.Main;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-
+// TODO: Use Fabric API
 @Mixin(CommandManager.class)
 public abstract class MixinCommandManager {
     @Shadow
@@ -27,6 +27,6 @@ public abstract class MixinCommandManager {
 
     @Inject(method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)I", at = @At("HEAD"))
     public void helium$execute$logCommandExecution(ServerCommandSource source, String str, CallbackInfoReturnable<Integer> cbir) {
-        Helium.LOGGER.info("{} has executed the following command: {}", source.getName(), str);
+        HeliumEarlyRiser.LOGGER.info("{} has executed the following command: {}", source.getName(), str);
     }
 }

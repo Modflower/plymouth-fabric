@@ -1,4 +1,4 @@
-package net.kjp12.helium.mixins.world;
+package net.kjp12.helium.mixins.locking;
 
 import net.kjp12.helium.Helium;
 import net.kjp12.helium.helpers.IShadowBlockEntity;

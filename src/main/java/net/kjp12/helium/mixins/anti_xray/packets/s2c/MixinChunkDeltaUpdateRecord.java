@@ -1,4 +1,4 @@
-package net.kjp12.helium.mixins.packets.s2c;
+package net.kjp12.helium.mixins.anti_xray.packets.s2c;
 
 import net.kjp12.helium.helpers.IShadowChunk;
 import net.minecraft.server.world.ChunkHolder;

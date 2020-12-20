@@ -1,4 +1,4 @@
-package net.kjp12.helium.mixins.entities;
+package net.kjp12.helium.mixins.locking.entities;
 
 import net.kjp12.helium.Helium;
 import net.kjp12.helium.helpers.IShadowBlockEntity;

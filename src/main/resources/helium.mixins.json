@@ -1,20 +1,22 @@
 {
   "required": true,
   "package": "net.kjp12.helium.mixins",
+  "plugin": "net.kjp12.helium.MixinConfig",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "AccessorBlockTag",
-    "MixinBlockEntity",
     "MixinCommandManager",
-    "entities.MixinEnderDragon",
-    "entities.MixinEntity",
-    "entities.MixinPlayerEntity",
-    "entities.MixinTntMinecartEntity",
-    "packets.s2c.MixinBlockUpdate",
-    "packets.s2c.MixinChunkData",
-    "packets.s2c.MixinChunkDeltaUpdateRecord",
-    "world.MixinWorld",
-    "world.MixinWorldChunk"
+    "anti_xray.packets.s2c.MixinBlockUpdate",
+    "anti_xray.packets.s2c.MixinChunkData",
+    "anti_xray.packets.s2c.MixinChunkDeltaUpdateRecord",
+    "anti_xray.world.MixinWorldChunk",
+    "locking.MixinBlockEntity",
+    "locking.MixinWorld",
+    "locking.entities.MixinEnderDragon",
+    "locking.entities.MixinEntity",
+    "locking.entities.MixinPlayerEntity",
+    "locking.entities.MixinTntMinecartEntity",
+    "misc.MixinPreventPlayerFallThrough"
   ],
   "injectors": {
     "defaultRequire": 1

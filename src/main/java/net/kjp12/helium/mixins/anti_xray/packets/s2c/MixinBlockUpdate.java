@@ -1,4 +1,4 @@
-package net.kjp12.helium.mixins.packets.s2c;
+package net.kjp12.helium.mixins.anti_xray.packets.s2c;
 
 import net.kjp12.helium.helpers.IShadowChunk;
 import net.minecraft.block.BlockState;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(BlockUpdateS2CPacket.class)
 public class MixinBlockUpdate {
     @Redirect(method = "<init>(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/BlockView;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
-    private BlockState helium$init$proxyWorldChunk$getBlockState(BlockView self, BlockPos pos) {
+    private static BlockState helium$init$proxyWorldChunk$getBlockState(BlockView self, BlockPos pos) {
         return self instanceof World ? ((IShadowChunk) ((World) self).getChunk(pos.getX() >> 4, pos.getZ() >> 4)).helium$getShadowBlock(pos) : self.getBlockState(pos);
     }
 }

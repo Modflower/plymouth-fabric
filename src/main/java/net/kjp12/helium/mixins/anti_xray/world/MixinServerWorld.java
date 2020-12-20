@@ -1,4 +1,4 @@
-package net.kjp12.helium.mixins.world;
+package net.kjp12.helium.mixins.anti_xray.world;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerChunkManager;

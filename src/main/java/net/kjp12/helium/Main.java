@@ -99,6 +99,6 @@ public class Main implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Helium.LOGGER.info(Helium.ANONYMOUS_BLOCK_UUID);
+        HeliumEarlyRiser.LOGGER.info(Helium.ANONYMOUS_BLOCK_UUID);
     }
 }
