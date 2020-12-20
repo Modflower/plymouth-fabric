@@ -1,4 +1,4 @@
-package gay.ampflower.helium.mixins.world;
+package gay.ampflower.helium.mixins.anti_xray.world;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerChunkManager;

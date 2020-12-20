@@ -1,4 +1,4 @@
-package gay.ampflower.helium.mixins.packets.s2c;
+package gay.ampflower.helium.mixins.anti_xray.packets.s2c;
 
 import gay.ampflower.helium.helpers.IShadowChunk;
 import net.minecraft.block.entity.BlockEntity;

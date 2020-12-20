@@ -1,6 +1,7 @@
-package gay.ampflower.helium.mixins.world;
+package gay.ampflower.helium.mixins.anti_xray.world;
 
 import gay.ampflower.helium.Helium;
+import gay.ampflower.helium.HeliumEarlyRiser;
 import gay.ampflower.helium.helpers.IShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -126,7 +127,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
 
     private void helium$setIfHidden(final BlockPos.Mutable bp) {
         // This is called by other chunks, shadowMask check is required.
-        if (World.isHeightInvalid(bp) || helium$shadowMasks == null) return;
+        if (World.isOutOfBuildLimitVertically(bp) || helium$shadowMasks == null) return;
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
                 cx = x >> 4, cy = y >> 4, cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {
@@ -235,7 +236,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 (!(state = helium$getShadowBlock(bp.set(pos, Direction.EAST))).isAir() && !state.isIn(Helium.NO_SMEAR_BLOCKS)) ||
                 (!(state = helium$getShadowBlock(bp.set(pos, Direction.WEST))).isAir() && !state.isIn(Helium.NO_SMEAR_BLOCKS)))
             return state;
-        Helium.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(pos), pos);
+        HeliumEarlyRiser.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(pos), pos);
         if (world.getRegistryKey().equals(World.OVERWORLD))
             return Blocks.STONE.getDefaultState();
         return biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();

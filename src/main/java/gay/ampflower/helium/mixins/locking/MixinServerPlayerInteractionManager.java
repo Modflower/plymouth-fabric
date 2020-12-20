@@ -1,4 +1,4 @@
-package gay.ampflower.helium.mixins;
+package gay.ampflower.helium.mixins.locking;
 
 import gay.ampflower.helium.Helium;
 import gay.ampflower.helium.helpers.IShadowBlockEntity;

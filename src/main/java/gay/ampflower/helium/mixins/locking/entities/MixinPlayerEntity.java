@@ -1,4 +1,4 @@
-package gay.ampflower.helium.mixins.entities;
+package gay.ampflower.helium.mixins.locking.entities;
 
 import gay.ampflower.helium.Helium;
 import gay.ampflower.helium.helpers.IShadowBlockEntity;
@@ -24,13 +24,4 @@ public abstract class MixinPlayerEntity extends LivingEntity {
         if (!world.isClient && !Helium.canBreak((IShadowBlockEntity) world.getBlockEntity(pos), this))
             cbir.setReturnValue(true);
     }
-
-    //TODO: Inject into on movement & do 8x4x5 (basically what you're looking at) sending
-    // once shadow by lighting has been implemented.
-    /*
-    @Override
-    public void setPos(double x, double y, double z) {
-        double i = prevX, j = prevY, k = prevZ;
-        super.setPos(x, y, z);
-    }*/
 }

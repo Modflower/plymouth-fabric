@@ -21,12 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -36,7 +33,6 @@ import java.util.UUID;
  * registered.
  */
 public class Helium {
-    public static final Logger LOGGER = LogManager.getLogger("Helium");
     public static final UUID
             ANONYMOUS_UUID = Util.NIL_UUID,
             ANONYMOUS_ENTITY_UUID,
@@ -64,10 +60,9 @@ public class Helium {
     static {
         try {
             var properties = new Properties();
-            var conf = Path.of(".", "config");
-            var props = conf.resolve("helium.db.properties");
+            var props = HeliumEarlyRiser.config.resolve("helium.db.properties");
             if (Files.notExists(props)) {
-                Files.createDirectories(conf);
+                Files.createDirectories(HeliumEarlyRiser.config);
                 Files.createFile(props);
                 try (var os = Files.newOutputStream(props)) {
                     properties.put("helium$url", "jdbc:postgresql://127.0.0.1:5432/helium");
@@ -75,7 +70,7 @@ public class Helium {
                     properties.put("password", "password");
                     properties.store(os, "Please fill out these properties to your needs. Supported drivers: PostgreSQL");
                 }
-                LOGGER.warn("Plymouth wasn't present, using NoOP.");
+                HeliumEarlyRiser.LOGGER.warn("Plymouth wasn't present, using NoOP.");
                 database = new PlymouthNoOP();
             } else {
                 try (var is = Files.newInputStream(props)) {
@@ -87,7 +82,7 @@ public class Helium {
             }
         } catch (NoClassDefFoundError | PlymouthException | IOException ncdfe) {
             assert false : ncdfe;
-            LOGGER.error("Cannot load Plymouth Driver Wrapper, using NoOP.", ncdfe);
+            HeliumEarlyRiser.LOGGER.error("Cannot load Plymouth Driver Wrapper, using NoOP.", ncdfe);
             database = new PlymouthNoOP();
         }
         //TODO: Replace with Fabric API when it becomes a thing.
