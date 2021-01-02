@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.UUID;
+
 public class PlymouthNoOP implements Plymouth {
     public void initializeDatabase() {
     }
@@ -45,5 +47,9 @@ public class PlymouthNoOP implements Plymouth {
     }
 
     public void putItems(BlockPos pos, ItemStack i, int c, Entity placer) {
+    }
+
+    public String getPlayerName(UUID uuid) {
+        return null;
     }
 }
