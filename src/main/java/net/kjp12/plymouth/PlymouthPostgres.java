@@ -28,7 +28,9 @@ import java.sql.Types;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static net.kjp12.plymouth.PlymouthHelper.toJson;
 
@@ -52,7 +54,9 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
             entities = new Int2IntOpenHashMap(32);
     private PreparedStatement
             insertBlocks, insertDeaths, insertItems,
-            getElseInsertUser, getElseInsertBlock, getElseInsertEntity, getElseInsertWorld;
+            getElseInsertUser, getElseInsertBlock, getElseInsertEntity, getElseInsertWorld, getUsername,
+            getModificationsInArea, getModificationsInAreaDuring, getModificationsInAreaBy, getModificationsInAreaDuringBy;
+    private ReentrantLock databaseLock = new ReentrantLock();
 
     public PlymouthPostgres(String uri, Properties properties) throws PlymouthException, NoClassDefFoundError {
         super(new Driver(), uri, properties);
@@ -99,6 +103,11 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
             insertBlocks = connection.prepareStatement("INSERT INTO blocks (cause_id, cause_raw, pos, block, action) VALUES (?, ?, (?, ?, ?, ?)::ipos, ?, ?::block_action);");
             insertDeaths = connection.prepareStatement("INSERT INTO deaths (cause_id, cause_raw, target_id, target_raw, death_pos) VALUES (?, ?, ?, ?, (?, ?, ?, ?)::dpos);");
             insertItems = connection.prepareStatement("INSERT INTO items (cause_id, ?, inventory_id, ?, data, action) VALUES (?, ?, ?, ?, ?::jsonb, ?);");
+            getUsername = connection.prepareStatement("SELECT name FROM users_table WHERE uid = ?;");
+            getModificationsInArea = connection.prepareStatement("SELECT * FROM blocks WHERE (pos).x > ? AND (pos).x < ? AND (pos).y > ? AND (pos).y < ? AND (pos).z > ? AND (pos).z < ?;");
+            getModificationsInAreaBy = connection.prepareStatement("SELECT * FROM blocks WHERE cause_id = ? AND (pos).x > ? AND (pos).x < ? AND (pos).y > ? AND (pos).y < ? AND (pos).z > ? AND (pos).z < ?;");
+            getModificationsInAreaDuring = connection.prepareStatement("SELECT * FROM blocks WHERE time > ? AND time < ? AND (pos).x > ? AND (pos).x < ? AND (pos).y > ? AND (pos).y < ? AND (pos).z > ? AND (pos).z < ?;");
+            getModificationsInAreaDuringBy = connection.prepareStatement("SELECT * FROM blocks WHERE time > ? AND time < ? AND cause_id = ? AND (pos).x > ? AND (pos).x < ? AND (pos).y > ? AND (pos).y < ? AND (pos).z > ? AND (pos).z < ?;");
             try {
                 connection.prepareStatement("SELECT now_utc();").executeQuery();
                 return;
@@ -117,7 +126,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
             statement.addBatch("CREATE TABLE IF NOT EXISTS worlds_table (index SERIAL PRIMARY KEY, name TEXT NOT NULL, dimension TEXT NOT NULL);");
             statement.addBatch("CREATE TABLE IF NOT EXISTS blocks_table (index SERIAL PRIMARY KEY, name TEXT NOT NULL, properties jsonb NULL);");
             statement.addBatch("CREATE TABLE IF NOT EXISTS entities_table (index SERIAL PRIMARY KEY, uid uuid NOT NULL UNIQUE);");
-            statement.addBatch("CREATE INDEX IF NOT EXISTS user_index ON users_table (index);");
+            statement.addBatch("CREATE INDEX IF NOT EXISTS user_index ON users_table (index, uid);");
             statement.addBatch("CREATE INDEX IF NOT EXISTS block_index ON blocks_table (index);");
             statement.addBatch("CREATE INDEX IF NOT EXISTS entity_index ON entities_table (index);");
             /* Late-init methods due to the above tables needing to exist */
@@ -344,5 +353,25 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Override
     public void putItems(BlockPos pos, ItemStack i, int c, Entity placer) {
 
+    }
+
+    @Override
+    public String getPlayerName(UUID uuid) {
+        databaseLock.lock();
+        try {
+            getUsername.setObject(0, uuid);
+            var results = getUsername.executeQuery();
+            if (results.first()) {
+                // We got a result, return the result from the name column.
+                return results.getString("name");
+            } else {
+                // There's nothing to return, so, return null.
+                return null;
+            }
+        } catch (SQLException sql) {
+            throw new PlymouthException(getUsername, sql);
+        } finally {
+            databaseLock.unlock();
+        }
     }
 }

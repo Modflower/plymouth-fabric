@@ -14,6 +14,7 @@ version = "0.0.0"
 
 dependencies {
     include(implementation("org.postgresql", "postgresql", postgres_version))
+//    implementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
 }
 
 minecraft {

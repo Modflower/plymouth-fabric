@@ -41,7 +41,7 @@ public abstract class MixinServerPlayerInteractionManager {
     )
     public void helium$tryBreakBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cbir,
                                      BlockState blockState, BlockEntity blockEntity, Block block) {
-        if (!((IShadowBlockEntity) blockEntity).helium$canBreakBlock(player)) {
+        if (blockEntity != null && !((IShadowBlockEntity) blockEntity).helium$canBreakBlock(player)) {
             cbir.setReturnValue(false);
         }
     }

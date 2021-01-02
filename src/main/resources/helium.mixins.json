@@ -11,6 +11,7 @@
     "anti_xray.packets.s2c.MixinChunkDeltaUpdateRecord",
     "anti_xray.world.MixinWorldChunk",
     "locking.MixinBlockEntity",
+    "locking.MixinServerPlayerInteractionManager",
     "locking.MixinWorld",
     "locking.entities.MixinEnderDragon",
     "locking.entities.MixinEntity",

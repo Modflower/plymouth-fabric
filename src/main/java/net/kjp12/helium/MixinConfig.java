@@ -87,6 +87,7 @@ public class MixinConfig implements IMixinConfigPlugin {
                 // This one must remain enabled to maintain NBT data.
             case "locking.MixinBlockEntity":
                 return true;
+            case "locking.MixinServerPlayerInteractionManager":
             case "locking.MixinWorld":
             case "locking.entities.MixinEnderDragon":
             case "locking.entities.MixinEntity":

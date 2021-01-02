@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.UUID;
+
 /**
  * Plymouth Database Driver Adaptor, a meta-driver for driving databases.
  * <p>
@@ -83,4 +85,12 @@ public interface Plymouth {
     void takeItems(BlockPos pos, ItemStack i, int c, Entity taker);
 
     void putItems(BlockPos pos, ItemStack i, int c, Entity placer);
+
+    /**
+     * Player lookup by database.
+     *
+     * @param uuid The UUID to look up by.
+     * @return The username if it exists in the database, else null.
+     */
+    String getPlayerName(UUID uuid);
 }
