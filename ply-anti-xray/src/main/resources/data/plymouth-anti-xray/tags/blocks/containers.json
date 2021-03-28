@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#plymouth-anti-xray:furnaces",
+    "#plymouth-anti-xray:redstone_containers",
+    "#shulker_boxes",
+    "chest",
+    "ender_chest"
+  ]
+}

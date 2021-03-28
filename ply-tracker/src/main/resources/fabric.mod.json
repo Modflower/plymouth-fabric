@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "plymouth-tracker",
+  "version": "${version}",
+  "name": "Plymouth: Tracker",
+  "description": "Track your world changes.",
+  "authors": [
+    "Ampflower"
+  ],
+  "contact": {
+    "sources": "https://github.com/Modflower/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
+  },
+  "environment": "*",
+  "entrypoints": {},
+  "mixins": [
+    "plymouth-tracker.mixins.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=0.11.1",
+    "java": ">=11",
+    "fabric-permissions-api-v0": "*",
+    "plymouth-common": "^${version}",
+    "plymouth-database": "^${version}"
+  },
+  "recommends": {
+    "luckperms": "*"
+  }
+}

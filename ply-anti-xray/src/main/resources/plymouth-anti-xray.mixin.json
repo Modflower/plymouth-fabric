@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "gay.ampflower.plymouth.anti_xray.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "AccessorBlockTag",
+    "packets.s2c.MixinBlockUpdate",
+    "packets.s2c.MixinChunkData",
+    "packets.s2c.MixinChunkHolder",
+    "player.MixinPlayerEntity",
+    "world.MixinServerWorld",
+    "world.MixinWorldChunk"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

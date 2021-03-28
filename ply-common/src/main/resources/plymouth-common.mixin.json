@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "gay.ampflower.plymouth.common.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "MixinServerPlayerInteractionManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

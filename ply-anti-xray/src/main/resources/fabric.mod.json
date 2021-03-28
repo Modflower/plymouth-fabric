@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "plymouth-anti-xray",
+  "version": "${version}",
+  "name": "Plymouth: Anti-Xray",
+  "description": "A cache-based anti-xray engine.",
+  "authors": [
+    "Ampflower"
+  ],
+  "contact": {
+    "sources": "https://github.com/Modflower/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gay.ampflower.plymouth.anti_xray.Constants::init"
+    ]
+  },
+  "mixins": [
+    "plymouth-anti-xray.mixin.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=0.11.1",
+    "java": ">=11",
+    "fabric-resource-loader-v0": "*"
+  }
+}

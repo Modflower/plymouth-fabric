@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#plymouth-anti-xray:precious_blocks",
+    "#plymouth-anti-xray:redstone",
+    "#plymouth-anti-xray:operator_blocks",
+    "#plymouth-anti-xray:common_structure_blocks",
+    "dragon_egg"
+  ]
+}

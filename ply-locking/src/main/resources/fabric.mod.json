@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "plymouth-locking",
+  "version": "${version}",
+  "name": "Plymouth: Locking",
+  "description": "Lock your chests and trust a few with your items.",
+  "authors": [
+    "Ampflower"
+  ],
+  "contact": {
+    "sources": "https://github.com/Modflower/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gay.ampflower.plymouth.locking.Locking"
+    ]
+  },
+  "mixins": [
+    "plymouth-locking.mixin.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=0.11.1",
+    "java": ">=11",
+    "plymouth-common": "^${version}",
+    "fabric-command-api-v1": "*",
+    "fabric-permissions-api-v0": "*"
+  },
+  "recommends": {
+    "luckperms": "*"
+  }
+}
