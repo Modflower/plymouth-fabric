@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "net.kjp12.plymouth.common.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "MixinServerPlayerInteractionManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

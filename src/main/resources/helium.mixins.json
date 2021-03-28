@@ -4,19 +4,7 @@
   "plugin": "net.kjp12.helium.MixinConfig",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
-    "AccessorBlockTag",
     "MixinCommandManager",
-    "anti_xray.packets.s2c.MixinBlockUpdate",
-    "anti_xray.packets.s2c.MixinChunkData",
-    "anti_xray.packets.s2c.MixinChunkDeltaUpdateRecord",
-    "anti_xray.world.MixinWorldChunk",
-    "locking.MixinBlockEntity",
-    "locking.MixinServerPlayerInteractionManager",
-    "locking.MixinWorld",
-    "locking.entities.MixinEnderDragon",
-    "locking.entities.MixinEntity",
-    "locking.entities.MixinPlayerEntity",
-    "locking.entities.MixinTntMinecartEntity",
     "misc.MixinPreventPlayerFallThrough"
   ],
   "injectors": {

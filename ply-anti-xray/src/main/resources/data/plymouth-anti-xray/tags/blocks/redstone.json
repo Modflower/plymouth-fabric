@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#plymouth-anti-xray:redstone_non_full",
+    "#plymouth-anti-xray:redstone_containers",
+    "#plymouth-anti-xray:pistons",
+    "redstone_block",
+    "note_block",
+    "redstone_lamp",
+    "observer",
+    "target"
+  ]
+}

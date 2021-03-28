@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "#plymouth-anti-xray:workstations",
+    "#plymouth-anti-xray:infested",
+    "chiseled_stone_bricks",
+    "cracked_stone_bricks",
+    "mossy_stone_bricks",
+    "stone_bricks",
+    "cobblestone",
+    "mossy_cobblestone",
+    "#plymouth-anti-xray:containers",
+    "tnt"
+  ]
+}

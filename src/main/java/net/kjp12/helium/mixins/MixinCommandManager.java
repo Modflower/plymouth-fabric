@@ -2,7 +2,8 @@ package net.kjp12.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.kjp12.helium.HeliumEarlyRiser;
-import net.kjp12.helium.Main;
+import net.kjp12.helium.commands.InventoryLookupCommand;
+import net.kjp12.helium.commands.MappingCommand;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Final;
@@ -22,7 +23,8 @@ public abstract class MixinCommandManager {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void helium$registerCommands(CommandManager.RegistrationEnvironment env, CallbackInfo cbi) {
-        Main.initializeCommands(env, dispatcher);
+        InventoryLookupCommand.register(dispatcher);
+        MappingCommand.register(dispatcher);
     }
 
     @Inject(method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)I", at = @At("HEAD"))

@@ -11,8 +11,8 @@ public class Standalone {
                     Path.of(Objects.requireNonNullElse(System.getenv("APPDATA"), System.getProperty("user.home", ".")), ".minecraft", "mods") :
                     os.contains("mac") || os.contains("osx") ?
                             Path.of(System.getProperty("user.home", "."), "Library", "Application Support", "minecraft", "mods") :
-                            Path.of(System.getProperty("user.home", "."), ".minecraft"));
-            if (JOptionPane.showOptionDialog(null, "Please put Helium in your mods folder.\nIt'll be located at `" + path.toAbsolutePath().toString() + "`.\n\nWould you like that folder to be opened?", "Helium Mod", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
+                            Path.of(System.getProperty("user.home", "."), ".minecraft", "mods"));
+            if (JOptionPane.showOptionDialog(null, "Please put Helium in your mods folder.\nIt'll be located at `" + path.toAbsolutePath() + "`.\n\nWould you like that folder to be opened?", "Helium Mod", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
                 Desktop.getDesktop().browseFileDirectory(path.toFile());
             }
         } catch (Exception e) {

@@ -1,14 +1,15 @@
 {
   "schemaVersion": 1,
-  "id": "helium",
+  "id": "plymouth",
   "version": "${version}",
-  "name": "Helium",
-  "description": "Helium Anti-Cheat",
+  "name": "Plymouth",
+  "description": "Miscellaneous Utilities",
   "authors": [
     "KJP12"
   ],
   "contact": {
-    "sources": "https://github.com/KJP12/helium-fabric"
+    "sources": "https://github.com/KJP12/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
   },
   "environment": "*",
   "entrypoints": {
@@ -17,12 +18,18 @@
     ]
   },
   "mixins": [
-    "helium.mixins.json",
-    "plymouth.mixins.json"
+    "helium.mixins.json"
   ],
   "depends": {
     "minecraft": ">=${minecraft_required}",
-    "fabricloader": ">=${loader_version}",
-    "fabric-resource-loader-v0": "*"
+    "fabricloader": ">=0.11.1",
+    "java": ">=11",
+    "fabric-resource-loader-v0": "*",
+    "fabric-permissions-api-v0": "*",
+    "fabric-lifecycle-events-v1": "*",
+    "fabric-api-base": "*"
+  },
+  "recommends": {
+    "luckperms": "*"
   }
 }

@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "net.kjp12.plymouth.locking.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "MixinBlockEntity",
+    "MixinExplosionBehavior",
+    "MixinServerPlayerInteractionManager",
+    "MixinWorld",
+    "entities.MixinEnderDragon",
+    "entities.MixinEntity",
+    "entities.MixinPlayerEntity",
+    "entities.MixinTntMinecartEntity"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

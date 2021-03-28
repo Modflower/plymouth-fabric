@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "plymouth-anti-xray",
+  "version": "${version}",
+  "name": "Plymouth: Anti-Xray",
+  "description": "A cache-based anti-xray engine.",
+  "authors": [
+    "KJP12"
+  ],
+  "contact": {
+    "sources": "https://github.com/KJP12/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.kjp12.plymouth.anti_xray.Constants::init"
+    ]
+  },
+  "mixins": [
+    "plymouth-anti-xray.mixin.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=0.11.1",
+    "java": ">=11",
+    "fabric-resource-loader-v0": "*"
+  }
+}

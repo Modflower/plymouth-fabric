@@ -57,7 +57,7 @@ public abstract class MixinPreventPlayerFallThrough extends PlayerEntity {
             var world = getServerWorld();
             var chunk = world.getChunk(chunkX, chunkZ);
 
-            int ix = MathHelper.fastFloor(x), iz = MathHelper.fastFloor(z);
+            int ix = MathHelper.floor(x), iz = MathHelper.floor(z);
             if (chunk.getBlockState(new BlockPos(ix, 0, iz)).isOf(Blocks.BEDROCK)) {
                 // We are somehow below bedrock, fix position. We'll use this position to fix the player.
                 int iy = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).get(ix & 15, iz & 15);

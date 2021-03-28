@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "#anvil",
+    "#plymouth-anti-xray:furnaces",
+    "#beds",
+    "jukebox",
+    "grindstone",
+    "smithing_table",
+    "fletching_table",
+    "cartography_table",
+    "loom",
+    "composter",
+    "stonecutter",
+    "lectern",
+    "enchanting_table"
+  ]
+}

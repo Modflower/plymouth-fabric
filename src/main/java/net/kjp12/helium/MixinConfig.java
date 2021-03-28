@@ -27,8 +27,6 @@ import java.util.Set;
 public class MixinConfig implements IMixinConfigPlugin {
     // Quite crude of a config system, but should be sufficient.
     private boolean
-            enableLocking = true,
-            enableAntiXray = true,
             enableFallThroughPrevention = true;
 
     @Override
@@ -43,18 +41,12 @@ public class MixinConfig implements IMixinConfigPlugin {
                     properties.load(stream);
                 }
                 // We didn't crash, so, we should be good.
-                if (properties.containsKey("locking"))
-                    enableLocking = Boolean.parseBoolean(properties.getProperty("locking"));
-                if (properties.containsKey("anti-xray"))
-                    enableAntiXray = Boolean.parseBoolean(properties.getProperty("anti-xray"));
                 if (properties.containsKey("prevent-fall-through"))
                     enableFallThroughPrevention = Boolean.parseBoolean(properties.getProperty("prevent-fall-through"));
             } else {
                 Files.createDirectories(HeliumEarlyRiser.config);
                 Files.createFile(mixinConfig);
                 // The config doesn't exist. Default all.
-                properties.put("locking", Boolean.toString(enableLocking));
-                properties.put("anti-xray", Boolean.toString(enableAntiXray));
                 properties.put("prevent-fall-through", Boolean.toString(enableFallThroughPrevention));
                 try (var stream = Files.newOutputStream(mixinConfig)) {
                     properties.store(stream, "Helium Mixin Config");
@@ -85,20 +77,7 @@ public class MixinConfig implements IMixinConfigPlugin {
             case "AccessorBlockTag":
             case "MixinCommandManager":
                 // This one must remain enabled to maintain NBT data.
-            case "locking.MixinBlockEntity":
                 return true;
-            case "locking.MixinServerPlayerInteractionManager":
-            case "locking.MixinWorld":
-            case "locking.entities.MixinEnderDragon":
-            case "locking.entities.MixinEntity":
-            case "locking.entities.MixinPlayerEntity":
-            case "locking.entities.MixinTntMinecartEntity":
-                return enableLocking;
-            case "anti_xray.packets.s2c.MixinBlockUpdate":
-            case "anti_xray.packets.s2c.MixinChunkData":
-            case "anti_xray.packets.s2c.MixinChunkDeltaUpdateRecord":
-            case "anti_xray.world.MixinWorldChunk":
-                return enableAntiXray;
             case "misc.MixinPreventPlayerFallThrough":
                 return enableFallThroughPrevention;
             default:
