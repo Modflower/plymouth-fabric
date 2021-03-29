@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "plymouth-debug",
+  "version": "${version}",
+  "name": "Plymouth: Debug",
+  "description": "Debugging utilities for Plymouth.",
+  "authors": [
+    "Ampflower"
+  ],
+  "contact": {
+    "sources": "https://github.com/Modflower/plymouth-fabric",
+    "discord": "https://discord.gg/EmPS9y9"
+  },
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gay.ampflower.plymouth.debug.Debug"
+    ],
+    "client": [
+      "gay.ampflower.plymouth.debug.DebugClient"
+    ]
+  },
+  "mixins": [
+    "plymouth-debug.mixin.json"
+  ],
+  "depends": {
+    "minecraft": ">=${minecraft_required}",
+    "fabricloader": ">=0.11.1",
+    "java": ">=11"
+  }
+}
