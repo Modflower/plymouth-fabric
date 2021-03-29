@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "net.kjp12.plymouth.debug.mixins",
+  "compatibilityLevel": "JAVA_11",
+  "mixins": [
+    "MetaMixinShadowChunk",
+    "client.MixinClientPlayNetworkHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
