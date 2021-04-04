@@ -1,4 +1,9 @@
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 
 plugins {
     java
@@ -71,5 +76,61 @@ tasks {
         }
         from(jar, remapJar, sourcesJar, remapSourcesJar)
         into(project.buildDir.resolve("pool"))
+    }
+    register<Task>("uploadPool") {
+        dependsOn(build)
+        for (p in subprojects) {
+            if (p.name == "ply-debug") continue
+            dependsOn(p.tasks.build)
+        }
+        // I can guarantee you that the following was never supposed to happen.
+        doLast {
+            val gson = Gson()
+            val httpClient = HttpClient.newHttpClient()
+            val uri =
+                URI.create("${System.getenv("ACTIONS_RUNTIME_URL")}_apis/pipelines/workflows/${System.getenv("GITHUB_RUN_ID")}/artifacts?api-version=6.0-preview")
+            project.logger.debug("POST {}", uri)
+            val request = HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
+                .header("Tiny-Potato", "Hi GitHub!")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"Type\":\"actions_storage\",\"Name\":\"build-artifacts\"}"))
+                .build()
+            val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            if (response.statusCode() / 100 != 2) {
+                project.logger.warn("Unable to continue. {}\n\n{}", response.statusCode(), response.body())
+            } else {
+                val containerUrl =
+                    gson.fromJson(response.body(), JsonObject::class.java)["fileContainerResourceUrl"].asString
+                val set = hashSetOf(
+                    jar.get().archiveFile.get().asFile,
+                    remapJar.get().archiveFile.get().asFile,
+                    sourcesJar.get().archiveFile.get().asFile,
+                    remapSourcesJar.get().output
+                )
+
+                for (p in subprojects) {
+                    if (p.name == "ply-debug") continue
+                    set.add(p.tasks.jar.get().archiveFile.get().asFile)
+                    set.add(p.tasks.remapJar.get().archiveFile.get().asFile)
+                    set.add(p.task<Jar>("sourcesJar").archiveFile.get().asFile)
+                    set.add(p.tasks.remapSourcesJar.get().output)
+                }
+
+                for (file in set) {
+                    val ur = URI.create(containerUrl + "?itemPath=${file.name}")
+                    val req = HttpRequest.newBuilder(ur).header("Content-Type", "application/octet-stream")
+                        .PUT(HttpRequest.BodyPublishers.ofFile(file.toPath())).build()
+                    httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString()).handleAsync { res, thr ->
+                        if (thr != null) {
+                            project.logger.warn("Failed to upload {}", ur, thr)
+                        } else if (res.statusCode() / 100 != 2) {
+                            project.logger.warn(
+                                "Failed to upload {} for {}\n\n{}",
+                                arrayOf(ur, res.statusCode(), res.body())
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
