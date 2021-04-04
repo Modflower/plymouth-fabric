@@ -40,19 +40,21 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    register<Jar>("sourcesJar") {
+    val sourcesJar = register<Jar>("sourcesJar") {
         dependsOn("classes")
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
     }
-    getByName<ProcessResources>("processResources") {
+    processResources {
         inputs.property("version", project.version)
 
         from(sourceSets.main.get().resources.srcDirs) {
             include("fabric.mod.json")
-            expand("version" to project.version,
-                    "loader_version" to project.property("loader_version")?.toString(),
-                    "minecraft_required" to project.property("minecraft_required")?.toString())
+            expand(
+                "version" to project.version,
+                "loader_version" to project.property("loader_version")?.toString(),
+                "minecraft_required" to project.property("minecraft_required")?.toString()
+            )
         }
 
         from(sourceSets.main.get().resources.srcDirs) {
@@ -61,5 +63,13 @@ tasks {
     }
     withType<Jar> {
         from("LICENSE")
+    }
+    register<Copy>("poolBuilds") {
+        for (p in subprojects) {
+            if (p.name == "ply-debug") continue
+            from(p.tasks.jar, p.tasks.remapJar, p.task("sourcesJar"), p.tasks.remapSourcesJar)
+        }
+        from(jar, remapJar, sourcesJar, remapSourcesJar)
+        into(project.buildDir.resolve("pool"))
     }
 }
