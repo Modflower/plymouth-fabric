@@ -87,12 +87,15 @@ tasks {
         doLast {
             val gson = Gson()
             val httpClient = HttpClient.newHttpClient()
+            val urir =
+                "${System.getenv("ACTIONS_RUNTIME_URL")}_apis/pipelines/workflows/${System.getenv("GITHUB_RUN_ID")}/artifacts?api-version=6.0-preview"
+            println(urir)
             val uri =
-                URI.create("${System.getenv("ACTIONS_RUNTIME_URL")}_apis/pipelines/workflows/${System.getenv("GITHUB_RUN_ID")}/artifacts?api-version=6.0-preview")
+                URI.create(urir)
             project.logger.debug("POST {}", uri)
             val request = HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
                 .header("Tiny-Potato", "Hi GitHub!")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"Type\":\"actions_storage\",\"Name\":\"build-artifacts\"}"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"Type\":\"actions_storage\",\"Name\":\"potato-pool\"}"))
                 .build()
             val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
             if (response.statusCode() / 100 != 2) {
@@ -116,7 +119,9 @@ tasks {
                 }
 
                 for (file in set) {
-                    val ur = URI.create(containerUrl + "?itemPath=${file.name}")
+                    val urr = containerUrl + "?itemPath=${file.name}"
+                    println(urr)
+                    val ur = URI.create(urr)
                     val req = HttpRequest.newBuilder(ur).header("Content-Type", "application/octet-stream")
                         .PUT(HttpRequest.BodyPublishers.ofFile(file.toPath())).build()
                     httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString()).handleAsync { res, thr ->
