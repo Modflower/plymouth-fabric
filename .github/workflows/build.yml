@@ -17,8 +17,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            # This project is a non-standard multi-module
-                  ply-*/build/libs/
-                  build/libs/
-            # Plymouth: Debug is meant primarily for development purposes and should not be easily accessible.
-                  !ply-debug/**
+            ply-*/build/libs/
+            build/libs/
+            !ply-debug/**
