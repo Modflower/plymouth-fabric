@@ -21,8 +21,6 @@ jobs:
         uses: AButlet/upload-release-assets@v2.0
         with:
           files: |
-            ply-*/build/libs/*.jar
-            build/libs/*.jar
-            !ply-debug/**
+            build/pool/*.jar
             !*-dev.jar
           repo-token: ${{secrets.GITHUB_TOKEN}}

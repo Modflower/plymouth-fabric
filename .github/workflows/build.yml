@@ -17,6 +17,4 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            ply-*/build/libs/
-            build/libs/
-            !ply-debug/**
+            build/pool/*.jar
