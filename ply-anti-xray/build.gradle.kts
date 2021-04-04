@@ -63,7 +63,7 @@ tasks {
     withType<Jar> {
         from("LICENSE")
     }
-    getByName<TaskModrinthUpload>("publishModrinth") {
+    register<TaskModrinthUpload>("publishModrinth") {
         token = System.getenv("MODRINTH_TOKEN")
         projectId = "6Zrbdphe"
         versionNumber = version.toString()
