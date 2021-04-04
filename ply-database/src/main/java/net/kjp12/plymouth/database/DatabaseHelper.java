@@ -35,26 +35,31 @@ public final class DatabaseHelper implements ModInitializer {
      * due to no permission checks existing for the new code. Beware of this.
      */
     private static final int
-            HASHED_ENTITY = 0x809ee372 ^ 0x7c02d003;
-    private static final int HASHED_BLOCK = 0x809ee372 ^ 0x03d4d46d;
-    private static final int HASHED_WORLD = 0x809ee372 ^ 0x04fe2b72;
+            HASHED_ENTITY = 0x809ee372 ^ 0x7c02d003,
+            HASHED_BLOCK = 0x809ee372 ^ 0x03d4d46d,
+            HASHED_WORLD = 0x809ee372 ^ 0x04fe2b72;
 
     static {
         try {
             var properties = new java.util.Properties();
-            var props = config.resolve("helium.db.properties");
+            var props = config.resolve("plymouth.db.properties");
             if (Files.notExists(props)) {
-                Files.createDirectories(config);
-                Files.createFile(props);
-                try (var os = Files.newOutputStream(props)) {
-                    properties.put("helium$url", "jdbc:postgresql://127.0.0.1:5432/helium");
-                    properties.put("user", "username");
-                    properties.put("password", "password");
-                    properties.put("closeOnError", "true");
-                    properties.store(os, "Please fill out these properties to your needs. Supported drivers: PostgreSQL");
+                var legacyOptions = config.resolve("helium.db.properties");
+                if (Files.exists(legacyOptions)) {
+                    Files.move(legacyOptions, props);
+                } else {
+                    Files.createDirectories(config);
+                    Files.createFile(props);
+                    try (var os = Files.newOutputStream(props)) {
+                        properties.put("helium$url", "jdbc:postgresql://127.0.0.1:5432/helium");
+                        properties.put("user", "username");
+                        properties.put("password", "password");
+                        properties.put("closeOnError", "true");
+                        properties.store(os, "Please fill out these properties to your needs. Supported JDBC drivers: PostgreSQL");
+                    }
+                    LOGGER.warn("Plymouth wasn't present, using NoOP.");
+                    database = new PlymouthNoOP();
                 }
-                LOGGER.warn("Plymouth wasn't present, using NoOP.");
-                database = new PlymouthNoOP();
             } else {
                 try (var is = Files.newInputStream(props)) {
                     properties.load(is);

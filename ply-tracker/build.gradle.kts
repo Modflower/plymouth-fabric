@@ -27,11 +27,9 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    // include(implementation("org.postgresql", "postgresql", postgres_version))
-    // modImplementation(fabricApi.module("fabric-api-base", fabric_api_version)) { include(this) }
+    modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
     implementation(project(":ply-common"))
     implementation(project(":ply-database"))
-    // modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 

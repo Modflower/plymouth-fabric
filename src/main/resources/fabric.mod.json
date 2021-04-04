@@ -2,15 +2,19 @@
   "schemaVersion": 1,
   "id": "plymouth",
   "version": "${version}",
-  "name": "Plymouth",
-  "description": "Miscellaneous Utilities",
+  "name": "Plymouth: Utilities",
+  "description": "Miscellaneous server-sided utilities",
   "authors": [
     "KJP12"
   ],
+  "icon": "pack.png",
   "contact": {
-    "sources": "https://github.com/KJP12/plymouth-fabric",
+    "sources": "https://github.com/the-glitch-network/plymouth-fabric",
     "discord": "https://discord.gg/EmPS9y9"
   },
+  "license": [
+    "MPL-2.0"
+  ],
   "environment": "*",
   "entrypoints": {
     "main": [

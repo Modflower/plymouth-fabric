@@ -7,10 +7,14 @@
   "authors": [
     "KJP12"
   ],
+  "icon": "pack.png",
   "contact": {
     "sources": "https://github.com/KJP12/plymouth-fabric",
     "discord": "https://discord.gg/EmPS9y9"
   },
+  "license": [
+    "MPL-2.0"
+  ],
   "environment": "*",
   "entrypoints": {
     "main": [

@@ -18,7 +18,7 @@ import java.util.BitSet;
 public final class Constants {
     public static final Logger LOGGER = LogManager.getLogger("Plymouth Anti-Xray");
 
-    public static final Tag<Block>
+    public static final Tag.Identified<Block>
             HIDDEN_BLOCKS,
             NO_SMEAR_BLOCKS;
 

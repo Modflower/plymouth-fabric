@@ -1,5 +1,6 @@
 package net.kjp12.plymouth.anti_xray.mixins.world;
 
+import net.kjp12.plymouth.anti_xray.CloneAccessible;
 import net.kjp12.plymouth.anti_xray.Constants;
 import net.kjp12.plymouth.anti_xray.IShadowChunk;
 import net.minecraft.block.Block;
@@ -120,7 +121,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 cx = x >> 4, cy = y >> 4, cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {
             var section = sections[cy];
-            if (ChunkSection.isEmpty(section)) return;
+            if (ChunkSection.isEmpty(section) || !section.hasAny(s -> s.isIn(Constants.HIDDEN_BLOCKS))) return;
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
             if (!state.isAir() && state.isIn(Constants.HIDDEN_BLOCKS)) {
@@ -170,38 +171,47 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
 
     @Unique
     private void generateShadow() {
-        if (shadowSections == null) shadowSections = new ChunkSection[sections.length];
-        if (shadowMasks == null) shadowMasks = new BitSet[sections.length];
-        for (int i = 0; i < sections.length; i++) {
-            shadowSections[i] = sections[i] != null ? new ChunkSection(i * 16) : null;
+        if (shadowSections == null) {
+            shadowSections = new ChunkSection[sections.length];
+        } else for (int i = 0; i < sections.length; i++) {
+            shadowSections[i] = null;
+        }
+        if (shadowMasks == null) {
+            shadowMasks = new BitSet[sections.length];
+        } else for (int i = 0; i < sections.length; i++) {
             shadowMasks[i] = null;
         }
-        boolean f;
+
         var bp = new BlockPos.Mutable();
         for (int sy = 0; sy < 16; sy++) {
             var section = sections[sy];
-            if (section == null) continue;
-            var shadowSection = shadowSections[sy];
-            for (int x = 0; x < 16; x++)
-                for (int z = 0; z < 16; z++) {
-                    var smear = biomeArray.getBiomeForNoiseGen(x >> 2, sy << 2, z >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
-                    for (int y = 0; y < 16; y++) {
-                        var state = section.getBlockState(x, y, z);
-                        if (state.isAir()) continue;
-                        if (state.isIn(Constants.HIDDEN_BLOCKS)) {
-                            if (state.getBlock() instanceof InfestedBlock) {
-                                state = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
-                                Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
-                            } else if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) | y, z))) {
-                                state = smear;
-                                Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
+            if (ChunkSection.isEmpty(section)) continue;
+            if (section.hasAny(s -> s.isIn(Constants.HIDDEN_BLOCKS))) {
+                var shadowSection = Constants.getOrCreateSection(shadowSections, sy);
+                for (int x = 0; x < 16; x++)
+                    for (int z = 0; z < 16; z++) {
+                        var smear = biomeArray.getBiomeForNoiseGen(x >> 2, sy << 2, z >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
+                        for (int y = 0; y < 16; y++) {
+                            var state = section.getBlockState(x, y, z);
+                            if (state.isAir()) continue;
+                            if (state.isIn(Constants.HIDDEN_BLOCKS)) {
+                                if (state.getBlock() instanceof InfestedBlock) {
+                                    state = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
+                                    Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
+                                } else if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) | y, z))) {
+                                    state = smear;
+                                    Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
+                                }
+                            } else if (Constants.isHidingCandidate(state)) {
+                                smear = state;
                             }
-                        } else if (Constants.isHidingCandidate(state)) {
-                            smear = state;
+                            shadowSection.setBlockState(x, y, z, state);
                         }
-                        shadowSection.setBlockState(x, y, z, state);
                     }
-                }
+            } else {
+                // We'll just clone the palette as is.
+                shadowSections[sy] = (ChunkSection) ((CloneAccessible) section).clone();
+            }
         }
     }
 

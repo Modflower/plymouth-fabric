@@ -8,6 +8,9 @@
     "packets.s2c.MixinChunkData",
     "packets.s2c.MixinChunkHolder",
     "player.MixinPlayerEntity",
+    "world.MixinChunkSection",
+    "world.MixinPackedIntegerArray",
+    "world.MixinPalettedContainer",
     "world.MixinServerWorld",
     "world.MixinWorldChunk"
   ],

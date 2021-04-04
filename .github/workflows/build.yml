@@ -1,0 +1,24 @@
+name: Java CI with Gradle
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: build-artifacts
+          path: |
+            # This project is a non-standard multi-module
+                  ply-*/build/libs/
+                  build/libs/
+            # Plymouth: Debug is meant primarily for development purposes and should not be easily accessible.
+                  !ply-debug/**
