@@ -1,10 +1,11 @@
 {
   "required": true,
   "package": "gay.ampflower.plymouth.debug.mixins",
+  "plugin": "gay.ampflower.plymouth.debug.MixinConfig",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
-    "MetaMixinShadowChunk",
-    "client.MixinClientPlayNetworkHandler"
+    "anti_xray.MetaMixinShadowChunk",
+    "anti_xray.client.MixinClientPlayNetworkHandler"
   ],
   "injectors": {
     "defaultRequire": 1

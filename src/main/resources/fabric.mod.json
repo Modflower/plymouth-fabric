@@ -2,15 +2,19 @@
   "schemaVersion": 1,
   "id": "plymouth",
   "version": "${version}",
-  "name": "Plymouth",
-  "description": "Miscellaneous Utilities",
+  "name": "Plymouth: Utilities",
+  "description": "Miscellaneous server-sided utilities",
   "authors": [
     "Ampflower"
   ],
+  "icon": "pack.png",
   "contact": {
     "sources": "https://github.com/Modflower/plymouth-fabric",
     "discord": "https://discord.gg/EmPS9y9"
   },
+  "license": [
+    "MPL-2.0"
+  ],
   "environment": "*",
   "entrypoints": {
     "main": [

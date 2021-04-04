@@ -1,20 +1,21 @@
+import com.modrinth.minotaur.TaskModrinthUpload
 import java.net.URI
 
 plugins {
     java
     `java-library`
     id("fabric-loom")
+    id("com.modrinth.minotaur")
     `maven-publish`
 }
 
 val minecraft_version: String by project
 val yarn_mappings: String by project
 val loader_version: String by project
-val jupiter_version: String by project
 val fabric_api_version: String by project
 
 group = "gay.ampflower"
-version = "0.0.0"
+version = "0.0.0+mc.$minecraft_version"
 
 repositories {
     maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
@@ -48,9 +49,11 @@ tasks {
 
         from(sourceSets.main.get().resources.srcDirs) {
             include("fabric.mod.json")
-            expand("version" to project.version,
-                    "loader_version" to project.property("loader_version")?.toString(),
-                    "minecraft_required" to project.property("minecraft_required")?.toString())
+            expand(
+                "version" to project.version,
+                "loader_version" to project.property("loader_version")?.toString(),
+                "minecraft_required" to project.property("minecraft_required")?.toString()
+            )
         }
 
         from(sourceSets.main.get().resources.srcDirs) {
@@ -59,5 +62,13 @@ tasks {
     }
     withType<Jar> {
         from("LICENSE")
+    }
+    getByName<TaskModrinthUpload>("publishModrinth") {
+        token = System.getenv("MODRINTH_TOKEN")
+        projectId = "6Zrbdphe"
+        versionNumber = version.toString()
+        uploadFile = jar
+        addGameVersion(minecraft_version)
+        addLoader("fabric")
     }
 }

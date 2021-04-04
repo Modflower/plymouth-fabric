@@ -10,7 +10,6 @@ plugins {
 val minecraft_version: String by project
 val yarn_mappings: String by project
 val loader_version: String by project
-val jupiter_version: String by project
 val fabric_api_version: String by project
 val fabric_permissions_version: String by project
 
@@ -31,14 +30,8 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", jupiter_version)
-    testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", jupiter_version)
     modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
-}
-
-minecraft {
-    //accessWidener = projectDir.resolve("src/main/resources/helium.accesswidener")
 }
 
 tasks {

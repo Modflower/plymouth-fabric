@@ -1,7 +1,8 @@
-package gay.ampflower.plymouth.debug.mixins;
+package gay.ampflower.plymouth.debug.mixins.anti_xray;
 
 import gay.ampflower.plymouth.anti_xray.IShadowChunk;
 import gay.ampflower.plymouth.debug.Debug;
+import gay.ampflower.plymouth.debug.anti_xray.AntiXrayDebugger;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +21,7 @@ public interface MetaMixinShadowChunk {
      */
     @Overwrite
     default void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
-        Debug.send(Debug.debugAntiXraySet, pos.asLong());
+        Debug.send(AntiXrayDebugger.debugAntiXraySet, pos.asLong());
     }
 
     /**
@@ -28,7 +29,7 @@ public interface MetaMixinShadowChunk {
      */
     @Overwrite
     default void plymouth$trackUpdate(BlockPos pos) {
-        Debug.send(Debug.debugAntiXrayUpdate, pos.asLong());
+        Debug.send(AntiXrayDebugger.debugAntiXrayUpdate, pos.asLong());
     }
 
     /**
@@ -36,7 +37,7 @@ public interface MetaMixinShadowChunk {
      */
     @Overwrite
     default boolean plymouth$isBlockHidden(BlockState state, BlockPos.Mutable pos) {
-        Debug.send(Debug.debugAntiXrayTest, pos.asLong());
+        Debug.send(AntiXrayDebugger.debugAntiXrayTest, pos.asLong());
         return false;
     }
 }
