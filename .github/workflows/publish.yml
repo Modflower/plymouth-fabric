@@ -14,12 +14,11 @@ jobs:
         with:
           java-version: 11
       - name: Build and publish with Gradle
-        run: ./gradlew pool
+        run: ./gradlew poolBuilds
         env:
           BUILD_RELEASE: ${{github.event.prelease == false}}
       - name: Upload build artifacts
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: |
-            build/pool/
+          files: 'build/pool/*'
           repo-token: ${{secrets.GITHUB_TOKEN}}
