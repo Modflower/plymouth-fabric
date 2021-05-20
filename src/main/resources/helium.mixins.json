@@ -1,11 +1,9 @@
 {
   "required": true,
   "package": "net.kjp12.helium.mixins",
-  "plugin": "net.kjp12.helium.MixinConfig",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
-    "MixinCommandManager",
-    "misc.MixinPreventPlayerFallThrough"
+    "MixinCommandManager"
   ],
   "injectors": {
     "defaultRequire": 1

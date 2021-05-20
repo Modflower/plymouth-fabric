@@ -3,13 +3,18 @@
   "package": "net.kjp12.plymouth.tracker.mixins",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
+    "AccessorDoubleInventory",
     "MixinAnvilScreenHandler",
     "MixinBlockItem",
+    "MixinExplosion",
     "MixinFireCharge",
     "MixinFlintAndSteel",
     "MixinHybridLPEntity",
-    "MixinMinecraftServer",
-    "MixinPlayerInteractionManager"
+    "MixinPlayerInteractionManager",
+    "MixinSlot",
+    "ScreenHandlerMixin",
+    "targets.MixinBlockEntity",
+    "targets.MixinEntity"
   ],
   "injectors": {
     "defaultRequire": 1

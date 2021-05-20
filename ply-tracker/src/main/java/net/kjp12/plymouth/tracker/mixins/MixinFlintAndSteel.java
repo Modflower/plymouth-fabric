@@ -1,6 +1,7 @@
 package net.kjp12.plymouth.tracker.mixins;
 
 import net.kjp12.plymouth.database.DatabaseHelper;
+import net.kjp12.plymouth.database.Target;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FlintAndSteelItem;
@@ -27,6 +28,6 @@ public class MixinFlintAndSteel extends Item {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void helium$useOnBlock$logUsage(ItemUsageContext iuc, CallbackInfoReturnable<ActionResult> cbir, PlayerEntity player, World world, BlockPos $2, BlockPos pos) {
         if (world instanceof ServerWorld)
-            DatabaseHelper.database.placeBlock((ServerWorld) world, pos, Blocks.FIRE, player);
+            DatabaseHelper.database.placeBlock((ServerWorld) world, pos, Blocks.FIRE, (Target) player);
     }
 }

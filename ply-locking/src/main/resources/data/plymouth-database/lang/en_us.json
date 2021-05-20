@@ -1,0 +1,8 @@
+{
+  "plymouth.locking.claimed": "Successfully claimed %s at %s.",
+  "plymouth.locking.unclaimed": "Successfully unclaimed %s at %s.",
+  "plymouth.locking.dump.basic": "Locked by %s:%s with permissions of %s.",
+  "commands.plymouth.locking.block.not_owned": "%s is not owned by anyone.",
+  "commands.plymouth.locking.block.not_owner": "%s is not owned by you.",
+  "commands.plymouth.locking.block.out_range": "%s is out of range for claiming."
+}

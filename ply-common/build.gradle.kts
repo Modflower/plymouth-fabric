@@ -12,8 +12,16 @@ val yarn_mappings: String by project
 val loader_version: String by project
 val jupiter_version: String by project
 
+val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
+val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
+val baseVersion: String = "${project.property("project_version")}+minecraft.$minecraft_version"
+
 group = "net.kjp12"
-version = "0.0.0"
+version = when {
+    isRelease -> baseVersion
+    isActions -> "$baseVersion+build.${System.getenv("GITHUB_RUN_ID")}+commit.${System.getenv("GITHUB_SHA").substring(0, 7)}+branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '-') ?: "unknown"}"
+    else -> "$baseVersion+build.local"
+}
 
 repositories {
     maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
@@ -40,18 +48,15 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
     }
-    getByName<ProcessResources>("processResources") {
+    processResources {
         inputs.property("version", project.version)
 
-        from(sourceSets.main.get().resources.srcDirs) {
-            include("fabric.mod.json")
-            expand("version" to project.version,
-                    "loader_version" to project.property("loader_version")?.toString(),
-                    "minecraft_required" to project.property("minecraft_required")?.toString())
-        }
-
-        from(sourceSets.main.get().resources.srcDirs) {
-            exclude("fabric.mod.json")
+        filesMatching("fabric.mod.json") {
+            expand(
+                "version" to project.version,
+                "loader_version" to project.property("loader_version")?.toString(),
+                "minecraft_required" to project.property("minecraft_required")?.toString()
+            )
         }
     }
     withType<Jar> {

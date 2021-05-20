@@ -1,0 +1,5 @@
+{
+  "commands.plymouth.tracker.inspect.start": "You're now inspecting.\n- Punch a block to inspect placement.\n- Use a block to inspect inventories.",
+  "commands.plymouth.tracker.inspect.end": "You're no longer inspecting.",
+  "commands.plymouth.tracker.inspect.lookup": "Lookup at %s, %s, %s. Time in %s."
+}

@@ -1,6 +1,7 @@
 package net.kjp12.plymouth.tracker.mixins;
 
 import net.kjp12.plymouth.database.DatabaseHelper;
+import net.kjp12.plymouth.database.Target;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.FireChargeItem;
 import net.minecraft.item.Item;
@@ -26,6 +27,6 @@ public class MixinFireCharge extends Item {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void helium$useOnBlock$logUsage(ItemUsageContext iuc, CallbackInfoReturnable<ActionResult> cbir, World world, BlockPos pos) {
         if (world instanceof ServerWorld)
-            DatabaseHelper.database.placeBlock((ServerWorld) world, pos, Blocks.FIRE, iuc.getPlayer());
+            DatabaseHelper.database.placeBlock((ServerWorld) world, pos, Blocks.FIRE, (Target) iuc.getPlayer());
     }
 }

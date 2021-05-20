@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.kjp12.plymouth.common.InjectableInteractionManager;
 import net.kjp12.plymouth.common.InteractionManagerInjection;
@@ -15,7 +16,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -24,7 +24,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.chunk.ChunkStatus;
 
 import java.util.Collection;
@@ -38,16 +38,19 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
+ * Lock management command for fetching who owns the block, setting who can access the block, and what permissions to give one.
+ *
  * @author KJP12
  * @since 0.0.0
  **/
 public class LockCommand {
     private static final IntegerArgumentType PERMISSIONS = integer(0, 1 | 2 | 4 | 8);
     private static final SimpleCommandExceptionType
-            BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid")),
-            BLOCK_ENTITY_NOT_OWNED = new SimpleCommandExceptionType(new LiteralText("Block entity is not owned by anyone.")),
-            BLOCK_ENTITY_NOT_OWNER = new SimpleCommandExceptionType(new LiteralText("Block entity is not owned by you.")),
-            BLOCK_ENTITY_OUT_OF_RANGE = new SimpleCommandExceptionType(new LiteralText("Block entity is out of range for claiming."));
+            BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
+    private static final DynamicCommandExceptionType
+            BLOCK_ENTITY_NOT_OWNED = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owned", i)),
+            BLOCK_ENTITY_NOT_OWNER = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owner", i)),
+            BLOCK_ENTITY_OUT_OF_RANGE = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.out_range", i));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
         var add = literal("add")
@@ -66,7 +69,7 @@ public class LockCommand {
                 .then(argument("pos", blockPos())
                         .executes(ctx -> getLock(ctx.getSource(), getLoadedBlockPos(ctx, "pos"))))
                 .executes(ctx -> getLock(ctx.getSource()));
-        dispatcher.register(literal("lock").then(add).then(rm).then(set).then(get));
+        dispatcher.register(literal("lock").requires(Locking.LOCKING_LOCK_PERMISSION).then(add).then(rm).then(set).then(get));
     }
 
     // generics are the only thing that can compile this
@@ -97,11 +100,11 @@ public class LockCommand {
             if (runner.world == world && Locking.canReach(runner, block.getPos())) {
                 block.plymouth$setPermissionHandler(handler = requiresAdvanced ? new AdvancedPermissionHandler(runner.getUuid()) : new BasicPermissionHandler(runner.getUuid()));
             } else {
-                throw BLOCK_ENTITY_OUT_OF_RANGE.create();
+                throw BLOCK_ENTITY_OUT_OF_RANGE.create(block.getCachedState().getBlock().getTranslationKey());
             }
         } else {
             if (!handler.allowPermissions(source)) {
-                throw BLOCK_ENTITY_NOT_OWNER.create();
+                throw BLOCK_ENTITY_NOT_OWNER.create(block.getCachedState().getBlock().getTranslationKey());
             }
             if (requiresAdvanced && !(handler instanceof IAdvancedPermissionHandler)) {
                 block.plymouth$setPermissionHandler(handler = new AdvancedPermissionHandler(handler));
@@ -178,14 +181,14 @@ public class LockCommand {
         protected abstract void tryInteraction(ServerWorld world, BlockPos pos);
 
         @Override
-        public final ActionResult onBreakBlock(BlockPos pos) {
-            tryInteraction(((ServerPlayerInteractionManager) manager).world, pos);
+        public final ActionResult onBreakBlock(ServerPlayerEntity player, ServerWorld world, BlockPos pos, Direction direction) {
+            tryInteraction(world, pos);
             return ActionResult.CONSUME;
         }
 
         @Override
-        public final ActionResult onInteractBlock(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult) {
-            tryInteraction((ServerWorld) world, hitResult.getBlockPos());
+        public final ActionResult onInteractBlock(ServerPlayerEntity player, ServerWorld world, ItemStack stack, Hand hand, BlockHitResult hitResult) {
+            tryInteraction(world, hitResult.getBlockPos());
             return ActionResult.CONSUME;
         }
     }
@@ -269,7 +272,8 @@ public class LockCommand {
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
                 var handler = getBlockEntity(world, pos).plymouth$getPermissionHandler();
-                if (handler == null) throw BLOCK_ENTITY_NOT_OWNED.create();
+                if (handler == null)
+                    throw BLOCK_ENTITY_NOT_OWNED.create(world.getBlockState(pos).getBlock().getTranslationKey());
                 handler.dumpLock(source);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();

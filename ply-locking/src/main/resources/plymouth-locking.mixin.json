@@ -6,6 +6,7 @@
     "MixinBlockEntity",
     "MixinExplosionBehavior",
     "MixinServerPlayerInteractionManager",
+    "MixinServerWorld",
     "MixinWorld",
     "entities.MixinEnderDragon",
     "entities.MixinEntity",

@@ -1,6 +1,5 @@
 package net.kjp12.plymouth.locking.mixins;
 
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.kjp12.plymouth.locking.ILockable;
 import net.kjp12.plymouth.locking.Locking;
 import net.minecraft.block.Block;
@@ -66,12 +65,13 @@ public abstract class MixinServerPlayerInteractionManager {
         if (!blockEntity.helium$canOpenBlock(player)) {
             cbir.setReturnValue(ActionResult.FAIL);
         } else if (player.isSneaking()) {
+            var src = player.getCommandSource();
             // I don't expect people to have more than two hands, but if feet becomes a replacement for hands, this is ready.
             var otherPos = Locking.getOtherPos(world, pos);
             if (hand == Hand.MAIN_HAND &&
                     player.getStackInHand(Hand.OFF_HAND).isEmpty() &&
                     player.getStackInHand(Hand.MAIN_HAND).isEmpty() &&
-                    Permissions.check(player, "helium.locking.lock", true)) {
+                    Locking.LOCKING_LOCK_PERMISSION.test(src)) {
                 var obe = otherPos == null ? null : (ILockable) world.getBlockEntity(otherPos);
                 var puid = player.getUuid();
                 if (obe == null) {
@@ -80,7 +80,7 @@ public abstract class MixinServerPlayerInteractionManager {
                         setClaimed(player, cbir, pos, block, blockEntity, puid);
                     } else  // note for the check: If you own this block, we're assuming that you have sufficient permission to disown it.
                         // Admins or operators can however override.
-                        if (buid.equals(puid) || Permissions.check(player, "helium.admin.locking.unlock", 2)) {
+                        if (buid.equals(puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
                             setUnclaimed(player, cbir, pos, block, blockEntity);
                         } else {
                             player.sendMessage(new LiteralText(buid + " already claimed this block!").formatted(Formatting.RED), true);
@@ -91,7 +91,7 @@ public abstract class MixinServerPlayerInteractionManager {
                     if (oa == null && ob == null) {
                         blockEntity.helium$setOwner(puid);
                         setClaimed(player, cbir, pos, block, obe, puid);
-                    } else if (puid.equals(oa) || puid.equals(ob) || Permissions.check(player, "helium.admin.locking.unlock", 2)) {
+                    } else if (puid.equals(oa) || puid.equals(ob) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
                         blockEntity.helium$setOwner(null);
                         setUnclaimed(player, cbir, pos, block, obe);
                     } else {

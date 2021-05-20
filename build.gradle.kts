@@ -13,8 +13,18 @@ val loader_version: String by project
 val fabric_api_version: String by project
 val fabric_permissions_version: String by project
 
+val isPublish: String? = System.getenv("GITHUB_EVENT_NAME")
+println("Event name: $isPublish")
+val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
+val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
+val baseVersion: String = "${project.property("project_version")}+minecraft.$minecraft_version"
+
 group = "net.kjp12"
-version = "0.0.0"
+version = when {
+    isRelease -> baseVersion
+    isActions -> "$baseVersion+build.${System.getenv("GITHUB_RUN_ID")}+commit.${System.getenv("GITHUB_SHA").substring(0, 7)}+branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '-') ?: "unknown"}"
+    else -> "$baseVersion+build.local"
+}
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -30,7 +40,6 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 
@@ -48,17 +57,12 @@ tasks {
     processResources {
         inputs.property("version", project.version)
 
-        from(sourceSets.main.get().resources.srcDirs) {
-            include("fabric.mod.json")
+        filesMatching("fabric.mod.json") {
             expand(
                 "version" to project.version,
                 "loader_version" to project.property("loader_version")?.toString(),
                 "minecraft_required" to project.property("minecraft_required")?.toString()
             )
-        }
-
-        from(sourceSets.main.get().resources.srcDirs) {
-            exclude("fabric.mod.json")
         }
     }
     withType<Jar> {

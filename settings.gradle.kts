@@ -2,7 +2,6 @@ rootProject.name = "plymouth"
 
 pluginManagement {
     repositories {
-        jcenter()
         maven {
             name = "Fabric"
             url = java.net.URI("https://maven.fabricmc.net/")

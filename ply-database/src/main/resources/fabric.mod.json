@@ -14,7 +14,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.kjp12.plymouth.database.DatabaseHelper"
+      "net.kjp12.plymouth.database.DatabaseHelper::init"
     ]
   },
   "depends": {
