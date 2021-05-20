@@ -1,0 +1,52 @@
+name: Bug report
+description: Create a bug report to help us improve.
+labels: [ 'bug' ]
+
+body:
+  - type: input
+    attributes:
+      label: Plymouth Module & Version
+      description: The full version of the module, which can be found with the file name or in the logs.
+      placeholder: e.g. Tracker v0.0.0-rc.0
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Environment
+      description: What platform, side and version of Minecraft and Java are you using?
+      placeholder: e.g. Minecraft Server 1.16.4 with Fabric running on Java 11.0.5
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: To reproduce
+      description: Steps to reproduce the behaviour.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Expected results
+      description: What behaviour did you expect?
+      placeholder: e.g. To be wither immune.
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Actual results
+      description: What behaviour did you observe instead?
+      placeholder: e.g. The wither destroyed it.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Anything else?
+    validations:
+      required: false

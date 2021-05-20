@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an idea for this project.
+labels: [ 'enhancement' ]
+
+body:
+  - type: input
+    attributes:
+      label: Module to add this to?
+      description: The module you'd like to see this added to.
+      placeholder: e.g. Tracker
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: What would you like to be added?
+      placeholder: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Alternative solutions
+      placeholder: A clear description of any alternatives you've considered.
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
+      label: Additional context?
+    validations:
+      required: false
