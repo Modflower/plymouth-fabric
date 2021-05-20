@@ -16,11 +16,7 @@
     "MPL-2.0"
   ],
   "environment": "*",
-  "entrypoints": {
-    "main": [
-      "gay.ampflower.helium.Main"
-    ]
-  },
+  "entrypoints": {},
   "mixins": [
     "helium.mixins.json"
   ],
@@ -28,10 +24,7 @@
     "minecraft": ">=${minecraft_required}",
     "fabricloader": ">=0.11.1",
     "java": ">=11",
-    "fabric-resource-loader-v0": "*",
-    "fabric-permissions-api-v0": "*",
-    "fabric-lifecycle-events-v1": "*",
-    "fabric-api-base": "*"
+    "fabric-permissions-api-v0": "*"
   },
   "recommends": {
     "luckperms": "*"

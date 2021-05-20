@@ -12,7 +12,11 @@
     "discord": "https://discord.gg/EmPS9y9"
   },
   "environment": "*",
-  "entrypoints": {},
+  "entrypoints": {
+    "main": [
+      "gay.ampflower.plymouth.tracker.Tracker::init"
+    ]
+  },
   "mixins": [
     "plymouth-tracker.mixins.json"
   ],

@@ -1,5 +1,6 @@
 package gay.ampflower.plymouth.database;
 
+import gay.ampflower.plymouth.database.records.PlymouthRecord;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -7,6 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
@@ -21,35 +23,67 @@ import java.util.UUID;
  * @since 0.0.0
  */
 public interface Plymouth {
+    /**
+     * Either initialises or migrates the database for use.
+     * <p>
+     * Normally includes any driver setup.
+     *
+     * @throws PlymouthException When any failure with setup occurs.
+     */
     void initializeDatabase() throws PlymouthException;
 
+    /**
+     * Instructs the database to send all batches.
+     * <p>
+     * This includes the following.
+     * <ul>
+     *     <li>Blocks</li>
+     *     <li>Deaths</li>
+     *     <li>Inventories</li>
+     * </ul>
+     * <p>
+     * Additional handling of lookups and special handling of accumulative records such as the
+     * {@link gay.ampflower.plymouth.database.records.InventoryRecord Inventory Record} may also occur here.
+     * <p>
+     * This must <em>not</em> to be called asynchronously.
+     */
     void sendBatches();
 
     /**
-     * @param world  The world the block was broken in.
-     * @param pos    Where the block got broken.
-     * @param state  The old blockstate.
-     * @param entity Who broke this?
-     */
-    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, Entity entity);
-
-    /**
-     * @param world  The world the block was placed in.
-     * @param pos    Where the block got placed.
-     * @param state  The new blockstate.
-     * @param entity Who placed this?
-     */
-    void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Entity entity);
-
-    /**
-     * Same as {@link #placeBlock(ServerWorld, BlockPos, BlockState, Entity)} but for when blockstates are meaningless, ie. FIRE.
+     * Queues a record for insertion or query by the database.
      *
-     * @param world  The world the block was placed in.
-     * @param pos    Where the block got placed.
-     * @param block  The new block.
-     * @param entity Who placed this?
+     * @param record The record to queue.
      */
-    void placeBlock(ServerWorld world, BlockPos pos, Block block, Entity entity);
+    void queue(PlymouthRecord record);
+
+    /**
+     * @param world The world the block was broken in.
+     * @param pos   Where the block got broken.
+     * @param state The old blockstate.
+     * @param nbt   The NBT of the block pre-removal.
+     * @param cause Who broke this?
+     */
+    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, CompoundTag nbt, Target cause);
+
+    /**
+     * @param world The world the block was placed in.
+     * @param pos   Where the block got placed.
+     * @param state The new blockstate.
+     * @param cause Who placed this?
+     */
+    void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Target cause);
+
+    /**
+     * Same as {@link #placeBlock(ServerWorld, BlockPos, BlockState, Target)} but for when blockstates are meaningless, ie. FIRE.
+     *
+     * @param world The world the block was placed in.
+     * @param pos   Where the block got placed.
+     * @param block The new block.
+     * @param cause Who placed this?
+     */
+    default void placeBlock(ServerWorld world, BlockPos pos, Block block, Target cause) {
+        placeBlock(world, pos, block.getDefaultState(), cause);
+    }
 
     /**
      * Changes such as tuning noteblocks and timings should be committed with a number.
@@ -62,7 +96,7 @@ public interface Plymouth {
      * @param i     The item that was used.
      * @param user  Who used this?
      */
-    void useBlock(ServerWorld world, BlockPos pos, Item i, Entity user);
+    void useBlock(ServerWorld world, BlockPos pos, Item i, Target user);
 
     /**
      * Redstone components, such as redstone dust, dispensers, droppers, observers and anything else with a state change
@@ -74,23 +108,22 @@ public interface Plymouth {
      * @param n        The new blockstate.
      * @param replacer Who replaced this?
      */
-    void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, Entity replacer);
+    void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, Target replacer);
 
     void hurtEntity(LivingEntity target, float amount, DamageSource source);
 
     void createEntity(Entity target, Entity creator);
 
-    void transferItems(BlockPos i, BlockPos o, ItemStack is, int c);
+    void takeItems(Target inventory, ItemStack stack, int count, Target taker);
 
-    void takeItems(BlockPos pos, ItemStack i, int c, Entity taker);
-
-    void putItems(BlockPos pos, ItemStack i, int c, Entity placer);
+    void putItems(Target inventory, ItemStack stack, int count, Target placer);
 
     /**
      * Player lookup by database.
      *
      * @param uuid The UUID to look up by.
      * @return The username if it exists in the database, else null.
+     * @throws PlymouthException Request has failed, either by closed driver or bad SQL.
      */
-    String getPlayerName(UUID uuid);
+    String getPlayerName(UUID uuid) throws PlymouthException;
 }

@@ -24,6 +24,9 @@ import java.net.http.HttpClient;
  * This class is a late-init-type class. It's expecting that
  * by the time that it's called, all blocks would have been
  * registered.
+ *
+ * @author Ampflower
+ * @since ${version}
  */
 public class Helium {
     public static final HttpClient httpClient = HttpClient.newHttpClient();

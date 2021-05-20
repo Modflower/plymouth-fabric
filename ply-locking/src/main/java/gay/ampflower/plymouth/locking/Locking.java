@@ -3,6 +3,7 @@ package gay.ampflower.plymouth.locking;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import gay.ampflower.plymouth.common.UUIDHelper;
 import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.BedBlock;
@@ -17,9 +18,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -40,20 +38,25 @@ public class Locking implements ModInitializer {
     public static final Logger logger = LogManager.getLogger("Plymouth: Locking");
 
     public static final Predicate<ServerCommandSource>
-            LOCKING_BYPASS_PERMISSION = Permissions.require("plymouth.locking.bypass", 2),
+            // LOCKING_BYPASS_PERMISSION = Permissions.require("plymouth.locking.bypass", 2),
             LOCKING_BYPASS_READ_PERMISSION = Permissions.require("plymouth.locking.bypass.read", 2),
             LOCKING_BYPASS_WRITE_PERMISSION = Permissions.require("plymouth.locking.bypass.write", 2),
             LOCKING_BYPASS_DELETE_PERMISSION = Permissions.require("plymouth.locking.bypass.delete", 2),
             LOCKING_BYPASS_PERMISSIONS_PERMISSION = Permissions.require("plymouth.locking.bypass.permissions", 2),
             LOCKING_LOCK_PERMISSION = Permissions.require("plymouth.locking.lock", true);
 
-    public static final Text
-            LOCKING_CLAIMED = new TranslatableText("plymouth.locking.claimed").formatted(Formatting.GREEN),
-            LOCKING_UNCLAIMED = new TranslatableText("plymouth.locking.unclaimed").formatted(Formatting.GREEN);
-
     @Override
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register(LockCommand::register);
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            // Runs permissions checks using MinecraftServer as the command source, preinitializing any permission nodes.
+            // This will become redundant as command equivalents get implemented.
+            var source = server.getCommandSource();
+            LOCKING_BYPASS_READ_PERMISSION.test(source);
+            LOCKING_BYPASS_WRITE_PERMISSION.test(source);
+            LOCKING_BYPASS_DELETE_PERMISSION.test(source);
+            LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source);
+        });
     }
 
     public static boolean canReach(ServerPlayerEntity runner, BlockPos target) {

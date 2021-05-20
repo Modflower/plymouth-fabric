@@ -1,6 +1,7 @@
 package gay.ampflower.plymouth.tracker.mixins;
 
 import gay.ampflower.plymouth.database.DatabaseHelper;
+import gay.ampflower.plymouth.database.Target;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -34,9 +35,9 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
     @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private static void helium$onTakeOutput$postBreakAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
+    private static void plymouth$onTakeOutput$postBreakAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
         if (world instanceof ServerWorld)
-            DatabaseHelper.database.breakBlock((ServerWorld) world, pos, oldState, player);
+            DatabaseHelper.database.breakBlock((ServerWorld) world, pos, oldState, null, (Target) player);
     }
 
     /**
@@ -50,8 +51,8 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
     @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private static void helium$onTakeOutput$postDamageAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
+    private static void plymouth$onTakeOutput$postDamageAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
         if (world instanceof ServerWorld)
-            DatabaseHelper.database.replaceBlock((ServerWorld) world, pos, oldState, newState, player);
+            DatabaseHelper.database.replaceBlock((ServerWorld) world, pos, oldState, newState, (Target) player);
     }
 }

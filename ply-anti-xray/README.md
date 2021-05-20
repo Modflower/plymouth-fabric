@@ -1,8 +1,7 @@
-<img width="128" src="src/main/resources/pack.png"  alt="Plymouth Anti-Xray" align="right"/>
+<img width="128" src="src/main/resources/pack.png" alt="Plymouth Anti-Xray" align="right"/>
 <div align="left">
 
 # Plymouth: Anti-Xray
-
 A cache-based anti-xray engine designed for FabricMC that by default hides precious vanilla materials such as ores and
 buried chests.
 
@@ -11,19 +10,16 @@ don't trust with your materials, or if you don't trust yourself to not hack the 
 entirely prevent hacks whilst running alongside with said hacks on the same instance of Minecraft.
 
 ## Downloads
-
 You may download Anti-Xray from [Modrinth](https://modrinth.com/mod/plymouth-anti-xray) or from
 [GitHub Releases](https://github.com/Modflower/plymouth-fabric/releases).
 
 ## Usage
-
 Drop the mod into the mods folder of your server then boot it up. No configuring nor commands required.
 
 Do note, unusually flat bedrock from x-ray view is to be expected, as bedrock is considered to be a hidden block
 via `#operator_blocks`.
 
 ## Configuration
-
 Anti-Xray can be configured by datapacks. There are two resource tags you'll need to cover, which are
 `plymouth-anti-xray:hidden` and `plymouth-anti-xray:no_smear`.
 

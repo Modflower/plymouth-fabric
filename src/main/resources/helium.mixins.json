@@ -1,11 +1,9 @@
 {
   "required": true,
   "package": "gay.ampflower.helium.mixins",
-  "plugin": "gay.ampflower.helium.MixinConfig",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
-    "MixinCommandManager",
-    "misc.MixinPreventPlayerFallThrough"
+    "MixinCommandManager"
   ],
   "injectors": {
     "defaultRequire": 1
