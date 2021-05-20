@@ -18,7 +18,7 @@ jobs:
         env:
           BUILD_RELEASE: ${{github.event.prelease == false}}
       - name: Upload build artifacts
-        uses: AButlet/upload-release-assets@v2.0
+        uses: AButler/upload-release-assets@v2.0
         with:
           files: |
             build/pool/*.jar
