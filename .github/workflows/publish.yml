@@ -21,6 +21,5 @@ jobs:
         uses: AButler/upload-release-assets@v2.0
         with:
           files: |
-            build/pool/*.jar
-            !*-dev.jar
+            build/pool/
           repo-token: ${{secrets.GITHUB_TOKEN}}

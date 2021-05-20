@@ -13,8 +13,7 @@ val loader_version: String by project
 val fabric_api_version: String by project
 val fabric_permissions_version: String by project
 
-val isPublish: String? = System.getenv("GITHUB_EVENT_NAME")
-println("Event name: $isPublish")
+val isPublish = System.getenv("GITHUB_EVENT_NAME") == "release"
 val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
 val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
 val baseVersion: String = "${project.property("project_version")}+minecraft.$minecraft_version"
@@ -70,11 +69,19 @@ tasks {
     }
     register<Copy>("poolBuilds") {
         dependsOn(build)
-        for (p in subprojects) {
-            if (p.name == "ply-debug") continue
-            from(p.tasks.jar, p.tasks.remapJar, p.tasks.getByName("sourcesJar"), p.tasks.remapSourcesJar)
+        if (isPublish) {
+            for (p in subprojects) {
+                if (p.name == "ply-debug") continue
+                from(p.tasks.remapJar)
+            }
+            from(remapJar)
+        } else {
+            for (p in subprojects) {
+                if (p.name == "ply-debug") continue
+                from(p.tasks.jar, p.tasks.remapJar, p.tasks.getByName("sourcesJar"), p.tasks.remapSourcesJar)
+            }
+            from(jar, remapJar, sourcesJar, remapSourcesJar)
         }
-        from(jar, remapJar, sourcesJar, remapSourcesJar)
         into(project.buildDir.resolve("pool"))
     }
 }
