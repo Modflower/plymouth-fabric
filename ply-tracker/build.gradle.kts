@@ -59,6 +59,9 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
     }
+    remapJar {
+        dependsOn(":utilities:jar")
+    }
     processResources {
         inputs.property("version", project.version)
 
