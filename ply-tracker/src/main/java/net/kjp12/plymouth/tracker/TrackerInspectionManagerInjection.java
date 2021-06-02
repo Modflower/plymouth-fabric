@@ -28,12 +28,13 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
     @Override
     public ActionResult onBreakBlock(ServerPlayerEntity player, final ServerWorld world, final BlockPos pos, Direction direction) {
         var future = new CompletableFuture<List<PlymouthRecord>>();
-        DatabaseHelper.database.queue(new LookupRecord(future, RecordType.BLOCK, world, pos, 0));
+        var lookup = new LookupRecord(future, RecordType.BLOCK, world, pos, 0);
+        DatabaseHelper.database.queue(lookup);
         future.thenAcceptAsync(l -> {
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(new TranslatableText("commands.plymouth.tracker.inspect.lookup", pos.getX(), pos.getY(), pos.getZ(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup, "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;

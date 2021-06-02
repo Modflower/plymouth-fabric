@@ -12,17 +12,18 @@ val yarn_mappings: String by project
 val loader_version: String by project
 val fabric_api_version: String by project
 val fabric_permissions_version: String by project
+val project_version: String by project
 
 val isPublish = System.getenv("GITHUB_EVENT_NAME") == "release"
 val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
 val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
-val baseVersion: String = "${project.property("project_version")}+minecraft.$minecraft_version"
+val baseVersion: String = "$project_version+mc.$minecraft_version"
 
 group = "net.kjp12"
 version = when {
     isRelease -> baseVersion
-    isActions -> "$baseVersion+build.${System.getenv("GITHUB_RUN_ID")}+commit.${System.getenv("GITHUB_SHA").substring(0, 7)}+branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '-') ?: "unknown"}"
-    else -> "$baseVersion+build.local"
+    isActions -> "$baseVersion-build.${System.getenv("GITHUB_RUN_NUMBER")}-commit.${System.getenv("GITHUB_SHA").substring(0, 7)}-branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '.') ?: "unknown"}"
+    else -> "$baseVersion-build.local"
 }
 
 configure<JavaPluginConvention> {
@@ -59,7 +60,8 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(
                 "version" to project.version,
-                "loader_version" to project.property("loader_version")?.toString(),
+                "project_version" to project_version,
+                "loader_version" to loader_version,
                 "minecraft_required" to project.property("minecraft_required")?.toString()
             )
         }
@@ -71,13 +73,13 @@ tasks {
         dependsOn(build)
         if (isPublish) {
             for (p in subprojects) {
-                if (p.name == "ply-debug") continue
+                if (p.name == "ply-debug" || !p.name.startsWith("ply-")) continue
                 from(p.tasks.remapJar)
             }
             from(remapJar)
         } else {
             for (p in subprojects) {
-                if (p.name == "ply-debug") continue
+                if (p.name == "ply-debug" || !p.name.startsWith("ply-")) continue
                 from(p.tasks.jar, p.tasks.remapJar, p.tasks.getByName("sourcesJar"), p.tasks.remapSourcesJar)
             }
             from(jar, remapJar, sourcesJar, remapSourcesJar)

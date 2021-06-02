@@ -25,7 +25,10 @@
     "plymouth-anti-xray.mixin.json"
   ],
   "depends": {
-    "minecraft": "<=1.16.5",
+    "minecraft": [
+      "1.16.4",
+      "1.16.5"
+    ],
     "fabricloader": ">=0.11.1",
     "java": ">=11",
     "fabric-resource-loader-v0": "*"

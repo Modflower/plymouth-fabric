@@ -5,24 +5,20 @@ import net.kjp12.plymouth.common.UUIDHelper;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
-import net.minecraft.text.*;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.level.ServerWorldProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,10 +26,7 @@ import java.nio.file.Path;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -69,7 +62,6 @@ public final class DatabaseHelper {
      * due to no permission checks existing for the new code. Beware of this.
      */
     private static final int
-            HASHED_ENTITY = 0x809ee372 ^ 0x7c02d003,
             HASHED_WORLD = 0x809ee372 ^ 0x04fe2b72;
 
     static {
@@ -225,123 +217,5 @@ public final class DatabaseHelper {
         statement.setDouble(offset++, pos.y);
         statement.setDouble(offset++, pos.z);
         return offset;
-    }
-
-    /**
-     * Formats the input time to ISO Local Date with a hover card showing the full date in RFC 1123 format.
-     *
-     * @param instant The time to format.
-     * @return The formatted time as a literal text.
-     */
-    public static Text timeToText(Instant instant) {
-        var time = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
-        return new LiteralText(DateTimeFormatter.ISO_LOCAL_DATE.format(time)).styled(s -> s.withFormatting(Formatting.GRAY).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(DateTimeFormatter.RFC_1123_DATE_TIME.format(time)))));
-    }
-
-    private static <T extends Comparable<T>> Text mkPropertyText(BlockState state, Property<T> property) {
-        return new LiteralText(property.getName()).formatted(Formatting.BLUE).append(": ").append(new LiteralText(property.name(state.get(property))).formatted(Formatting.GRAY)).append("\n");
-    }
-
-    /**
-     * Appends the properties of the block onto the input mutable text.
-     *
-     * @param state The block state to fetch the properties of.
-     * @param input The mutable text to append properties to.
-     * @return input mutated with all the properties appended.
-     */
-    private static MutableText mkBlockStateHoverCard(BlockState state, MutableText input) {
-        var props = state.getProperties();
-        if (!props.isEmpty()) {
-            input.append("\n");
-            for (var prop : props) {
-                input.append(mkPropertyText(state, prop));
-            }
-        }
-        return input;
-    }
-
-    /**
-     * Returns a text derived from the given block, including a hover card of the properties mimicking the in-inventory
-     * hover card.
-     *
-     * @param state The block state to format into a text object.
-     * @return The translatable text based off of the input.
-     */
-    public static MutableText fromBlockToText(BlockState state) {
-        var block = state.getBlock();
-        var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, mkBlockStateHoverCard(state, new TranslatableText(block.getTranslationKey())).append("\n").append(new LiteralText(Registry.BLOCK.getId(block).toString()).formatted(Formatting.DARK_GRAY)));
-        return new TranslatableText(block.getTranslationKey()).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.LIGHT_PURPLE));
-    }
-
-    /**
-     * Returns a text derived from the given stack, including a hover card of the item.
-     *
-     * @param stack The item stack to format into a text object.
-     * @return The literal text based off of the input.
-     */
-    public static MutableText fromItemToText(ItemStack stack) {
-        var text = new LiteralText("").append(stack.getName());
-        var style = text.getStyle();
-        if (stack.hasCustomName()) style = style.withFormatting(Formatting.ITALIC);
-        var fmt = stack.getRarity().formatting;
-        style = style.withFormatting(fmt == Formatting.WHITE ? Formatting.LIGHT_PURPLE : fmt);
-        style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)));
-        return text.setStyle(style);
-    }
-
-    public static MutableText fromPlayerToText(String userName, UUID userId, @Nullable UUID entityId) {
-        return fromPlayerToText(null, null, userName, userId, entityId);
-    }
-
-    /**
-     * Returns a text derived from the given username, user UUID and entity UUID.
-     *
-     * @param world    The world to name if the user ID is a world.
-     * @param pos      The position to name if the user ID is a block.
-     * @param userName The username of the user. Can also be an identifier.
-     * @param userId   The UUID of the user. Maybe an NPC-based Plymouth identifier of an entity, block or world.
-     * @param entityId The raw UUID of the entity should it not be a player.
-     * @return Either the literal or translatable text based off of the input.
-     */
-    public static MutableText fromPlayerToText(ServerWorld world, BlockPos pos, String userName, UUID userId, @Nullable UUID entityId) {
-        if (UUIDHelper.isEntity(userId)) {
-            // Do an entity lookup using userName as an identifier.
-            var optional = EntityType.get(userName);
-            if (optional.isPresent()) {
-                // We have a valid entity, make it based off of the SHOW_ENTITY hover event action.
-                var type = optional.get();
-                var onHover = new HoverEvent(HoverEvent.Action.SHOW_ENTITY, new HoverEvent.EntityContent(type, Objects.requireNonNullElse(entityId, userId), new TranslatableText(type.getTranslationKey())));
-                return new TranslatableText(type.getTranslationKey()).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.BLUE));
-            } else {
-                // We don't havea  valid entity, we'll have to resort to manually generating the string.
-                var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(userName + '\n' + Objects.requireNonNullElse(entityId, userId)));
-                var i = userName.indexOf(':');
-                return new LiteralText(i == -1 ? userName : userName.substring(i + 1)).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.DARK_BLUE));
-            }
-        } else if (UUIDHelper.isDamageSource(userId) || UUIDHelper.isWorld(userId) /*The world is an undefined format currently. For now, it shall fall through. TODO: implement world schema*/) {
-            // We really have nothing we can do to lookup here,
-            // nor should we really need to as the damage source is saved as helium:<src>.
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(userName + '\n' + userId));
-            var i = userName.indexOf(':');
-            return new LiteralText(i == -1 ? userName : userName.substring(i + 1)).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.DARK_AQUA));
-        } else if (UUIDHelper.isBlock(userId)) {
-            // Do a block lookup using userName as an identifier.
-            var optional = Registry.BLOCK.getOrEmpty(Identifier.tryParse(userName));
-            if (optional.isPresent()) {
-                // We have a valid block, we can make use of the translation key.
-                var block = optional.get();
-                var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText(block.getTranslationKey()).append("\n" + userId));
-                return new TranslatableText(block.getTranslationKey()).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.YELLOW));
-            } else {
-                // We don't have a valid block. Perhaps it was removed? Use the non-translatable version of the return to make a reasonable string.
-                var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(userName + '\n' + userId));
-                var i = userName.indexOf(':');
-                return new LiteralText(i == -1 ? userName : userName.substring(i + 1)).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.GOLD));
-            }
-        } else {
-            // We're a player, we'll just present the output as one. Note: This may produce screwy output with legacy database schemas.
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_ENTITY, new HoverEvent.EntityContent(EntityType.PLAYER, userId, new LiteralText(userName /*no name lookup required*/)));
-            return new LiteralText(userName).styled(s -> s.withHoverEvent(onHover));
-        }
     }
 }

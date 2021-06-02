@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -53,10 +54,9 @@ public abstract class MixinBlockEntity implements Target {
         return pos;
     }
 
-    // TODO: Implement the method in database helper.
     @Override
     public String ply$name() {
-        return null;
+        return Registry.BLOCK.getId(getCachedState().getBlock()).toString();
     }
 
     @Override

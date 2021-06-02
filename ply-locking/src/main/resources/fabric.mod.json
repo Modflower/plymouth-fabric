@@ -24,7 +24,7 @@
     "minecraft": ">=${minecraft_required}",
     "fabricloader": ">=0.11.1",
     "java": ">=11",
-    "plymouth-common": "^${version}",
+    "plymouth-common": "^${project_version}",
     "fabric-command-api-v1": "*",
     "fabric-lifecycle-events-v1": "*",
     "fabric-permissions-api-v0": "*"

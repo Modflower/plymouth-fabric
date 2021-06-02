@@ -32,6 +32,7 @@ public final class TargetRecord implements Target {
         this.world = world;
         this.pos = pos == null ? dpos == null ? null : new BlockPos(dpos) : pos.toImmutable();
         this.dpos = dpos == null ? pos == null ? null : Vec3d.ofCenter(pos) : dpos;
+        if (name == null && userId != null) throw new Error("wtf?");
         this.name = name;
         this.userId = userId;
         this.entityId = entityId;
