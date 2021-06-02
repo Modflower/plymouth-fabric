@@ -3,11 +3,13 @@ package gay.ampflower.plymouth.database.records;
 import gay.ampflower.plymouth.common.UUIDHelper;
 import gay.ampflower.plymouth.database.DatabaseHelper;
 import gay.ampflower.plymouth.database.Target;
+import gay.ampflower.plymouth.database.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -18,8 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Instant;
 import java.util.UUID;
 
-import static gay.ampflower.plymouth.database.DatabaseHelper.fromPlayerToText;
-import static gay.ampflower.plymouth.database.DatabaseHelper.timeToText;
+import static gay.ampflower.plymouth.database.TextUtils.atBlock;
 
 /**
  * A record of an entity death.
@@ -91,16 +92,21 @@ public final class DeathRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toText() {
-        var text = new TranslatableText("plymouth.tracker.record.death", timeToText(time), fromPlayerToText(causeName, causeUserId, causeEntityId), fromPlayerToText(targetName, targetUserId, targetEntityId),
+        var text = new TranslatableText("plymouth.tracker.record.death", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId),
                 new TranslatableText("chat.coordinates", (long) targetPos.x, (long) targetPos.y, (long) targetPos.z)
-                        .styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("chat.coordinates", targetPos.x, targetPos.y, targetPos.z))).withFormatting(Formatting.LIGHT_PURPLE)));
+                        .setStyle(atBlock.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                new LiteralText("X: ")
+                                        .append(new LiteralText(Double.toString(targetPos.x)).formatted(Formatting.RED)).append("\nY: ")
+                                        .append(new LiteralText(Double.toString(targetPos.y)).formatted(Formatting.GREEN)).append("\nZ: ")
+                                        .append(new LiteralText(Double.toString(targetPos.z)).formatted(Formatting.BLUE))
+                        ))));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }
 
     @Override
     public @NotNull Text toTextNoPosition() {
-        var text = new TranslatableText("plymouth.tracker.record.death.nopos", timeToText(time), fromPlayerToText(causeName, causeUserId, causeEntityId), fromPlayerToText(targetName, targetUserId, targetEntityId));
+        var text = new TranslatableText("plymouth.tracker.record.death.nopos", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

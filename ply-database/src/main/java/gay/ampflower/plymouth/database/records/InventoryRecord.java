@@ -1,6 +1,7 @@
 package gay.ampflower.plymouth.database.records;
 
 import gay.ampflower.plymouth.database.BlockAction;
+import gay.ampflower.plymouth.database.TextUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -17,7 +18,7 @@ import java.io.*;
 import java.time.Instant;
 import java.util.UUID;
 
-import static gay.ampflower.plymouth.database.DatabaseHelper.*;
+import static gay.ampflower.plymouth.database.DatabaseHelper.tookText;
 
 /**
  * A record of inventory changes.
@@ -51,11 +52,13 @@ public final class InventoryRecord implements PlymouthRecord {
                            Instant time, boolean isUndone, Item item, CompoundTag nbt, int delta, ItemStack stack, int flags) {
         this.causeWorld = causeWorld;
         this.causePos = causePos;
+        if (causeName == null && causeUserId != null) throw new Error("cause wtf?");
         this.causeName = causeName;
         this.causeUserId = causeUserId;
         this.causeEntityId = causeEntityId;
         this.targetWorld = targetWorld;
         this.targetPos = targetPos;
+        if (targetName == null && targetUserId != null) throw new Error("target wtf?");
         this.targetName = targetName;
         this.targetUserId = targetUserId;
         this.targetEntityId = targetEntityId;
@@ -109,10 +112,10 @@ public final class InventoryRecord implements PlymouthRecord {
     @Override
     public @NotNull Text toText() {
         var text = new TranslatableText("plymouth.tracker.record.inventory",
-                timeToText(time),
-                fromPlayerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
-                delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), fromItemToText(stack),
-                fromPlayerToText(targetWorld, targetPos, targetName, targetUserId, targetEntityId));
+                TextUtils.timeToText(time),
+                TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
+                delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack),
+                TextUtils.playerToText(targetWorld, targetPos, targetName, targetUserId, targetEntityId));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }
@@ -120,9 +123,9 @@ public final class InventoryRecord implements PlymouthRecord {
     @Override
     public @NotNull Text toTextNoPosition() {
         var text = new TranslatableText("plymouth.tracker.record.inventory.nopos",
-                timeToText(time),
-                fromPlayerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
-                delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), fromItemToText(stack));
+                TextUtils.timeToText(time),
+                TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
+                delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

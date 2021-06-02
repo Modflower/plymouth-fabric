@@ -12,6 +12,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static gay.ampflower.plymouth.database.TextUtils.lookupPlayerToText;
+import static gay.ampflower.plymouth.database.TextUtils.positionToText;
+
 /**
  * A record for looking up records in a database.
  * <p>
@@ -72,8 +75,30 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
     public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
         this.future = future;
         this.world = world;
-        this.minPosition = minPosition == null ? null : minPosition.toImmutable();
-        this.maxPosition = maxPosition == null ? null : maxPosition.toImmutable();
+        switch (flags >>> 2 & 3) {
+            case 0:
+                this.minPosition = null;
+                this.maxPosition = null;
+                break;
+            case 1:
+                this.minPosition = minPosition.toImmutable();
+                this.maxPosition = null;
+                break;
+            case 2:
+                int ax = minPosition.getX(), ay = minPosition.getY(), az = minPosition.getZ(),
+                        bx = maxPosition.getX(), by = maxPosition.getY(), bz = maxPosition.getZ(),
+                        ix = Math.min(ax, bx), iy = Math.min(ay, by), iz = Math.min(az, bz);
+                if (ax == ix && ay == iy && az == iz) {
+                    this.minPosition = minPosition.toImmutable();
+                    this.maxPosition = maxPosition.toImmutable();
+                } else {
+                    this.minPosition = new BlockPos(ix, iy, iz);
+                    this.maxPosition = new BlockPos(Math.max(ax, bx), Math.max(ay, by), Math.max(az, bz));
+                }
+                break;
+            default:
+                throw new IllegalStateException("Illegal state 3 on AT & AREA for given flags " + flags);
+        }
         this.causeUuid = causeUuid;
         this.minTime = minTime;
         this.maxTime = maxTime;
@@ -147,27 +172,27 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
             case 0b0000:
                 return new TranslatableText("plymouth.tracker.record.lookup", page);
             case 0b0001:
-                return new TranslatableText("plymouth.tracker.record.lookup.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.by", lookupPlayerToText(null, causeUuid), page);
             case 0b0010:
-                return new TranslatableText("plymouth.tracker.record.lookup.time");
+                return new TranslatableText("plymouth.tracker.record.lookup.time", minTime, maxTime, page);
             case 0b0011:
-                return new TranslatableText("plymouth.tracker.record.lookup.time.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             case 0b0100:
-                return new TranslatableText("plymouth.tracker.record.lookup.at");
+                return new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPosition), page);
             case 0b0101:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPosition), lookupPlayerToText(null, causeUuid), page);
             case 0b0110:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time");
+                return new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPosition), minTime, maxTime, page);
             case 0b0111:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPosition), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             case 0b1000:
-                return new TranslatableText("plymouth.tracker.record.lookup.area");
+                return new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPosition), positionToText(maxPosition), page);
             case 0b1001:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPosition), positionToText(maxPosition), lookupPlayerToText(null, causeUuid), page);
             case 0b1010:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time");
+                return new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPosition), positionToText(maxPosition), minTime, maxTime, page);
             case 0b1011:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time.by");
+                return new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPosition), positionToText(maxPosition), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             default:
                 return new TranslatableText("plymouth.tracker.record.lookup.invalid");
         }

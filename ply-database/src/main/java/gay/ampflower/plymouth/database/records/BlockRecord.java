@@ -2,6 +2,7 @@ package gay.ampflower.plymouth.database.records;
 
 import gay.ampflower.plymouth.database.BlockAction;
 import gay.ampflower.plymouth.database.Target;
+import gay.ampflower.plymouth.database.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -16,8 +17,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.time.Instant;
 import java.util.UUID;
-
-import static gay.ampflower.plymouth.database.DatabaseHelper.*;
 
 /**
  * A record of world changes.
@@ -87,7 +86,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toText() {
-        var text = new TranslatableText("plymouth.tracker.record.block", timeToText(time), fromPlayerToText(userName, userId, entityId), action.niceName, fromBlockToText(block), new TranslatableText("chat.coordinates", targetPos.getX(), targetPos.getY(), targetPos.getZ()));
+        var text = new TranslatableText("plymouth.tracker.record.block", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block), TextUtils.positionToText(targetPos).setStyle(TextUtils.atBlock));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }
@@ -95,7 +94,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toTextNoPosition() {
-        var text = new TranslatableText("plymouth.tracker.record.block.nopos", timeToText(time), fromPlayerToText(userName, userId, entityId), action.niceName, fromBlockToText(block));
+        var text = new TranslatableText("plymouth.tracker.record.block.nopos", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

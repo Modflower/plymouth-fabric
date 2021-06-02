@@ -1,9 +1,6 @@
 package gay.ampflower.helium;
 
 import com.mojang.datafixers.DataFixer;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
@@ -11,8 +8,6 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.chunk.IdListPalette;
-import net.minecraft.world.chunk.Palette;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -32,11 +27,6 @@ public class Helium {
     public static final HttpClient httpClient = HttpClient.newHttpClient();
     public static final Text
             SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(Formatting.ITALIC);
-    public static final Palette<BlockState> BLOCK_STATE_PALETTE = new IdListPalette<>(Block.STATE_IDS, Blocks.AIR.getDefaultState());
-
-    public static int toChunkIndex(int x, int y, int z) {
-        return y << 8 | z << 4 | x;
-    }
 
     /**
      * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readTag(String, int)}

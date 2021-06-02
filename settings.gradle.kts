@@ -15,4 +15,4 @@ pluginManagement {
     }
 }
 
-include("ply-common", "ply-anti-xray", "ply-locking", "ply-tracker", "ply-database", "ply-debug")
+include("utilities", "ply-common", "ply-anti-xray", "ply-locking", "ply-tracker", "ply-database", "ply-debug")

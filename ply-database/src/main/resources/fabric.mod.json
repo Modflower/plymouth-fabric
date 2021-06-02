@@ -21,6 +21,6 @@
     "minecraft": ">=${minecraft_required}",
     "fabricloader": ">=0.11.1",
     "java": ">=11",
-    "plymouth-common": "^${version}"
+    "plymouth-common": "^${project_version}"
   }
 }

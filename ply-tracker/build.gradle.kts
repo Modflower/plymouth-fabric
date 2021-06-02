@@ -14,16 +14,17 @@ val jupiter_version: String by project
 val postgres_version: String by project
 val fabric_api_version: String by project
 val fabric_permissions_version: String by project
+val project_version: String by project
 
 val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
 val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
-val baseVersion: String = "${project.property("project_version")}+minecraft.$minecraft_version"
+val baseVersion: String = "$project_version+mc.$minecraft_version"
 
 group = "gay.ampflower"
 version = when {
     isRelease -> baseVersion
-    isActions -> "$baseVersion+build.${System.getenv("GITHUB_RUN_ID")}+commit.${System.getenv("GITHUB_SHA").substring(0, 7)}+branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '-') ?: "unknown"}"
-    else -> "$baseVersion+build.local"
+    isActions -> "$baseVersion-build.${System.getenv("GITHUB_RUN_NUMBER")}-commit.${System.getenv("GITHUB_SHA").substring(0, 7)}-branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '.') ?: "unknown"}"
+    else -> "$baseVersion-build.local"
 }
 
 repositories {
@@ -37,6 +38,8 @@ dependencies {
     modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
     implementation(project(":ply-common"))
     implementation(project(":ply-database"))
+    implementation(project(":utilities")) { include(this) }
+    // implementation(project(":commander")) { include(this) }
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 
@@ -62,7 +65,8 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(
                 "version" to project.version,
-                "loader_version" to project.property("loader_version")?.toString(),
+                "project_version" to project_version,
+                "loader_version" to loader_version,
                 "minecraft_required" to project.property("minecraft_required")?.toString()
             )
         }

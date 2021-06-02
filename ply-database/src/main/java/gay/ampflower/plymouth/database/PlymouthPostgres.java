@@ -85,7 +85,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
             insertBlocks = connection.prepareStatement("INSERT INTO blocks (cause_id, cause_raw, target_pos, block, action, nbt, time) VALUES (?, ?, (?, ?, ?, ?)::ipos, ?, ?::block_action, ?, ?);");
             insertDeaths = connection.prepareStatement("INSERT INTO deaths (cause_id, cause_raw, target_id, target_raw, target_pos, time) VALUES (?, ?, ?, ?, (?, ?, ?, ?)::dpos, ?);");
             insertItems = connection.prepareStatement("INSERT INTO items (cause_id, cause_raw, target_id, target_raw, target_pos, item, nbt, delta, time) VALUES (?, ?, ?, ?, (?, ?, ?, ?)::ipos, ?, ?, ?, ?);");
-            getUsername = connection.prepareStatement("SELECT name FROM users_table WHERE uid = ?;");
+            getUsername = connection.prepareStatement("SELECT name FROM users_table WHERE index = ?;");
             getBlocks = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block)                                                                                                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
             getBlocksBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE                                                                               b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
             getBlocksDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE                                                                                                  time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
@@ -344,7 +344,11 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         insertItems.setObject(3, getUserIndex(ir.targetName, ir.targetUserId));
         insertItems.setObject(4, ir.targetEntityId);
         addVec3i(insertItems, 5, ir.targetPos);
-        insertItems.setInt(8, getWorldIndex(ir.targetWorld));
+        if (ir.targetWorld == null) {
+            insertItems.setNull(8, Types.INTEGER);
+        } else {
+            insertItems.setInt(8, getWorldIndex(ir.targetWorld));
+        }
         insertItems.setString(9, Registry.ITEM.getId(ir.item).toString());
         insertItems.setBinaryStream(10, ir.mkNbtStream());
         insertItems.setInt(11, ir.delta);
@@ -566,11 +570,11 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     public String getPlayerName(UUID uuid) throws PlymouthException {
         databaseLock.lock();
         try {
-            getUsername.setObject(0, uuid);
+            getUsername.setObject(1, uuid);
             var results = getUsername.executeQuery();
-            if (results.first()) {
+            if (results.next()) {
                 // We got a result, return the result from the name column.
-                return results.getString("name");
+                return results.getString(1);
             } else {
                 // There's nothing to return, so, return null.
                 return null;
