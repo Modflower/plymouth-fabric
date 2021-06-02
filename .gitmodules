@@ -1,0 +1,3 @@
+[submodule "utilities"]
+	path = utilities
+	url = git@github.com:the-glitch-network/hachimitsu-utilities.git
