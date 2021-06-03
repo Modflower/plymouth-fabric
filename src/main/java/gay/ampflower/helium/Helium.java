@@ -2,7 +2,7 @@ package gay.ampflower.helium;
 
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.LiteralText;
@@ -29,16 +29,16 @@ public class Helium {
             SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(Formatting.ITALIC);
 
     /**
-     * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readTag(String, int)}
+     * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readNbt(String, int)}
      *
      * @param stream      Stream to read NBT data from.
      * @param dfu         Server's DataFixer
      * @param dataVersion The data version to update to.
      * @return The NBT data, datafixed if necessary.
      */
-    public static CompoundTag readTag(InputStream stream, DataFixer dfu, int dataVersion) throws IOException {
+    public static NbtCompound readTag(InputStream stream, DataFixer dfu, int dataVersion) throws IOException {
         try (var inputStream = stream; var pushback = new PushbackInputStream(inputStream, 2)) {
-            CompoundTag tag;
+            NbtCompound tag;
             if (isCompressed(pushback)) {
                 tag = NbtIo.readCompressed(pushback);
             } else {

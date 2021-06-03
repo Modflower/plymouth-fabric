@@ -14,6 +14,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.collection.DefaultedList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,7 +23,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.IdentityHashMap;
-import java.util.List;
 
 /**
  * @author Ampflower
@@ -38,23 +38,50 @@ public abstract class ScreenHandlerMixin {
 
     @Shadow
     @Final
-    public List<Slot> slots;
+    public DefaultedList<Slot> slots;
+
+    private static final String TAKE_SLOT_DEFINITION = "Lnet/minecraft/screen/slot/Slot;onTakeItem(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)V";
 
     /**
      * @reason To create an event bus for taking items.
      * @author Ampflower
      */
-    @Redirect(method = "method_30010", require = 7, at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;onTakeItem(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;"))
-    private ItemStack plymouth$30010$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
+    @Redirect(method = {"internalOnSlotClick", "method_34249"}, require = 4, at = @At(value = "INVOKE", target = TAKE_SLOT_DEFINITION))
+    private void plymouth$30010$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
+        plymouth$bridge$onTakeItem(slot, player, stack);
+    }
+
+    @Redirect(method = "method_34251", require = 1, at = @At(value = "INVOKE", target = TAKE_SLOT_DEFINITION))
+    private static void plymouth$34251$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
+        plymouth$bridge$onTakeItem(slot, player, stack);
+    }
+
+    @Unique
+    private static void plymouth$bridge$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
         var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
         if (player instanceof ServerPlayerEntity && inv instanceof Target) {
             Tracker.logger.info("[TAKE] onTakeItem: Stack is {}, slot is {}", stack, slot);
             DatabaseHelper.database.takeItems((Target) inv, stack, stack.getCount(), (Target) player);
         }
-        return slot.onTakeItem(player, stack);
+        slot.onTakeItem(player, stack);
     }
 
-    @Redirect(method = "method_30010", require = 12, at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;setStack(Lnet/minecraft/item/ItemStack;)V"))
+    @Redirect(method = "internalOnSlotClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;"))
+    private ItemStack plymouth$30010$onInsertStack(Slot slot, ItemStack stack, int c, int i, int j, SlotActionType actionType, PlayerEntity player) {
+        int cu = stack.getCount();
+        var ret = slot.insertStack(stack, c);
+        var di = cu - ret.getCount();
+        if (di != 0 && player instanceof ServerPlayerEntity) {
+            var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
+            if (inv instanceof Target) {
+                Tracker.logger.info("[PUT] onInsertStack: Add is {}, Return is {}, slot is {}", di, stack, slot);
+                DatabaseHelper.database.putItems((Target) inv, slot.getStack(), di, (Target) player);
+            }
+        }
+        return ret;
+    }
+
+    @Redirect(method = "internalOnSlotClick", require = 7, at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;setStack(Lnet/minecraft/item/ItemStack;)V"))
     private void plymouth$30010$onSetStack(Slot slot, ItemStack stack, int i, int j, SlotActionType slotActionType, PlayerEntity player) {
         var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
         if (player instanceof ServerPlayerEntity && inv instanceof Target) {
@@ -72,7 +99,7 @@ public abstract class ScreenHandlerMixin {
         slot.setStack(stack);
     }
 
-    @Redirect(method = "method_30010", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/ScreenHandler;transferSlot(Lnet/minecraft/entity/player/PlayerEntity;I)Lnet/minecraft/item/ItemStack;"))
+    @Redirect(method = "internalOnSlotClick", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/ScreenHandler;transferSlot(Lnet/minecraft/entity/player/PlayerEntity;I)Lnet/minecraft/item/ItemStack;"))
     private ItemStack plymouth$30010$onTransferSlot(ScreenHandler screenHandler, PlayerEntity player, int index) {
         mutatedSlots.clear();
         stackToSlot.clear();

@@ -8,7 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
@@ -63,7 +63,7 @@ public interface Plymouth {
      * @param nbt   The NBT of the block pre-removal.
      * @param cause Who broke this?
      */
-    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, CompoundTag nbt, Target cause);
+    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, Target cause);
 
     /**
      * @param world The world the block was placed in.

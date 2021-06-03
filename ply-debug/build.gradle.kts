@@ -35,6 +35,10 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     implementation(project(":ply-anti-xray"))
+    implementation(project(":ply-common"))
+    implementation(project(":ply-database"))
+    implementation(project(":ply-locking"))
+    implementation(project(":ply-tracker"))
     modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
@@ -56,15 +60,16 @@ tasks {
         from(sourceSets.main.get().allSource)
     }
     processResources {
-        inputs.property("version", project.version)
+        val map = mapOf(
+            "version" to project.version,
+            "project_version" to project_version,
+            "loader_version" to loader_version,
+            "minecraft_required" to project.property("minecraft_required")?.toString()
+        )
+        inputs.properties(map)
 
         filesMatching("fabric.mod.json") {
-            expand(
-                "version" to project.version,
-                "project_version" to project_version,
-                "loader_version" to loader_version,
-                "minecraft_required" to project.property("minecraft_required")?.toString()
-            )
+            expand(map)
         }
     }
     withType<Jar> {

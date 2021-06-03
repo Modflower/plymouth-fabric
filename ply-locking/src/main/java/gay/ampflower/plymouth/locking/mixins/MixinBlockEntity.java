@@ -5,9 +5,8 @@ import gay.ampflower.plymouth.locking.Locking;
 import gay.ampflower.plymouth.locking.handler.AdvancedPermissionHandler;
 import gay.ampflower.plymouth.locking.handler.BasicPermissionHandler;
 import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -37,8 +36,8 @@ public abstract class MixinBlockEntity implements ILockable {
         this.permissionHandler = handler;
     }
 
-    @Inject(method = "fromTag(Lnet/minecraft/block/BlockState;Lnet/minecraft/nbt/CompoundTag;)V", at = @At("RETURN"))
-    private void helium$fromTag(BlockState state, CompoundTag nbt, CallbackInfo cbi) {
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("RETURN"))
+    private void helium$fromTag(NbtCompound nbt, CallbackInfo cbi) {
         // LEGACY NOTE: "helium" and "sodium" namespaces are already used in production.
         //  In order to keep production tile entities from losing their lock, presence of Sodium will be checked if Helium doesn't exist.
         var helium = nbt.contains("helium", 10) ? nbt.getCompound("helium") : nbt.contains("sodium", 10) ? nbt.getCompound("sodium") : null;
@@ -54,41 +53,16 @@ public abstract class MixinBlockEntity implements ILockable {
                 permissionHandler = new BasicPermissionHandler();
             }
             permissionHandler.fromTag(helium);
-            // owner = helium.containsUuid("owner") ? helium.getUuid("owner") : null;
-            // if (owner != null) {
-            //     var publicAccess = helium.getByte("public");
-            //     access = new Object2ByteOpenHashMap<>();
-            //     access.defaultReturnValue(publicAccess);
-            //     var al = helium.getList("access", helium.getType());
-            //     if (al != null) {
-            //         for (var a : al) {
-            //             var access = (CompoundTag) a;
-            //             if (access.containsUuid("t") && access.contains("p"))
-            //                 this.access.put(access.getUuid("t"), access.getByte("p"));
-            //         }
-            //     }
-            // }
         }
     }
 
-    @Inject(method = "toTag(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;", at = @At("RETURN"))
-    private void helium$toTag(CompoundTag nbt, CallbackInfoReturnable<CompoundTag> cbi) {
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;", at = @At("RETURN"))
+    private void helium$toTag(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cbi) {
         if (permissionHandler != null) {
-            var helium = new CompoundTag();
+            var helium = new NbtCompound();
             permissionHandler.toTag(helium);
             // Legacy naming
             nbt.put("helium", helium);
-
-            // if (access != null) {
-            //     var access = new ListTag();
-            //     for (var e : this.access.object2ByteEntrySet()) {
-            //         var tmp = new CompoundTag();
-            //         tmp.putUuid("t", e.getKey());
-            //         tmp.putByte("p", e.getByteValue());
-            //         access.add(tmp);
-            //     }
-            //     helium.put("access", access);
-            // }
         }
     }
 }

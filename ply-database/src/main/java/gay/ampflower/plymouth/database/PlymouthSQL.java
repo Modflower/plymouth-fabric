@@ -11,7 +11,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
@@ -244,7 +244,7 @@ public abstract class PlymouthSQL implements Plymouth {
     protected abstract int getBlockIndex(BlockState state) throws PlymouthException;
 
     @Override
-    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, CompoundTag nbt, Target cause) {
+    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, Target cause) {
         queue(new BlockRecord(cause, world, pos, BlockAction.BREAK, state, nbt));
     }
 

@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Pseudo;
 public interface MetaMixinShadowChunk {
     /**
      * @author Ampflower
+     * @reason Required to inject into an interface.
      */
     @Overwrite
     default void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
@@ -26,6 +27,7 @@ public interface MetaMixinShadowChunk {
 
     /**
      * @author Ampflower
+     * @reason Required to inject into an interface.
      */
     @Overwrite
     default void plymouth$trackUpdate(BlockPos pos) {
@@ -34,6 +36,7 @@ public interface MetaMixinShadowChunk {
 
     /**
      * @author Ampflower
+     * @reason Required to inject into an interface.
      */
     @Overwrite
     default boolean plymouth$isBlockHidden(BlockState state, BlockPos.Mutable pos) {

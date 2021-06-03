@@ -4,7 +4,7 @@ import gay.ampflower.plymouth.database.BlockAction;
 import gay.ampflower.plymouth.database.TextUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -35,7 +35,7 @@ public final class InventoryRecord implements PlymouthRecord {
     public final Instant time;
     public final boolean isUndone;
     public final Item item;
-    public final CompoundTag nbt;
+    public final NbtCompound nbt;
     public final String causeName, targetName;
     public final UUID causeUserId, causeEntityId, targetUserId, targetEntityId;
     /**
@@ -49,7 +49,7 @@ public final class InventoryRecord implements PlymouthRecord {
 
     public InventoryRecord(ServerWorld causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
                            ServerWorld targetWorld, BlockPos targetPos, String targetName, UUID targetUserId, UUID targetEntityId,
-                           Instant time, boolean isUndone, Item item, CompoundTag nbt, int delta, ItemStack stack, int flags) {
+                           Instant time, boolean isUndone, Item item, NbtCompound nbt, int delta, ItemStack stack, int flags) {
         this.causeWorld = causeWorld;
         this.causePos = causePos;
         if (causeName == null && causeUserId != null) throw new Error("cause wtf?");

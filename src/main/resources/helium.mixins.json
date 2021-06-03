@@ -3,6 +3,8 @@
   "package": "gay.ampflower.helium.mixins",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
+    "AccessorMapState",
+    "AccessorPlayerEntity",
     "MixinCommandManager"
   ],
   "injectors": {

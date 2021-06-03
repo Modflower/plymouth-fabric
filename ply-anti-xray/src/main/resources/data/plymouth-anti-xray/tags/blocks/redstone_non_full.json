@@ -13,6 +13,7 @@
     "redstone_wire",
     "#doors",
     "daylight_detector",
-    "#rails"
+    "#rails",
+    "sculk_sensor"
   ]
 }

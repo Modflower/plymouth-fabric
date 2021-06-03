@@ -1,6 +1,6 @@
 package gay.ampflower.plymouth.locking.handler;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
@@ -91,14 +91,14 @@ public class BasicPermissionHandler implements IPermissionHandler {
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
+    public void fromTag(NbtCompound tag) {
         IPermissionHandler.super.fromTag(tag);
         // public for legacy handling
         permissions = (short) (tag.getShort("permissions") | tag.getByte("public"));
     }
 
     @Override
-    public void toTag(CompoundTag tag) {
+    public void toTag(NbtCompound tag) {
         IPermissionHandler.super.toTag(tag);
         tag.putShort("permissions", permissions);
     }

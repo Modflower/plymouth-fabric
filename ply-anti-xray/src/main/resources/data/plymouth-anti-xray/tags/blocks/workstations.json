@@ -13,6 +13,8 @@
     "composter",
     "stonecutter",
     "lectern",
-    "enchanting_table"
+    "enchanting_table",
+    "brewing_stand",
+    "#cauldrons"
   ]
 }

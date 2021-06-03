@@ -38,7 +38,7 @@ public abstract class MixinEnderDragon extends MobEntity {
                     var state = world.getBlockState(pos);
                     if (!state.isAir() && state.getMaterial() != Material.FIRE) {
                         var block = state.getBlock();
-                        if (grief && !BlockTags.DRAGON_IMMUNE.contains(block) && (!block.hasBlockEntity() || Locking.canBreak((ILockable) world.getBlockEntity(pos), this))) {
+                        if (grief && !BlockTags.DRAGON_IMMUNE.contains(block) && (!state.hasBlockEntity() || Locking.canBreak((ILockable) world.getBlockEntity(pos), this))) {
                             b2 = world.removeBlock(pos, false) || b2;
                         } else {
                             b1 = true;

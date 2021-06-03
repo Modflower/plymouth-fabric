@@ -5,6 +5,8 @@
     "#plymouth-anti-xray:redstone",
     "#plymouth-anti-xray:operator_blocks",
     "#plymouth-anti-xray:common_structure_blocks",
-    "dragon_egg"
+    "dragon_egg",
+    "spawner",
+    "lodestone"
   ]
 }

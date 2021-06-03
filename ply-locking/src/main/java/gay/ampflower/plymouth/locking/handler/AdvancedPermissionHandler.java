@@ -7,8 +7,8 @@ import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMaps;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -110,12 +110,12 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
+    public void fromTag(NbtCompound tag) {
         super.fromTag(tag);
         // Legacy handling
         if (tag.contains("access", 9)) {
             for (var a : tag.getList("access", 10)) {
-                var access = (CompoundTag) a;
+                var access = (NbtCompound) a;
                 if (access.containsUuid("t") && access.contains("p", 99)) {
                     playerAccess.put(access.getUuid("t"), reversePermissionBits(access.getByte("p")));
                 }
@@ -123,7 +123,7 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
         }
         if (tag.contains("players", 9)) {
             for (var a : tag.getList("players", 10)) {
-                var access = (CompoundTag) a;
+                var access = (NbtCompound) a;
                 if (access.containsUuid("u") && access.contains("p", 99)) {
                     playerAccess.put(access.getUuid("u"), access.getByte("p"));
                 }
@@ -131,7 +131,7 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
         }
         if (tag.contains("groups", 9)) {
             for (var a : tag.getList("groups", 10)) {
-                var access = (CompoundTag) a;
+                var access = (NbtCompound) a;
                 if (access.contains("g", 99) && access.contains("p", 99)) {
                     groupAccess.put(access.getLong("g"), access.getByte("p"));
                 }
@@ -152,14 +152,14 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
     }
 
     @Override
-    public void toTag(CompoundTag tag) {
+    public void toTag(NbtCompound tag) {
         super.toTag(tag);
         if (!playerAccess.isEmpty()) {
-            var players = new ListTag();
+            var players = new NbtList();
             var itr = Object2ByteMaps.fastIterator(playerAccess);
             while (itr.hasNext()) {
                 var e = itr.next();
-                var player = new CompoundTag();
+                var player = new NbtCompound();
                 player.putUuid("u", e.getKey());
                 player.putByte("p", e.getByteValue());
                 players.add(player);
@@ -167,11 +167,11 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
             tag.put("players", players);
         }
         if (!groupAccess.isEmpty()) {
-            var groups = new ListTag();
+            var groups = new NbtList();
             var itr = Long2ByteMaps.fastIterator(groupAccess);
             while (itr.hasNext()) {
                 var e = itr.next();
-                var group = new CompoundTag();
+                var group = new NbtCompound();
                 group.putLong("g", e.getLongKey());
                 group.putByte("p", e.getByteValue());
                 groups.add(group);

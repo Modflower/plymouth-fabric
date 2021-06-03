@@ -2,6 +2,7 @@ package gay.ampflower.plymouth.locking.mixins;
 
 import gay.ampflower.plymouth.locking.ILockable;
 import gay.ampflower.plymouth.locking.Locking;
+import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -18,6 +19,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,12 +28,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager {
+    @Final
     @Shadow
-    public ServerPlayerEntity player;
+    protected ServerPlayerEntity player;
 
     @Inject(method = "tryBreakBlock(Lnet/minecraft/util/math/BlockPos;)Z",
             cancellable = true,
@@ -59,7 +63,7 @@ public abstract class MixinServerPlayerInteractionManager {
     private void helium$interactBlock(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult bhr, CallbackInfoReturnable<ActionResult> cbir,
                                       BlockPos pos, BlockState blockState, boolean bl, boolean bl2) {
         var block = blockState.getBlock();
-        if (!block.hasBlockEntity()) return;
+        if (!blockState.hasBlockEntity()) return;
         var blockEntity = (ILockable) world.getBlockEntity(pos);
         if (blockEntity == null) return;
         if (!blockEntity.helium$canOpenBlock(player)) {
@@ -75,27 +79,27 @@ public abstract class MixinServerPlayerInteractionManager {
                 var obe = otherPos == null ? null : (ILockable) world.getBlockEntity(otherPos);
                 var puid = player.getUuid();
                 if (obe == null) {
-                    var buid = blockEntity.helium$getOwner();
-                    if (buid == null) {
+                    var handler = blockEntity.plymouth$getPermissionHandler();
+                    if (handler == null) {
                         setClaimed(player, cbir, pos, block, blockEntity, puid);
                     } else  // note for the check: If you own this block, we're assuming that you have sufficient permission to disown it.
                         // Admins or operators can however override.
-                        if (buid.equals(puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
+                        if (handler.isOwner(puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
                             setUnclaimed(player, cbir, pos, block, blockEntity);
                         } else {
-                            player.sendMessage(new LiteralText(buid + " already claimed this block!").formatted(Formatting.RED), true);
+                            player.sendMessage(new LiteralText(handler.getOwner() + " already claimed this block!").formatted(Formatting.RED), true);
                             cbir.setReturnValue(ActionResult.FAIL);
                         }
                 } else {
-                    UUID oa = blockEntity.helium$getOwner(), ob = obe.helium$getOwner();
-                    if (oa == null && ob == null) {
+                    IPermissionHandler ha = blockEntity.plymouth$getPermissionHandler(), hb = obe.plymouth$getPermissionHandler();
+                    if (ha == null && hb == null) {
                         blockEntity.helium$setOwner(puid);
                         setClaimed(player, cbir, pos, block, obe, puid);
-                    } else if (puid.equals(oa) || puid.equals(ob) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
+                    } else if (isOwner(ha, puid) || isOwner(hb, puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
                         blockEntity.helium$setOwner(null);
                         setUnclaimed(player, cbir, pos, block, obe);
                     } else {
-                        player.sendMessage(new LiteralText(oa + " already claimed !").formatted(Formatting.RED), true);
+                        player.sendMessage(new LiteralText(Objects.requireNonNullElse(ha, hb).getOwner() + " already claimed !").formatted(Formatting.RED), true);
                         cbir.setReturnValue(ActionResult.FAIL);
                     }
                 }
@@ -103,7 +107,7 @@ public abstract class MixinServerPlayerInteractionManager {
                 var item = player.getStackInHand(hand).getItem();
                 if (item instanceof BlockItem) {
                     var blockInHand = ((BlockItem) item).getBlock();
-                    if (blockInHand instanceof ChestBlock && otherPos == null && blockEntity.helium$getOwner() != null && !blockEntity.helium$isOwner(player.getUuid())) {
+                    if (blockInHand instanceof ChestBlock && otherPos == null && isNotNullAndNotOwner(blockEntity.plymouth$getPermissionHandler(), player.getUuid())) {
                         cbir.setReturnValue(ActionResult.FAIL);
                     }
                 }
@@ -123,5 +127,15 @@ public abstract class MixinServerPlayerInteractionManager {
         blockEntity.helium$setOwner(null);
         player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA)).formatted(Formatting.GREEN), true);
         cbir.setReturnValue(ActionResult.SUCCESS);
+    }
+
+    @Unique
+    private static boolean isOwner(IPermissionHandler handler, UUID check) {
+        return handler != null && handler.isOwner(check);
+    }
+
+    @Unique
+    private static boolean isNotNullAndNotOwner(IPermissionHandler handler, UUID check) {
+        return handler != null && !handler.isOwner(check);
     }
 }

@@ -29,7 +29,7 @@ public abstract class MixinWorld {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION
     )
     private void helium$breakBlock(BlockPos pos, boolean drop, Entity breaker, int i, CallbackInfoReturnable<Boolean> cbir, BlockState blockState) {
-        if (blockState.getBlock().hasBlockEntity() && !Locking.canBreak((ILockable) getBlockEntity(pos), breaker)) {
+        if (blockState.hasBlockEntity() && !Locking.canBreak((ILockable) getBlockEntity(pos), breaker)) {
             cbir.setReturnValue(false);
         }
     }

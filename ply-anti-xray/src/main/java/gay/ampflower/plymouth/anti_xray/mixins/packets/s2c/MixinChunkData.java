@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Mixin(ChunkDataS2CPacket.class)
 public class MixinChunkData {
-    @Redirect(method = "writeData(Lnet/minecraft/network/PacketByteBuf;Lnet/minecraft/world/chunk/WorldChunk;I)I",
+    @Redirect(method = "writeData",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/chunk/WorldChunk;getSectionArray()[Lnet/minecraft/world/chunk/ChunkSection;"
             ))
@@ -23,7 +23,7 @@ public class MixinChunkData {
         return ((IShadowChunk) chunk).plymouth$getShadowSections();
     }
 
-    @Redirect(method = "getDataSize(Lnet/minecraft/world/chunk/WorldChunk;I)I",
+    @Redirect(method = "getDataSize",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/chunk/WorldChunk;getSectionArray()[Lnet/minecraft/world/chunk/ChunkSection;"
             ))
@@ -31,7 +31,7 @@ public class MixinChunkData {
         return ((IShadowChunk) chunk).plymouth$getShadowSections();
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;I)V",
+    @Redirect(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;)V",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/chunk/WorldChunk;getBlockEntities()Ljava/util/Map;"
             ))
