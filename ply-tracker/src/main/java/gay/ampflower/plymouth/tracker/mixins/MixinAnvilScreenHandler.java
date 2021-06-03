@@ -49,7 +49,7 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
      */
     // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")
-    @Inject(method = "(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
+    @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private static void plymouth$onTakeOutput$postDamageAnvil(PlayerEntity player, ItemStack stack, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
