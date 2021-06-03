@@ -5,6 +5,7 @@ import net.kjp12.plymouth.database.Target;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.screen.ForgingScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -32,10 +33,10 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
      */
     // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")
-    @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
+    @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private static void plymouth$onTakeOutput$postBreakAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
+    private static void plymouth$onTakeOutput$postBreakAnvil(PlayerEntity player, ItemStack stack, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState) {
         if (world instanceof ServerWorld)
             DatabaseHelper.database.breakBlock((ServerWorld) world, pos, oldState, null, (Target) player);
     }
@@ -48,10 +49,10 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
      */
     // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")
-    @Inject(method = "method_24922(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
+    @Inject(method = "(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private static void plymouth$onTakeOutput$postDamageAnvil(PlayerEntity player, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
+    private static void plymouth$onTakeOutput$postDamageAnvil(PlayerEntity player, ItemStack stack, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
         if (world instanceof ServerWorld)
             DatabaseHelper.database.replaceBlock((ServerWorld) world, pos, oldState, newState, (Target) player);
     }

@@ -34,7 +34,7 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup, "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
@@ -44,14 +44,15 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
 
     @Override
     public ActionResult onInteractBlock(ServerPlayerEntity player, ServerWorld world, ItemStack stack, Hand hand, BlockHitResult hitResult) {
+        if (hand != Hand.MAIN_HAND) return ActionResult.CONSUME;
         var future = new CompletableFuture<List<PlymouthRecord>>();
-        var pos = hitResult.getBlockPos();
-        DatabaseHelper.database.queue(new LookupRecord(future, RecordType.INVENTORY, world, pos, 0));
+        var lookup = new LookupRecord(future, RecordType.INVENTORY, world, hitResult.getBlockPos(), 0);
+        DatabaseHelper.database.queue(lookup);
         future.thenAcceptAsync(l -> {
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(new TranslatableText("commands.plymouth.tracker.inspect.lookup", pos.getX(), pos.getY(), pos.getZ(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;

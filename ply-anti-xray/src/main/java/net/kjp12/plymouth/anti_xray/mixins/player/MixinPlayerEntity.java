@@ -24,11 +24,11 @@ public abstract class MixinPlayerEntity extends LivingEntity {
         super(entityType, world);
     }
 
-    @Inject(method = "updateSize()V", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/EntityPose;SWIMMING:Lnet/minecraft/entity/EntityPose;", ordinal = 2))
+    @Inject(method = "updatePose()V", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/EntityPose;SWIMMING:Lnet/minecraft/entity/EntityPose;", ordinal = 2))
     private void helium$onUpdateSize(CallbackInfo ci) {
         // We need access to shadow immediately to force shadow replacement with spruce planks.
-        var chunk = (IShadowChunk) world.getChunk(chunkX, chunkZ);
         var self = getBlockPos();
+        var chunk = (IShadowChunk) world.getChunk(self);
         if (chunk.plymouth$isMasked(self)) return;
         var possibleComposter = chunk.plymouth$getShadowBlock(self);
         if (possibleComposter.isOf(Blocks.COMPOSTER)) {

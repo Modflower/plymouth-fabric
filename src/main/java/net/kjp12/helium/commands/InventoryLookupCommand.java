@@ -3,6 +3,7 @@ package net.kjp12.helium.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.kjp12.helium.mixins.AccessorPlayerEntity;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.GenericContainerScreenHandler;
@@ -50,7 +51,7 @@ public class InventoryLookupCommand {
                 sp.sendSystemMessage(new LiteralText("Did you mean: ").formatted(Formatting.ITALIC, Formatting.RED).append(new KeybindText("key.inventory").formatted(Formatting.AQUA)).append("?"), Util.NIL_UUID);
             } else {
                 // TODO: Replace with a better screen handler that accounts for hidden player inventory.
-                sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, i, pi, p.inventory, 4) {
+                sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, i, pi, ((AccessorPlayerEntity) p).getInventory(), 4) {
                     @Override
                     public boolean canUse(PlayerEntity player) {
                         return true;

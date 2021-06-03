@@ -63,15 +63,16 @@ tasks {
         dependsOn(":utilities:jar")
     }
     processResources {
-        inputs.property("version", project.version)
+        val map = mapOf(
+            "version" to project.version,
+            "project_version" to project_version,
+            "loader_version" to loader_version,
+            "minecraft_required" to project.property("minecraft_required")?.toString()
+        )
+        inputs.properties(map)
 
         filesMatching("fabric.mod.json") {
-            expand(
-                "version" to project.version,
-                "project_version" to project_version,
-                "loader_version" to loader_version,
-                "minecraft_required" to project.property("minecraft_required")?.toString()
-            )
+            expand(map)
         }
     }
     withType<Jar> {

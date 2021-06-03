@@ -3,7 +3,6 @@ package net.kjp12.plymouth.database;// Created 2021-07-05T15:56:59
 import it.unimi.dsi.fastutil.Hash;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
 
 import java.util.Objects;
 
@@ -40,7 +39,7 @@ public final class ItemStackHasher implements Hash.Strategy<ItemStack> {
      */
     @Override
     public boolean equals(ItemStack a, ItemStack b) {
-        return a == b || a != null && b != null && ScreenHandler.canStacksCombine(a, b);
+        return a == b || a != null && b != null && ItemStack.canCombine(a, b);
     }
 
     /**

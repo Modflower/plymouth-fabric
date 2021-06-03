@@ -3,11 +3,10 @@ package net.kjp12.plymouth.tracker.mixins;// Created 2021-26-04T15:28:38
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.kjp12.plymouth.database.DatabaseHelper;
 import net.kjp12.plymouth.database.Target;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -46,10 +45,10 @@ public abstract class MixinExplosion {
     @Inject(method = "affectWorld",
             locals = LocalCapture.CAPTURE_FAILEXCEPTION,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;shouldDropItemsOnExplosion(Lnet/minecraft/world/explosion/Explosion;)Z"))
-    private void plymouth$affectWorld$onSetBlock(boolean flag, CallbackInfo cbi, ObjectArrayList<?> $0, Iterator<?> $1, BlockPos pos, BlockState old, Block block) {
+    private void plymouth$affectWorld$onSetBlock(boolean flag, CallbackInfo cbi, ObjectArrayList<?> $0, Iterator<?> $1, BlockPos pos, BlockState old) {
         if (!(world instanceof ServerWorld)) return;
         Entity e = getCausingEntity();
         if (e == null) e = entity;
-        DatabaseHelper.database.breakBlock((ServerWorld) world, pos, old, block.hasBlockEntity() ? world.getBlockEntity(pos).toTag(new CompoundTag()) : null, (Target) e);
+        DatabaseHelper.database.breakBlock((ServerWorld) world, pos, old, old.hasBlockEntity() ? world.getBlockEntity(pos).writeNbt(new NbtCompound()) : null, (Target) e);
     }
 }

@@ -10,9 +10,7 @@ import net.kjp12.plymouth.anti_xray.Constants;
 import net.kjp12.plymouth.debug.DebugProfiler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 
@@ -55,31 +53,29 @@ public class AntiXrayClientDebugger {
         renderMask(ctx);
     }
 
-    @SuppressWarnings("deprecation")
     private static void renderMask(WorldRenderContext ctx) {
         if (masks == null) return;
         // Note: We purposely don't enable a depth test for the sake of visibility.
         // However, due to which stage it's on, it does get obstructed by water and clouds.
-        RenderSystem.shadeModel(7425);
-        RenderSystem.enableAlphaTest();
-        RenderSystem.defaultAlphaFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.disableDepthTest();
 
         var stack = new MatrixStack();
         var tessellator = Tessellator.getInstance();
         var immediate = tessellator.getBuffer();
 
         RenderSystem.disableTexture();
-        RenderSystem.enableBlend();
+        RenderSystem.disableBlend();
         RenderSystem.lineWidth(0.5F);
 
-        immediate.begin(7, VertexFormats.POSITION_COLOR);
+        immediate.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
         var camera = ctx.camera().getPos();
 
         for (int w = 0; w < masks.length; w++) {
             var mask = masks[w];
             if (mask == null) continue;
             stack.push();
-            stack.translate(mx * 16 - camera.x, w * 16 - camera.y, mz * 16 - camera.z);
+            stack.translate(mx * 16 - camera.x, w * 16 - camera.y + ctx.world().getBottomY(), mz * 16 - camera.z);
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
@@ -95,7 +91,7 @@ public class AntiXrayClientDebugger {
         RenderSystem.lineWidth(1.0F);
         RenderSystem.enableBlend();
         RenderSystem.enableTexture();
-        RenderSystem.shadeModel(7424);
+        RenderSystem.enableDepthTest();
     }
 
     private static void handleAntiXraySet(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {

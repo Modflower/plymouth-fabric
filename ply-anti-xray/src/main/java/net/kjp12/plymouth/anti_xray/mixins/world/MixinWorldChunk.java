@@ -19,6 +19,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeArray;
+import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -36,6 +37,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.BitSet;
 
+import static net.kjp12.plymouth.anti_xray.Constants.HIDDEN_BLOCKS;
+
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Shadow
@@ -45,7 +48,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     private BiomeArray biomeArray;
     @Shadow
     @Final
-    private World world;
+    World world;
     @Shadow
     @Final
     private ChunkPos pos;
@@ -60,6 +63,12 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Shadow
     public abstract BlockState getBlockState(BlockPos pos);
 
+    @Shadow
+    public abstract ChunkSection[] getSectionArray();
+
+    @Shadow
+    public abstract int getBottomY();
+
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/block/BlockState;getBlock()Lnet/minecraft/block/Block;",
@@ -67,31 +76,31 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                     ordinal = 0
             ),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private void plymouth$setBlockState(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> bs, int i, int j, int k, ChunkSection chunkSection, boolean bl, BlockState old) {
+    private void plymouth$setBlockState(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> bs, int y, int yi, ChunkSection chunkSection, boolean bl, int i, int j, int k, BlockState old) {
         if (world instanceof ServerWorld && shadowSections != null) {
             var index = Constants.toIndex(i, j, k);
-            var mask = Constants.getOrCreateMask(shadowMasks, j >> 4);
-            if (state.isIn(Constants.HIDDEN_BLOCKS)) {
+            var mask = getShadowMask(yi);
+            if (state.isIn(HIDDEN_BLOCKS)) {
                 if (mask.get(index)) return;
                 var mutPos = pos.mutableCopy();
                 if (state.getBlock() instanceof InfestedBlock) {
                     var regular = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
-                    if (regular.isIn(Constants.HIDDEN_BLOCKS) && plymouth$isBlockHidden(regular, mutPos)) {
-                        if (old != regular && Constants.isHidingCandidate(old)) return;
+                    if (regular.isIn(HIDDEN_BLOCKS) && plymouth$isBlockHidden(regular, mutPos)) {
+                        if (old != regular && isHidingCandidate(old, pos)) return;
                         state = getSmearBlock(mutPos.set(pos));
                     } else {
                         state = regular;
                     }
                     mask.set(index, true);
                 } else if (plymouth$isBlockHidden(state, mutPos)) {
-                    if (Constants.isHidingCandidate(old)) return;
+                    if (isHidingCandidate(old, pos)) return;
                     state = getSmearBlock(mutPos.set(pos));
                     mask.set(index, true);
                 }
             } else {
                 mask.set(index, false);
             }
-            Constants.getOrCreateSection(shadowSections, j >> 4).setBlockState(i & 15, j & 15, k & 15, state);
+            getShadowSection(yi).setBlockState(i, j, k, state);
             plymouth$trackUpdate(pos);
             if (VoxelShapes.matchesAnywhere(state.getCollisionShape(world, pos), old.getCollisionShape(world, pos), BooleanBiFunction.NOT_SAME)) {
                 var bp = new BlockPos.Mutable();
@@ -116,16 +125,16 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Unique
     private void setIfHidden(final BlockPos.Mutable bp) {
         // This is called by other chunks, shadowMask check is required.
-        if (World.isOutOfBuildLimitVertically(bp) || shadowMasks == null) return;
+        if (isOutOfHeightLimit(bp) || shadowMasks == null) return;
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
-                cx = x >> 4, cy = y >> 4, cz = z >> 4;
+                cx = x >> 4, cy = getSectionIndex(y), cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {
             var section = sections[cy];
-            if (ChunkSection.isEmpty(section) || !section.hasAny(s -> s.isIn(Constants.HIDDEN_BLOCKS))) return;
+            if (ChunkSection.isEmpty(section) || !section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) return;
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
-            if (!state.isAir() && state.isIn(Constants.HIDDEN_BLOCKS)) {
-                var shadowMask = Constants.getOrCreateMask(shadowMasks, cy);
+            if (!state.isAir() && state.isIn(HIDDEN_BLOCKS)) {
+                var shadowMask = getShadowMask(cy);
                 var f = state.getBlock() instanceof InfestedBlock;
                 if (shadowMask.get(Constants.toIndex(ox, oy, oz))) {
                     if (!f && !plymouth$isBlockHidden(state, bp.set(ox, y, oz))) {
@@ -183,27 +192,29 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
         }
 
         var bp = new BlockPos.Mutable();
-        for (int sy = 0; sy < 16; sy++) {
+        for (int sy = 0, syl = sections.length; sy < syl; sy++) {
             var section = sections[sy];
             if (ChunkSection.isEmpty(section)) continue;
-            if (section.hasAny(s -> s.isIn(Constants.HIDDEN_BLOCKS))) {
-                var shadowSection = Constants.getOrCreateSection(shadowSections, sy);
+            if (section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) {
+                var shadowSection = getShadowSection(sy);
                 for (int x = 0; x < 16; x++)
                     for (int z = 0; z < 16; z++) {
-                        var smear = biomeArray.getBiomeForNoiseGen(x >> 2, sy << 2, z >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
+                        var smear = biomeArray.getBiomeForNoiseGen((pos.x + x) >> 2, BiomeCoords.fromBlock(sectionIndexToCoord(sy << 4)), (pos.z + z) >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
                         for (int y = 0; y < 16; y++) {
                             var state = section.getBlockState(x, y, z);
                             if (state.isAir()) continue;
-                            if (state.isIn(Constants.HIDDEN_BLOCKS)) {
+                            if (state.isIn(HIDDEN_BLOCKS)) {
                                 if (state.getBlock() instanceof InfestedBlock) {
                                     state = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
-                                    Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
-                                } else if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) | y, z))) {
+                                    getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
+                                } else if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
                                     state = smear;
-                                    Constants.getOrCreateMask(shadowMasks, sy).set(Constants.toIndex(x, y, z), true);
+                                    getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
                                 }
-                            } else if (Constants.isHidingCandidate(state)) {
-                                smear = state;
+                            } else {
+                                if (isHidingCandidate(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
+                                    smear = state;
+                                }
                             }
                             shadowSection.setBlockState(x, y, z, state);
                         }
@@ -219,12 +230,12 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     private BlockState getSmearBlock(BlockPos.Mutable bp) {
         int x = bp.getX(), y = bp.getY(), z = bp.getZ();
         BlockState state;
-        if (Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y - 1, z))) ||
-                Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y + 1, z))) ||
-                Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y, z - 1))) ||
-                Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y, z + 1))) ||
-                Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x + 1, y, z))) ||
-                Constants.isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x - 1, y, z))))
+        if (isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y - 1, z)), bp) ||
+                isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y + 1, z)), bp) ||
+                isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y, z - 1)), bp) ||
+                isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y, z + 1)), bp) ||
+                isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x + 1, y, z)), bp) ||
+                isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x - 1, y, z)), bp))
             return state;
         bp.set(x, y, z);
         Constants.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(bp), bp, new Throwable());
@@ -239,18 +250,18 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @NotNull
     public BlockState plymouth$getShadowBlock(BlockPos pos) {
         if (shadowSections == null) return Blocks.VOID_AIR.getDefaultState();
-        int i = pos.getX(), j = pos.getY(), k = pos.getZ();
+        int i = pos.getX(), j = pos.getY(), k = pos.getZ(), l = getSectionIndex(j);
         try {
-            if (j >= 0 && j >> 4 < shadowSections.length) {
-                var section = shadowSections[j >> 4];
+            if (l >= 0 && l < shadowSections.length) {
+                var section = shadowSections[l];
                 return ChunkSection.isEmpty(section) ? Blocks.AIR.getDefaultState() : section.getBlockState(i & 15, j & 15, k & 15);
             }
             return Blocks.VOID_AIR.getDefaultState();
         } catch (Throwable t) {
             var report = CrashReport.create(t, "Plymouth: Anti-Xray: Getting shadow block state");
             report.addElement("Block being got")
-                    .add("Location", () -> CrashReportSection.createPositionString(i, j, k))
-                    .add("Section", () -> "Section " + (j >> 4) + ": " + (shadowSections == null ? "shadowSections -> null?" : shadowSections[j >> 4]));
+                    .add("Location", () -> CrashReportSection.createPositionString(world, i, j, k))
+                    .add("Section", () -> "Section " + l + ": " + (shadowSections == null ? "shadowSections -> null?" : shadowSections[l]));
             throw new CrashException(report);
         }
     }
@@ -258,11 +269,10 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Override
     public void plymouth$unsetShadowBlock(BlockPos pos) {
         if (shadowMasks == null) return; // There is nothing to unset.
-        final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = y >> 4, i = Constants.toIndex(pos);
-        final var m = Constants.getOrCreateMask(shadowMasks, cy);
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y), i = Constants.toIndex(pos);
+        final var m = getShadowMask(cy);
         if (m.get(i)) {
-            Constants.getOrCreateSection(shadowSections, cy).setBlockState(x & 15, y & 15, z & 15,
-                    Constants.getOrCreateSection(sections, cy).getBlockState(x & 15, y & 15, z & 15));
+            getShadowSection(cy).setBlockState(x & 15, y & 15, z & 15, sections[cy].getBlockState(x & 15, y & 15, z & 15));
             m.set(i, false);
             plymouth$trackUpdate(pos);
         }
@@ -271,10 +281,11 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Override
     public void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
         IShadowChunk.super.plymouth$setShadowBlock(pos, state);
-        final int y = pos.getY(), cy = y >> 4;
+        final int y = pos.getY(), cy = getSectionIndex(y);
         // Do note, we're calling plymouth$getShadowSections() to force generation of the shadow chunk.
-        Constants.getOrCreateSection(plymouth$getShadowSections(), cy).setBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15, state);
-        Constants.getOrCreateMask(shadowMasks, cy).set(Constants.toIndex(pos), true);
+        plymouth$getShadowSections();
+        getShadowSection(cy).setBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15, state);
+        getShadowMask(cy).set(Constants.toIndex(pos), true);
         plymouth$trackUpdate(pos);
     }
 
@@ -294,7 +305,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Override
     public boolean plymouth$isMasked(BlockPos pos) {
         if (shadowMasks == null) return false;
-        var mask = shadowMasks[pos.getY() >> 4];
+        var mask = shadowMasks[getSectionIndex(pos.getY())];
         return mask != null && mask.get(Constants.toIndex(pos));
     }
 
@@ -302,5 +313,21 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     public void plymouth$trackUpdate(BlockPos pos) {
         IShadowChunk.super.plymouth$trackUpdate(pos);
         ((ServerWorld) world).getChunkManager().markForUpdate(pos);
+    }
+
+    @Unique
+    private ChunkSection getShadowSection(int y) {
+        return shadowSections[y] == null ? shadowSections[y] = new ChunkSection((y << 4) + getBottomY()) : shadowSections[y];
+    }
+
+    @Unique
+    private BitSet getShadowMask(int y) {
+        return shadowMasks[y] == null ? shadowMasks[y] = new BitSet(4096) : shadowMasks[y];
+    }
+
+    @Unique
+    private boolean isHidingCandidate(BlockState state, BlockPos pos) {
+        return !state.isAir() && state.getFluidState().isEmpty() && !state.hasBlockEntity() && !state.isIn(HIDDEN_BLOCKS) &&
+                !VoxelShapes.matchesAnywhere(state.getCollisionShape(this, pos), VoxelShapes.fullCube(), BooleanBiFunction.NOT_SAME);
     }
 }

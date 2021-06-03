@@ -4,7 +4,7 @@ import net.kjp12.plymouth.database.BlockAction;
 import net.kjp12.plymouth.database.Target;
 import net.kjp12.plymouth.database.TextUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -35,13 +35,13 @@ public final class BlockRecord implements PlymouthRecord {
     public final boolean isUndone;
     public final BlockAction action;
     public final BlockState block;
-    public final CompoundTag nbt;
+    public final NbtCompound nbt;
     public final String userName;
     public final UUID userId, entityId;
 
     public BlockRecord(Instant time, boolean isUndone,
                        ServerWorld causeWorld, BlockPos causePos, String userName, UUID userId, UUID entityId,
-                       ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState block, CompoundTag nbt) {
+                       ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState block, NbtCompound nbt) {
         this.causeWorld = causeWorld;
         this.causePos = causePos;
         this.targetWorld = targetWorld;
@@ -60,14 +60,14 @@ public final class BlockRecord implements PlymouthRecord {
      * Now helper constructor, setting time to the instance it was called and isUndone to false.
      */
     public BlockRecord(ServerWorld causeWorld, BlockPos causePos, String userName, UUID userId, UUID entityId,
-                       ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState state, CompoundTag nbt) {
+                       ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState state, NbtCompound nbt) {
         this(Instant.now(), false, causeWorld, causePos, userName, userId, entityId, targetWorld, targetPos, action, state, nbt);
     }
 
     /**
      * Constructs a now-based BlockRecord with NBT.
      */
-    public BlockRecord(Target cause, ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState state, CompoundTag nbt) {
+    public BlockRecord(Target cause, ServerWorld targetWorld, BlockPos targetPos, BlockAction action, BlockState state, NbtCompound nbt) {
         this(null, null, cause.ply$name(), cause.ply$userId(), cause.ply$entityId(), targetWorld, targetPos, action, state, nbt);
     }
 

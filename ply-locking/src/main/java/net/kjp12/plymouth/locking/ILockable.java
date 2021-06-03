@@ -5,7 +5,6 @@ import net.kjp12.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public interface ILockable {
@@ -19,12 +18,6 @@ public interface ILockable {
     }
 
     @Deprecated(forRemoval = true)
-    default UUID helium$getOwner() {
-        var h = plymouth$getPermissionHandler();
-        return h == null ? null : h.getOwner();
-    }
-
-    @Deprecated(forRemoval = true)
     default void helium$setOwner(UUID uuid) {
         if (uuid == null) {
             plymouth$setPermissionHandler(null);
@@ -33,11 +26,6 @@ public interface ILockable {
             if (h != null) h.setOwner(uuid);
             else plymouth$setPermissionHandler(new BasicPermissionHandler(uuid));
         }
-    }
-
-    @Deprecated(forRemoval = true)
-    default boolean helium$isOwner(UUID uuid) {
-        return Objects.equals(uuid, helium$getOwner());
     }
 
     // Note: This doesn't apply to doors.

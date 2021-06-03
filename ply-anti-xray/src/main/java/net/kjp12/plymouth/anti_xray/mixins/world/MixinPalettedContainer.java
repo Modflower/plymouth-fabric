@@ -7,7 +7,7 @@ import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.*;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 /**
  * Forces PalettedContainer to be cloneable.
@@ -27,7 +27,7 @@ public abstract class MixinPalettedContainer<T> implements Cloneable, CloneAcces
     @Shadow
     @Final
     @Mutable
-    private ReentrantLock writeLock;
+    private Semaphore writeLock;
 
     @Shadow
     public abstract void unlock();
@@ -54,7 +54,7 @@ public abstract class MixinPalettedContainer<T> implements Cloneable, CloneAcces
         try {
             var self = (MixinPalettedContainer<T>) super.clone();
             // We need to make a new write lock for as this is a new chunk section.
-            self.writeLock = new ReentrantLock();
+            self.writeLock = new Semaphore(1);
             // The IdListPalette is perfectly safe to leave untouched, for as it is immutable.
             if (!(self.palette instanceof IdListPalette)) {
                 // Force a null value for the purpose of forced "resize"

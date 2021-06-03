@@ -17,7 +17,7 @@ public abstract class MixinEntity {
 
     @Inject(method = "canExplosionDestroyBlock(Lnet/minecraft/world/explosion/Explosion;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;F)Z", at = @At("HEAD"), cancellable = true)
     private void helium$canExplosionDestroyBlock(Explosion explosion, BlockView blockView, BlockPos pos, BlockState blockState, float power, CallbackInfoReturnable<Boolean> cbir) {
-        if (blockState.getBlock().hasBlockEntity() && !Locking.canBreak((ILockable) blockView.getBlockEntity(pos), (Entity) (Object) this))
+        if (blockState.hasBlockEntity() && !Locking.canBreak((ILockable) blockView.getBlockEntity(pos), (Entity) (Object) this))
             cbir.setReturnValue(false);
     }
 }

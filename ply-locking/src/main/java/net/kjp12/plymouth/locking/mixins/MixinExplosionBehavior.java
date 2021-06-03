@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinExplosionBehavior {
     @Inject(method = "canDestroyBlock", at = @At("HEAD"), cancellable = true)
     private void helium$canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power, CallbackInfoReturnable<Boolean> cir) {
-        if (state.getBlock().hasBlockEntity() && Locking.canBreak((ILockable) world.getBlockEntity(pos), explosion))
+        if (state.hasBlockEntity() && Locking.canBreak((ILockable) world.getBlockEntity(pos), explosion))
             cir.setReturnValue(false);
     }
 }

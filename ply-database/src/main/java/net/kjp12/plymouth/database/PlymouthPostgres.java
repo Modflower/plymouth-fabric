@@ -7,7 +7,7 @@ import net.kjp12.plymouth.common.UUIDHelper;
 import net.kjp12.plymouth.database.records.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
@@ -485,7 +485,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
                             tp = null;
                         }
                         var io = Registry.ITEM.get(Identifier.tryParse(re.getString(i++)));
-                        CompoundTag in = null;
+                        NbtCompound in = null;
                         try (var dbs = re.getBinaryStream(i++)) {
                             if (dbs != null) try (var dis = new DataInputStream(dbs)) {
                                 in = NbtIo.read(dis);

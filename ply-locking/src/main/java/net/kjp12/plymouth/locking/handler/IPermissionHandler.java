@@ -3,7 +3,7 @@ package net.kjp12.plymouth.locking.handler;// Created 2021-03-23T03:51:23
 import net.kjp12.plymouth.common.UUIDHelper;
 import net.kjp12.plymouth.locking.Locking;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,14 +72,14 @@ public interface IPermissionHandler {
         return Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source) || allowPermissions(source.getEntity());
     }
 
-    default void fromTag(CompoundTag tag) {
+    default void fromTag(NbtCompound tag) {
         setOwner(tag.getUuid("owner"));
         if (tag.contains("group", 8)) {
             setGroup(tag.getString("group"));
         }
     }
 
-    default void toTag(CompoundTag tag) {
+    default void toTag(NbtCompound tag) {
         tag.putUuid("owner", getOwner());
         var group = getGroup();
         if (group != null) tag.putString("group", getGroup());
