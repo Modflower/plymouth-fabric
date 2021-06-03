@@ -45,7 +45,7 @@ public abstract class MixinExplosion {
     @Inject(method = "affectWorld",
             locals = LocalCapture.CAPTURE_FAILEXCEPTION,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;shouldDropItemsOnExplosion(Lnet/minecraft/world/explosion/Explosion;)Z"))
-    private void plymouth$affectWorld$onSetBlock(boolean flag, CallbackInfo cbi, ObjectArrayList<?> $0, Iterator<?> $1, BlockPos pos, BlockState old) {
+    private void plymouth$affectWorld$onSetBlock(boolean flag, CallbackInfo cbi, boolean $2, ObjectArrayList<?> $0, Iterator<?> $1, BlockPos pos, BlockState old) {
         if (!(world instanceof ServerWorld)) return;
         Entity e = getCausingEntity();
         if (e == null) e = entity;
