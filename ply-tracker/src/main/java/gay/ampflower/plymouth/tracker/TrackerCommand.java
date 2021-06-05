@@ -115,60 +115,51 @@ public class TrackerCommand {
         primary:
         while (parser.hasNext()) {
             parser.next();
-            Tracker.logger.info("parser: {} | current: {} / {} | f: {} | s: {} | c: {}", parser, parser.current(), parser.currentHashScreamingSnake(), f, s, c);
             switch (s) {
                 case 0:
                     switch (parser.currentHashScreamingSnake()) {
                         case 2135: // BY u
                             if (parser.contentEquals("by", true)) {
-                                Tracker.logger.info("got `by`");
                                 f |= u;
                                 s = 1;
                             }
                             break;
                         case 2575053: // TIME s e
                             if (parser.contentEquals("time", true)) {
-                                Tracker.logger.info("got `time`");
                                 f |= t;
                                 s = 2;
                             }
                             break;
                         case 2099: // AT x y z
                             if (parser.contentEquals("at", true)) {
-                                Tracker.logger.info("got `at`");
                                 f |= a;
                                 s = 3;
                             }
                             break;
                         case 2017421: // AREA x y z x y z
                             if (parser.contentEquals("area", true)) {
-                                Tracker.logger.info("got `area`");
                                 f |= a;
                                 s = 4;
                             }
                             break;
                         case -1885249390: // RADIUS r
                             if (parser.contentEquals("radius", true)) {
-                                Tracker.logger.info("got `radius`");
                                 f |= a;
                                 s = 5;
                             }
                             break;
                         case 63294573: // BLOCK
                             if (parser.contentEquals("block", true)) {
-                                Tracker.logger.info("got `block`");
                                 f |= r;
                             }
                             break;
                         case 64920148: // DEATH
                             if (parser.contentEquals("death", true)) {
-                                Tracker.logger.info("got `death`");
                                 f |= r;
                             }
                             break;
                         case 765995324: // INVENTORY
                             if (parser.contentEquals("inventory", true)) {
-                                Tracker.logger.info("got `inventory`");
                                 f |= r;
                             }
                             break;
@@ -185,24 +176,19 @@ public class TrackerCommand {
                     break;
                 case 1:
                 case 5:
-                    Tracker.logger.info("got {}'s param", s);
                     s = c = 0;
                     break;
                 case 2:
-                    Tracker.logger.info("got 2's param, at {}", c);
                     if (++c == 2) s = c = 0;
                     break;
                 case 3:
-                    Tracker.logger.info("got 3's param, at {}", c);
                     if (++c == 3) s = c = 0;
                     break;
                 case 4:
-                    Tracker.logger.info("got 4's param, at {}", c);
                     if (++c == 6) s = c = 0;
                     break;
                 default:
-                    Tracker.logger.info("got unhappy {} at {}", s, c);
-                    // throw new AssertionError("State: " + s + ", flags: " + f + ", input: " + builder);
+                    throw new AssertionError("State: " + s + ", flags: " + f + ", input: " + builder);
             }
         }
         // TODO: Make the suggestions quote aware.
