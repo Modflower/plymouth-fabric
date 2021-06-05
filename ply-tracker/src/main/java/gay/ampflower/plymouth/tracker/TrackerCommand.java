@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -49,6 +50,9 @@ public class TrackerCommand {
             REQUIRE_INSPECT_PERMISSION = Permissions.require("plymouth.admin.tracker.inspect", 3),
             REQUIRE_LOOKUP_PERMISSION = Permissions.require("plymouth.admin.tracker.lookup", 3),
             REQUIRE_ROLLBACK_PERMISSION = Permissions.require("plymouth.admin.tracker.rollback", 3);
+
+    private static final SimpleCommandExceptionType
+            RECORD_NOT_DEFINED = new SimpleCommandExceptionType(new TranslatableText("commands.plymouth.tracker.invalid.record"));
 
     private static final DynamicCommandExceptionType
             PARSER_INVALID = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.tracker.invalid", i));
@@ -175,6 +179,10 @@ public class TrackerCommand {
                     }
                     break;
                 case 1:
+                    if (!parser.hasPotential()) {
+                        parser.backtrack();
+                        break primary;
+                    }
                 case 5:
                     s = c = 0;
                     break;
@@ -193,51 +201,20 @@ public class TrackerCommand {
         }
         // TODO: Make the suggestions quote aware.
         switch (s) {
-            case 0:
-                if (parser.hasNext()) {
-                    parser.anchor(16);
-                    if ((f & u) == 0) {
-                        if (parser.tryTestAnchor("by")) builder.suggest(parser.getAnchor());
-                    }
-                    if ((f & t) == 0) {
-                        if (parser.tryTestAnchor("time")) builder.suggest(parser.getAnchor());
-                    }
-                    if ((f & a) == 0) {
-                        if (parser.tryTestAnchor("at")) builder.suggest(parser.getAnchor());
-                        if (parser.tryTestAnchor("area")) builder.suggest(parser.getAnchor());
-                        if (parser.tryTestAnchor("radius")) builder.suggest(parser.getAnchor());
-                    }
-                    if ((f & r) == 0) {
-                        if (parser.tryTestAnchor("block")) builder.suggest(parser.getAnchor());
-                        if (parser.tryTestAnchor("death")) builder.suggest(parser.getAnchor());
-                        if (parser.tryTestAnchor("inventory")) builder.suggest(parser.getAnchor());
-                    }
-                } else {
-                    psb = mkSb(builder.getRemaining());
-                    var len = psb.length();
-                    if ((f & u) == 0) {
-                        builder.suggest(psb.replace(len, psb.length(), "by").toString());
-                    }
-                    if ((f & t) == 0) {
-                        builder.suggest(psb.replace(len, psb.length(), "time").toString());
-                    }
-                    if ((f & a) == 0) {
-                        builder.suggest(psb.replace(len, psb.length(), "at").toString());
-                        builder.suggest(psb.replace(len, psb.length(), "area").toString());
-                        builder.suggest(psb.replace(len, psb.length(), "radius").toString());
-                    }
-                    if ((f & r) == 0) {
-                        builder.suggest(psb.replace(len, psb.length(), "block").toString());
-                        builder.suggest(psb.replace(len, psb.length(), "death").toString());
-                        builder.suggest(psb.replace(len, psb.length(), "inventory").toString());
+            case 1:
+                parser.anchor(32);
+                boolean sf = false;
+                var server = context.getSource().getMinecraftServer();
+                for (var player : server.getPlayerManager().getPlayerList()) {
+                    var name = player.getGameProfile().getName();
+                    if (parser.tryTestAnchor(name)) {
+                        builder.suggest(parser.getAnchor());
+                        // This makes for a consistent feel by skipping to state 0 if the only valid suggestion was also the same length.
+                        sf |= parser.currentLength() != name.length();
                     }
                 }
-                break;
-            case 1:
-                psb = mkSb(builder.getRemaining());
-                // for now, suggest the runner's uuid
-                builder.suggest(psb.append(context.getSource().getEntity().getUuid()).toString());
-                // TODO: name, uuid, identifiers
+                // TODO: plymouth identifiers
+                if (!sf) s = 0;
                 break;
             case 2:
                 psb = mkSb(builder.getRemaining());
@@ -255,13 +232,12 @@ public class TrackerCommand {
                 switch (c % 3) {
                     case 0:
                         builder.suggest(psb.append(pos.getX()).toString());
-                        break;
+                        psb.append(' ');
                     case 1:
                         builder.suggest(psb.append(pos.getY()).toString());
-                        break;
+                        psb.append(' ');
                     case 2:
                         builder.suggest(psb.append(pos.getZ()).toString());
-                        break;
                 }
                 break;
             case 5:
@@ -272,6 +248,25 @@ public class TrackerCommand {
                 builder.suggest(psb.replace(len, psb.length(), "32").toString());
                 builder.suggest(psb.replace(len, psb.length(), "64").toString());
                 break;
+        }
+        if (s == 0) {
+            parser.anchor(16);
+            if ((f & u) == 0) {
+                if (parser.tryTestAnchor("by")) builder.suggest(parser.getAnchor());
+            }
+            if ((f & t) == 0) {
+                if (parser.tryTestAnchor("time")) builder.suggest(parser.getAnchor());
+            }
+            if ((f & a) == 0) {
+                if (parser.tryTestAnchor("at")) builder.suggest(parser.getAnchor());
+                if (parser.tryTestAnchor("area")) builder.suggest(parser.getAnchor());
+                if (parser.tryTestAnchor("radius")) builder.suggest(parser.getAnchor());
+            }
+            if ((f & r) == 0) {
+                if (parser.tryTestAnchor("block")) builder.suggest(parser.getAnchor());
+                if (parser.tryTestAnchor("death")) builder.suggest(parser.getAnchor());
+                if (parser.tryTestAnchor("inventory")) builder.suggest(parser.getAnchor());
+            }
         }
         return builder.buildFuture();
     }
@@ -292,9 +287,17 @@ public class TrackerCommand {
                     if ((s & u) == 0 && parser.contentEquals("by", true)) {
                         s |= u;
                         f |= LookupRecord.FLAG_BY;
-                        // debate on if this would be more ideal
-                        // TODO: a more native fromString method?
-                        causeUuid = UUID.fromString(parser.nextString());
+                        parser.next();
+                        if (parser.isUUID()) {
+                            causeUuid = parser.currentUUID();
+                        } else {
+                            var p = ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(parser.current());
+                            if (p != null) {
+                                causeUuid = p.getUuid();
+                            } else {
+                                throw new UnsupportedOperationException("Not implemented.");
+                            }
+                        }
                     }
                     break;
                 case 2575053: // TIME s e
@@ -348,7 +351,9 @@ public class TrackerCommand {
                     }
             }
         }
-
+        if (type == RecordType.LOOKUP) {
+            throw RECORD_NOT_DEFINED.create();
+        }
         return lookup(ctx, type, source.getWorld(), minPos, maxPos, causeUuid, minTime, maxTime, page, f);
     }
 

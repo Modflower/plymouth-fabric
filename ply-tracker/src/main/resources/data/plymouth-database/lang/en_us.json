@@ -2,5 +2,6 @@
   "commands.plymouth.tracker.inspect.start": "You're now inspecting.\n- Punch a block to inspect placement.\n- Use a block to inspect inventories.",
   "commands.plymouth.tracker.inspect.end": "You're no longer inspecting.",
   "commands.plymouth.tracker.lookup": "Lookup %s. Time in %s.",
-  "commands.plymouth.tracker.invalid": "Invalid argument %s."
+  "commands.plymouth.tracker.invalid": "Invalid argument %s.",
+  "commands.plymouth.tracker.invalid.record": "Define if lookup should be under block, death or inventory."
 }
