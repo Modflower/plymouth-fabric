@@ -49,15 +49,20 @@ public class MappingCommand {
                                         try (var body = res.body()) {
                                             var server = ctx.getSource().getMinecraftServer();
                                             var overworld = server.getOverworld();
-                                            var mapState = (MapState & AccessorMapState) overworld.getMapState(FilledMapItem.getMapName(map));
                                             // note: data nesting can be blamed on by Mojang, who thought this was a good idea to begin with.
                                             var mapCompound = Helium.readTag(body, server.getDataFixer(), SharedConstants.getGameVersion().getWorldVersion()).getCompound("data");
-                                            assert mapState != null;
+                                            var mapName = FilledMapItem.getMapName(map);
+                                            var oldMapState = (MapState & AccessorMapState) overworld.getMapState(mapName);
+                                            assert oldMapState != null;
                                             if (!mapCompound.contains("dimension"))
                                                 mapCompound.putString("dimension", overworld.getRegistryKey().getValue().toString());
-                                            MapState.fromNbt(mapCompound);
-                                            mapState.callMarkDirty(0, 0);
-                                            mapState.callMarkDirty(127, 127);
+                                            var newMapState = (MapState & AccessorMapState) MapState.fromNbt(mapCompound);
+                                            overworld.putMapState(mapName, newMapState);
+                                            for (var updateTracker : oldMapState.getUpdateTrackers()) {
+                                                newMapState.getPlayerSyncData(updateTracker.player);
+                                            }
+                                            newMapState.callMarkDirty(0, 0);
+                                            newMapState.callMarkDirty(127, 127);
                                             source.sendFeedback(new LiteralText("Deployed ").append(uriLinked).append(" to map " + map), true);
                                         } catch (IOException ioe) {
                                             HeliumEarlyRiser.LOGGER.error("[IO Failure] Failed to parse {} for map {}", uri, map, ioe);
