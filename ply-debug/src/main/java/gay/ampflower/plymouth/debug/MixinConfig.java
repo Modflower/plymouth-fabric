@@ -32,20 +32,31 @@ public class MixinConfig implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         var loader = FabricLoader.getInstance();
         var index = mixinClassName.indexOf('.', substr);
-        switch (mixinClassName.substring(substr, index)) {
+        String env, cur = mixinClassName.substring(substr, index);
+        switch (cur) {
             case "anti_xray": {
                 if (!loader.isModLoaded("plymouth-anti-xray")) return false;
-                var index2 = mixinClassName.indexOf('.', index);
-                if (index2 == -1) return true;
-                switch (mixinClassName.substring(index, index2)) {
-                    case "client":
-                        return loader.getEnvironmentType() == EnvType.CLIENT;
-                    case "server":
-                        return loader.getEnvironmentType() == EnvType.SERVER;
-                    default:
-                        return true;
-                }
+                env = getEnvironment(mixinClassName, index);
+                break;
             }
+            case "tracker": {
+                if (!loader.isModLoaded("plymouth-tracker")) return false;
+                env = getEnvironment(mixinClassName, index);
+                break;
+            }
+            default:
+                env = cur;
+        }
+        return checkEnvironment(loader, env);
+    }
+
+    private String getEnvironment(String in, int s) {
+        int e = in.indexOf('.', s);
+        return e == -1 ? "" : in.substring(s, e);
+    }
+
+    private boolean checkEnvironment(FabricLoader loader, String str) {
+        switch (str) {
             case "client":
                 return loader.getEnvironmentType() == EnvType.CLIENT;
             case "server":

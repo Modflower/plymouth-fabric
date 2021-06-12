@@ -1,4 +1,4 @@
-package gay.ampflower.plymouth.debug.mixins;
+package gay.ampflower.plymouth.debug.mixins.tracker;
 
 import gay.ampflower.plymouth.database.Target;
 import gay.ampflower.plymouth.tracker.Tracker;
