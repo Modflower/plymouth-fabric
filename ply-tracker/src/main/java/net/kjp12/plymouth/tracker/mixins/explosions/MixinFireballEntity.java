@@ -1,4 +1,4 @@
-package net.kjp12.plymouth.tracker.mixins;// Created 2021-11-06T23:09:33
+package net.kjp12.plymouth.tracker.mixins.explosions;// Created 2021-11-06T23:09:33
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
