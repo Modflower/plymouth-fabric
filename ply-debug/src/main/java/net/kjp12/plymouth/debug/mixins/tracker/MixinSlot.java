@@ -1,4 +1,4 @@
-package net.kjp12.plymouth.debug.mixins;// Created 2021-03-30T05:26:32
+package net.kjp12.plymouth.debug.mixins.tracker;// Created 2021-03-30T05:26:32
 
 import net.kjp12.plymouth.database.Target;
 import net.kjp12.plymouth.tracker.Tracker;
