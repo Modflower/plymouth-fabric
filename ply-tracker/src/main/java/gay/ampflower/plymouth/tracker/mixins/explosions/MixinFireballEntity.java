@@ -1,4 +1,4 @@
-package gay.ampflower.plymouth.tracker.mixins;
+package gay.ampflower.plymouth.tracker.mixins.explosions;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
