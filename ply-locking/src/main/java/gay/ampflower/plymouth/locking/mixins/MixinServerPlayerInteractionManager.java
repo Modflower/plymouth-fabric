@@ -31,6 +31,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.Objects;
 import java.util.UUID;
 
+import static gay.ampflower.plymouth.locking.Locking.toText;
+
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager {
     @Final
@@ -118,14 +120,14 @@ public abstract class MixinServerPlayerInteractionManager {
     @Unique
     private static void setClaimed(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> cbir, BlockPos pos, Block block, ILockable blockEntity, UUID puid) {
         blockEntity.helium$setOwner(puid);
-        player.sendMessage(new TranslatableText("plymouth.locking.claimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA)).formatted(Formatting.GREEN), true);
+        player.sendMessage(new TranslatableText("plymouth.locking.claimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), toText(pos)).formatted(Formatting.GREEN), true);
         cbir.setReturnValue(ActionResult.SUCCESS);
     }
 
     @Unique
     private static void setUnclaimed(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> cbir, BlockPos pos, Block block, ILockable blockEntity) {
         blockEntity.helium$setOwner(null);
-        player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA)).formatted(Formatting.GREEN), true);
+        player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), toText(pos)).formatted(Formatting.YELLOW), true);
         cbir.setReturnValue(ActionResult.SUCCESS);
     }
 

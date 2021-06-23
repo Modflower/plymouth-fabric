@@ -18,16 +18,21 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collection;
 import java.util.function.Predicate;
 
 /**
@@ -60,8 +65,7 @@ public class Locking implements ModInitializer {
     }
 
     public static boolean canReach(ServerPlayerEntity runner, BlockPos target) {
-        var vec3d = Vec3d.ofCenter(target);
-        return runner.squaredDistanceTo(vec3d) < 5 && runner.world.raycast(new RaycastContext(new Vec3d(runner.getX(), runner.getEyeY(), runner.getZ()), vec3d, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, runner)).getType() == HitResult.Type.BLOCK;
+        return runner.squaredDistanceTo(Vec3d.ofCenter(target)) < 25;
     }
 
     /**
@@ -137,5 +141,22 @@ public class Locking implements ModInitializer {
             }
         }
         return otherPos;
+    }
+
+    public static Text toText(Collection<? extends Nameable> nameables) {
+        if (nameables == null || nameables.isEmpty()) {
+            return new LiteralText("?");
+        }
+        var itr = nameables.iterator();
+        var base = new LiteralText("");
+        base.append(itr.next().getDisplayName());
+        while (itr.hasNext()) {
+            base.append(Texts.GRAY_DEFAULT_SEPARATOR_TEXT).append(itr.next().getDisplayName());
+        }
+        return base;
+    }
+
+    public static Text toText(BlockPos pos) {
+        return new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA);
     }
 }
