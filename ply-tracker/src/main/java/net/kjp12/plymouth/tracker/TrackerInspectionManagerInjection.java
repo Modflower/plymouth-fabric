@@ -2,9 +2,8 @@ package net.kjp12.plymouth.tracker;// Created 2021-06-04T03:21
 
 import net.kjp12.plymouth.common.InteractionManagerInjection;
 import net.kjp12.plymouth.database.DatabaseHelper;
-import net.kjp12.plymouth.database.records.LookupRecord;
-import net.kjp12.plymouth.database.records.PlymouthRecord;
-import net.kjp12.plymouth.database.records.RecordType;
+import net.kjp12.plymouth.database.records.BlockLookupRecord;
+import net.kjp12.plymouth.database.records.InventoryLookupRecord;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -17,9 +16,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 /**
  * @author KJP12
  * @since ${version}
@@ -27,10 +23,9 @@ import java.util.concurrent.CompletableFuture;
 public class TrackerInspectionManagerInjection implements InteractionManagerInjection {
     @Override
     public ActionResult onBreakBlock(ServerPlayerEntity player, final ServerWorld world, final BlockPos pos, Direction direction) {
-        var future = new CompletableFuture<List<PlymouthRecord>>();
-        var lookup = new LookupRecord(future, RecordType.BLOCK, world, pos, 0);
+        var lookup = new BlockLookupRecord(world, pos, 0);
         DatabaseHelper.database.queue(lookup);
-        future.thenAcceptAsync(l -> {
+        lookup.getFuture().thenAcceptAsync(l -> {
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
@@ -45,10 +40,9 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
     @Override
     public ActionResult onInteractBlock(ServerPlayerEntity player, ServerWorld world, ItemStack stack, Hand hand, BlockHitResult hitResult) {
         if (hand != Hand.MAIN_HAND) return ActionResult.CONSUME;
-        var future = new CompletableFuture<List<PlymouthRecord>>();
-        var lookup = new LookupRecord(future, RecordType.INVENTORY, world, hitResult.getBlockPos(), 0);
+        var lookup = new InventoryLookupRecord(world, hitResult.getBlockPos(), 0);
         DatabaseHelper.database.queue(lookup);
-        future.thenAcceptAsync(l -> {
+        lookup.getFuture().thenAcceptAsync(l -> {
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }

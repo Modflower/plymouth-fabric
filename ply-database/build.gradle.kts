@@ -34,14 +34,15 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    implementation(project(":ply-common"))
+    api(project(":ply-common"))
+    api(project(":utilities")) { include(this) }
     include(implementation("org.postgresql", "postgresql", postgres_version))
     modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
 
 tasks {

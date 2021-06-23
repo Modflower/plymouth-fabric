@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
  * @see DeathRecord
  * @see InventoryRecord
  * @see LookupRecord
+ * @see BlockLookupRecord
+ * @see InventoryLookupRecord
  * @since ${version}
  **/
 public interface PlymouthRecord {

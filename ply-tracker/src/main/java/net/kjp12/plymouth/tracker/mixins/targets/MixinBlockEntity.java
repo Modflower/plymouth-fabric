@@ -5,7 +5,6 @@ import net.kjp12.plymouth.database.Target;
 import net.kjp12.plymouth.database.records.TargetRecord;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -45,8 +44,8 @@ public abstract class MixinBlockEntity implements Target {
     }
 
     @Override
-    public ServerWorld ply$world() {
-        return (ServerWorld) world;
+    public World ply$world() {
+        return world;
     }
 
     @Override

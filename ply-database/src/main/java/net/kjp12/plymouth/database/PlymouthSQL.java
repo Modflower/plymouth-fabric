@@ -3,6 +3,8 @@ package net.kjp12.plymouth.database;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import net.kjp12.plymouth.database.cache.SqlConnectionProvider;
+import net.kjp12.plymouth.database.cache.StatementCache;
 import net.kjp12.plymouth.database.records.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -16,12 +18,16 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author kjp12
  * @since 0.0.0
  */
-public abstract class PlymouthSQL implements Plymouth {
+public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
     private static final Logger log = LogManager.getLogger(PlymouthSQL.class);
 
     private int ticks = 0;
@@ -41,21 +47,13 @@ public abstract class PlymouthSQL implements Plymouth {
     protected Driver driver;
     protected Connection connection;
 
+    protected StatementCache<BlockLookupRecord, BlockRecord> blockLookupCache;
+    protected StatementCache<DeathLookupRecord, DeathRecord> deathLookupCache;
+    protected StatementCache<InventoryLookupRecord, InventoryRecord> inventoryLookupCache;
+
     protected PreparedStatement
             insertBlocks, insertDeaths, insertItems,
-            getElseInsertUser, getElseInsertBlock, getElseInsertWorld, getUsername,
-            getBlocks, getBlocksBy, getBlocksDuring, getBlocksDuringBy,
-            getBlocksAt, getBlocksAtBy, getBlocksAtDuring, getBlocksAtDuringBy,
-            getBlocksInArea, getBlocksInAreaBy, getBlocksInAreaDuring, getBlocksInAreaDuringBy,
-    // AtInArea cannot exist within the matrix, resort to NPE on fetch.
-    getInventory, getInventoryBy, getInventoryDuring, getInventoryDuringBy,
-            getInventoryAt, getInventoryAtBy, getInventoryAtDuring, getInventoryAtDuringBy,
-            getInventoryInArea, getInventoryInAreaBy, getInventoryInAreaDuring, getInventoryInAreaDuringBy,
-    // AtInArea cannot exist within the matrix, resort to NPE on fetch.
-    getDeaths, getDeathsBy, getDeathsDuring, getDeathsDuringBy,
-            getDeathsAt, getDeathsAtBy, getDeathsAtDuring, getDeathsAtDuringBy,
-            getDeathsInArea, getDeathsInAreaBy, getDeathsInAreaDuring, getDeathsInAreaDuringBy;
-    protected PreparedStatement[] getModificationsArray;
+            getElseInsertUser, getElseInsertBlock, getElseInsertWorld, getUsername;
     protected final ReentrantLock databaseLock = new ReentrantLock();
 
     private final Queue<PlymouthRecord> queue = new ConcurrentLinkedQueue<>();
@@ -72,6 +70,7 @@ public abstract class PlymouthSQL implements Plymouth {
     public void startConnection(String uri, Properties properties) throws PlymouthException {
         try {
             this.connection = driver.connect(uri, properties);
+            connection.isClosed();
         } catch (SQLException sql) {
             throw new PlymouthException(sql);
         }
@@ -79,23 +78,6 @@ public abstract class PlymouthSQL implements Plymouth {
 
     public Connection getConnection() {
         return connection;
-    }
-
-    protected void initModArray() {
-        getModificationsArray = new PreparedStatement[]{
-                getBlocks, getBlocksBy, getBlocksDuring, getBlocksDuringBy,
-                getBlocksAt, getBlocksAtBy, getBlocksAtDuring, getBlocksAtDuringBy,
-                getBlocksInArea, getBlocksInAreaBy, getBlocksInAreaDuring, getBlocksInAreaDuringBy,
-                null, null, null, null, // AtInArea cannot exist
-                getDeaths, getDeathsBy, getDeathsDuring, getDeathsDuringBy,
-                getDeathsAt, getDeathsAtBy, getDeathsAtDuring, getDeathsAtDuringBy,
-                getDeathsInArea, getDeathsInAreaBy, getDeathsInAreaDuring, getDeathsInAreaDuringBy,
-                null, null, null, null, // AtInArea cannot exist
-                getInventory, getInventoryBy, getInventoryDuring, getInventoryDuringBy,
-                getInventoryAt, getInventoryAtBy, getInventoryAtDuring, getInventoryAtDuringBy,
-                getInventoryInArea, getInventoryInAreaBy, getInventoryInAreaDuring, getInventoryInAreaDuringBy,
-                null, null, null, null, // AtInArea cannot exist
-        };
     }
 
     /**
@@ -160,16 +142,19 @@ public abstract class PlymouthSQL implements Plymouth {
                         lastStatement = insertItems;
                         handleInventoryRecord((InventoryRecord) r);
                         break;
-                    case LOOKUP:
-                        var lr = (LookupRecord) r;
-                        handleLookupRecord(lr, lastStatement = getModificationsArray[lr.flags()]);
-                        assert lr.future.isDone() : "Future of " + lr + " was never completed.";
+                    case LOOKUP_BLOCK:
+                        blockLookupCache.handle((BlockLookupRecord) r);
                         break;
+                    case LOOKUP_DEATH:
+                        deathLookupCache.handle((DeathLookupRecord) r);
+                        break;
+                    case LOOKUP_INVENTORY:
+                        inventoryLookupCache.handle((InventoryLookupRecord) r);
                     default:
                         log.warn("Unknown type {} for record {}.", r.getType(), r);
                 }
             } catch (IllegalStateException | NullPointerException | PlymouthException | SQLException exception) {
-                if (r instanceof CompletableRecord) ((CompletableRecord<?>) r).fail(exception);
+                if (r instanceof CompletableRecord<?> completable) completable.fail(exception);
                 log.error("Failed to add record {} to batch.\n{}", r, lastStatement, exception);
             }
             try {
@@ -223,18 +208,6 @@ public abstract class PlymouthSQL implements Plymouth {
     protected abstract void handleInventoryRecord(InventoryRecord inventoryRecord) throws SQLException, PlymouthException;
 
     /**
-     * Queries the database using the given lookup record and corresponding statement, and completes the lookup with the return.
-     *
-     * @param lookupRecord The lookup to be executed.
-     * @param statement    The statement the lookup will be executed with.
-     * @throws SQLException      If the database fails, i.e. bad SQL, and is uncaught.
-     * @throws PlymouthException If anything fails, giving extra diagnostic information.
-     * @implSpec If successful, the implementation must {@link LookupRecord#complete(List) complete} the lookup.
-     * It must not call {@link LookupRecord#fail(Throwable)} if it throws, it will be handled by {@link #sendBatches()}.
-     */
-    protected abstract void handleLookupRecord(LookupRecord lookupRecord, PreparedStatement statement) throws SQLException, PlymouthException;
-
-    /**
      * Looks up the integer index for a given block state. Must <em>not</em> be called asynchronously.
      *
      * @param state The block state to look up.
@@ -244,22 +217,22 @@ public abstract class PlymouthSQL implements Plymouth {
     protected abstract int getBlockIndex(BlockState state) throws PlymouthException;
 
     @Override
-    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, Target cause) {
-        queue(new BlockRecord(cause, world, pos, BlockAction.BREAK, state, nbt));
+    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, @Nullable Target cause) {
+        if (cause != null) queue(new BlockRecord(cause, world, pos, BlockAction.BREAK, state, nbt));
     }
 
     @Override
-    public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Target cause) {
-        queue(new BlockRecord(cause, world, pos, BlockAction.PLACE, state));
+    public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Target cause) {
+        if (cause != null) queue(new BlockRecord(cause, world, pos, BlockAction.PLACE, state));
     }
 
     @Override
-    public void useBlock(ServerWorld world, BlockPos pos, Item i, Target user) {
-        queue(new BlockRecord(user, world, pos, BlockAction.USE, null));
+    public void useBlock(ServerWorld world, BlockPos pos, Item i, @Nullable Target user) {
+        if (user != null) queue(new BlockRecord(user, world, pos, BlockAction.USE, null));
     }
 
     @Override
-    public void replaceBlock(ServerWorld world, BlockPos pos, BlockState oldState, BlockState newState, Target entity) {
+    public void replaceBlock(ServerWorld world, BlockPos pos, BlockState oldState, BlockState newState, @Nullable Target entity) {
         breakBlock(world, pos, oldState, null, entity);
         placeBlock(world, pos, newState, entity);
     }
@@ -277,13 +250,15 @@ public abstract class PlymouthSQL implements Plymouth {
     }
 
     @Override
-    public void takeItems(Target inventory, ItemStack i, int c, Target taker) {
-        inventoryDelta(inventory.plymouth$toRecord(), taker.plymouth$toRecord(), i, -c);
+    public void takeItems(Target inventory, ItemStack i, int c, @Nullable Target taker) {
+        if (taker != null && !taker.ply$targetMatches(inventory))
+            inventoryDelta(inventory.plymouth$toRecord(), taker.plymouth$toRecord(), i, -c);
     }
 
     @Override
-    public void putItems(Target inventory, ItemStack i, int c, Target placer) {
-        inventoryDelta(inventory.plymouth$toRecord(), placer.plymouth$toRecord(), i, c);
+    public void putItems(Target inventory, ItemStack i, int c, @Nullable Target placer) {
+        if (placer != null && !placer.ply$targetMatches(inventory))
+            inventoryDelta(inventory.plymouth$toRecord(), placer.plymouth$toRecord(), i, c);
     }
 
     /**
@@ -300,7 +275,7 @@ public abstract class PlymouthSQL implements Plymouth {
         // The following three assertions are for dev-time to detect where the accidental insertion of air or 0 are coming from.
         assert delta != 0 : "No delta.";
         assert reference != null && !reference.isEmpty() : "Air got in the system.";
-        assert !(reference.getItem() instanceof BlockItem && ((BlockItem) reference.getItem()).getBlock().getDefaultState().isAir()) : "Unusual air got in the system.";
+        assert !(reference.getItem() instanceof BlockItem blockItem && blockItem.getBlock().getDefaultState().isAir()) : "Unusual air got in the system.";
         synchronized (inventoryDeltaTable) {
             var map = getRecordMap(inventory, mutator);
             var record = map.get(reference);

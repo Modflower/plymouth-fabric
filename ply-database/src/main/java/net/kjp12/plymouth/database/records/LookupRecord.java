@@ -8,9 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static net.kjp12.plymouth.database.TextUtils.lookupPlayerToText;
 import static net.kjp12.plymouth.database.TextUtils.positionToText;
@@ -25,11 +25,7 @@ import static net.kjp12.plymouth.database.TextUtils.positionToText;
  * @author KJP12
  * @since ${version}
  **/
-public final class LookupRecord implements PlymouthRecord, CompletableRecord<List<PlymouthRecord>> {
-    /**
-     * Indicates that nothing has been selected. More for completeness sake.
-     */
-    public static final int FLAG_NONE = 0x00;
+public abstract class LookupRecord<T extends PlymouthRecord> implements PlymouthRecord, CompletableRecord<List<T>> {
     /**
      * Indicates that lookup is by user.
      */
@@ -52,48 +48,41 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
     public static final int FLAG_AREA = 0x08;
 
     /**
-     * Indicates that lookup is for blocks.
-     */
-    public static final int MOD_BLOCK = 0x00;
-    /**
      * Indicates that lookup is for deaths.
      */
+    @Deprecated(forRemoval = true)
     public static final int MOD_DEATH = 0x10;
-    /**
-     * Indicates that lookup is for inventories.
-     */
-    public static final int MOD_INVEN = 0x20;
 
-    public final CompletableFuture<List<PlymouthRecord>> future;
-    public final ServerWorld world;
-    public final BlockPos minPosition, maxPosition;
+    private final CompletableFuture<List<T>> future;
+    public final ServerWorld causeWorld;
+    public final BlockPos minPos, maxPos;
     public final UUID causeUuid;
     public final Instant minTime, maxTime;
     public final int page;
     private final int flags;
 
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
-        this.future = future;
-        this.world = world;
+    public LookupRecord(ServerWorld causeWorld, BlockPos minPos, BlockPos maxPos, UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
+        this.future = new CompletableFuture<>();
+        this.causeWorld = causeWorld;
         switch (flags >>> 2 & 3) {
             case 0:
-                this.minPosition = null;
-                this.maxPosition = null;
+                this.minPos = null;
+                this.maxPos = null;
                 break;
             case 1:
-                this.minPosition = minPosition.toImmutable();
-                this.maxPosition = null;
+                this.minPos = minPos.toImmutable();
+                this.maxPos = null;
                 break;
             case 2:
-                int ax = minPosition.getX(), ay = minPosition.getY(), az = minPosition.getZ(),
-                        bx = maxPosition.getX(), by = maxPosition.getY(), bz = maxPosition.getZ(),
+                int ax = minPos.getX(), ay = minPos.getY(), az = minPos.getZ(),
+                        bx = maxPos.getX(), by = maxPos.getY(), bz = maxPos.getZ(),
                         ix = Math.min(ax, bx), iy = Math.min(ay, by), iz = Math.min(az, bz);
                 if (ax == ix && ay == iy && az == iz) {
-                    this.minPosition = minPosition.toImmutable();
-                    this.maxPosition = maxPosition.toImmutable();
+                    this.minPos = minPos.toImmutable();
+                    this.maxPos = maxPos.toImmutable();
                 } else {
-                    this.minPosition = new BlockPos(ix, iy, iz);
-                    this.maxPosition = new BlockPos(Math.max(ax, bx), Math.max(ay, by), Math.max(az, bz));
+                    this.minPos = new BlockPos(ix, iy, iz);
+                    this.maxPos = new BlockPos(Math.max(ax, bx), Math.max(ay, by), Math.max(az, bz));
                 }
                 break;
             default:
@@ -106,64 +95,19 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
         this.flags = flags;
     }
 
-    // <editor-fold desc="Too many constructors.">
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, UUID causeUuid, Instant minTime, Instant maxTime, int page) {
-        this(future, world, minPosition, maxPosition, causeUuid, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | FLAG_BY | FLAG_AREA | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, UUID causeUuid, int page) {
-        this(future, world, minPosition, maxPosition, causeUuid, null, null, page, FLAG_BY | FLAG_AREA | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, Instant minTime, Instant maxTime, int page) {
-        this(future, world, minPosition, maxPosition, null, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | FLAG_AREA | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition, int page) {
-        this(future, world, minPosition, maxPosition, null, null, null, page, FLAG_AREA | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos pos, UUID causeUuid, Instant minTime, Instant maxTime, int page) {
-        this(future, world, pos, null, causeUuid, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | FLAG_BY | FLAG_AT | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos pos, UUID causeUuid, int page) {
-        this(future, world, pos, null, causeUuid, null, null, page, FLAG_BY | FLAG_AT | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos pos, Instant minTime, Instant maxTime, int page) {
-        this(future, world, pos, null, null, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | FLAG_AT | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, BlockPos pos, int page) {
-        this(future, world, pos, null, null, null, null, page, FLAG_AT | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, UUID causeUuid, Instant minTime, Instant maxTime, int page) {
-        this(future, world, null, null, causeUuid, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | FLAG_BY | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, UUID causeUuid, int page) {
-        this(future, world, null, null, causeUuid, null, null, page, FLAG_BY | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, Instant minTime, Instant maxTime, int page) {
-        this(future, world, null, null, null, Objects.requireNonNullElse(minTime, Instant.MIN), Objects.requireNonNullElse(maxTime, Instant.MAX), page, FLAG_TIME | type.bits);
-    }
-
-    public LookupRecord(@NotNull CompletableFuture<List<PlymouthRecord>> future, RecordType type, ServerWorld world, int page) {
-        this(future, world, null, null, null, null, null, page, FLAG_NONE | type.bits);
-    }
-    // </editor-fold>
-
     @Override
-    public void complete(List<PlymouthRecord> object) {
+    public void complete(List<T> object) {
         this.future.complete(object);
     }
 
     @Override
     public void fail(Throwable throwable) {
         this.future.completeExceptionally(throwable);
+    }
+
+    @Override
+    public CompletionStage<List<T>> getFuture() {
+        return future.minimalCompletionStage();
     }
 
     @Override
@@ -178,21 +122,21 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
             case 0b0011:
                 return new TranslatableText("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             case 0b0100:
-                return new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPosition), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPos), page);
             case 0b0101:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPosition), lookupPlayerToText(null, causeUuid), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPos), lookupPlayerToText(null, causeUuid), page);
             case 0b0110:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPosition), minTime, maxTime, page);
+                return new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPos), minTime, maxTime, page);
             case 0b0111:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPosition), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPos), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             case 0b1000:
-                return new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPosition), positionToText(maxPosition), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPos), positionToText(maxPos), page);
             case 0b1001:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPosition), positionToText(maxPosition), lookupPlayerToText(null, causeUuid), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPos), positionToText(maxPos), lookupPlayerToText(null, causeUuid), page);
             case 0b1010:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPosition), positionToText(maxPosition), minTime, maxTime, page);
+                return new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPos), positionToText(maxPos), minTime, maxTime, page);
             case 0b1011:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPosition), positionToText(maxPosition), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
+                return new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPos), positionToText(maxPos), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
             default:
                 return new TranslatableText("plymouth.tracker.record.lookup.invalid");
         }
@@ -227,8 +171,5 @@ public final class LookupRecord implements PlymouthRecord, CompletableRecord<Lis
         return RecordType.LOOKUP;
     }
 
-    @Override
-    public String toString() {
-        return "LookupRecord{future=" + future + ",world=" + world + ",minPosition=" + minPosition + ",maxPosition=" + maxPosition + ",causeUuid=" + causeUuid + ",minTime=" + minTime + ",maxTime=" + maxTime + ",flags=" + flags + '}';
-    }
+    public abstract Class<T> getOutput();
 }

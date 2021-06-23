@@ -7,7 +7,6 @@ import net.kjp12.plymouth.database.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -15,6 +14,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
@@ -31,7 +31,7 @@ import static net.kjp12.plymouth.database.TextUtils.atBlock;
  * @since ${version}
  **/
 public final class DeathRecord implements PlymouthRecord {
-    public final ServerWorld causeWorld, targetWorld;
+    public final World causeWorld, targetWorld;
     public final BlockPos causePos;
     public final Vec3d targetPos;
     public final Instant time;
@@ -40,8 +40,8 @@ public final class DeathRecord implements PlymouthRecord {
     public final UUID causeUserId, causeEntityId, targetUserId, targetEntityId;
 
     public DeathRecord(Instant time, boolean isUndone,
-                       ServerWorld causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
-                       ServerWorld targetWorld, Vec3d targetPos, String targetName, UUID targetUserId, UUID targetEntityId) {
+                       World causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
+                       World targetWorld, Vec3d targetPos, String targetName, UUID targetUserId, UUID targetEntityId) {
         this.causeWorld = causeWorld;
         this.causePos = causePos;
         this.targetWorld = targetWorld;
@@ -59,8 +59,8 @@ public final class DeathRecord implements PlymouthRecord {
     /**
      * Helper constructor for defaulting time to now, isUndone to false, and assuming that the cause is always an entity.
      */
-    public DeathRecord(ServerWorld causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
-                       ServerWorld targetWorld, Vec3d targetPos, String targetName, UUID targetUserId, UUID targetEntityId) {
+    public DeathRecord(World causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
+                       World targetWorld, Vec3d targetPos, String targetName, UUID targetUserId, UUID targetEntityId) {
         this(Instant.now(), false,
                 causeWorld, causePos, causeName, causeUserId, causeEntityId,
                 targetWorld, targetPos, targetName, targetUserId, targetEntityId);
@@ -87,7 +87,7 @@ public final class DeathRecord implements PlymouthRecord {
     public static DeathRecord fromDamageSource(DamageSource cause, Entity target) {
         var causeUser = UUIDHelper.getEntity(cause);
         return new DeathRecord(null, null, DatabaseHelper.getName(cause), UUIDHelper.getUUID(cause), causeUser == null || causeUser instanceof PlayerEntity ? null : causeUser.getUuid(),
-                (ServerWorld) target.world, target.getPos(), DatabaseHelper.getName(target), UUIDHelper.getUUID(target), target instanceof PlayerEntity ? null : target.getUuid());
+                target.world, target.getPos(), DatabaseHelper.getName(target), UUIDHelper.getUUID(target), target instanceof PlayerEntity ? null : target.getUuid());
     }
 
     @Override

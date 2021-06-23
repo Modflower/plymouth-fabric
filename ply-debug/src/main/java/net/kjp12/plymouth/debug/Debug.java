@@ -10,6 +10,9 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.invoke.MethodHandles;
+import java.util.stream.Collectors;
+
 /**
  * The primary initializer for the debug server.
  *
@@ -18,6 +21,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class Debug implements ModInitializer {
     public static final Logger logger = LogManager.getLogger("Plymouth: Debug");
+    private static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+    private static final MethodHandles.Lookup self = MethodHandles.lookup();
 
     @Override
     public void onInitialize() {
@@ -33,5 +38,22 @@ public class Debug implements ModInitializer {
         for (var p : AntiXrayDebugger.players) {
             ServerPlayNetworking.send(p.player, id, new PacketByteBuf(Unpooled.copyLong(pos)));
         }
+    }
+
+    public static void printRichStack() {
+        logger.info("Stacktrace at head\n{}", (String) walker.walk(stream -> stream.map(Debug::mux).collect(Collectors.joining("\n"))));
+    }
+
+    private static String mux(StackWalker.StackFrame frame) {
+        // try {
+        //     var method = frame.getDeclaringClass().getDeclaredMethod(frame.getMethodName(), frame.getMethodType().parameterArray());
+        //     method.getAnnotation()
+        // } catch (NoSuchMethodException | SecurityException exception) {
+        //     ;
+        // }
+        // self.findVirtual(frame.getDeclaringClass(), frame.getMethodName(), frame.getMethodType()).
+        // MethodHandles.reflectAs()
+        // frame.getMethodType()
+        return frame.toString();
     }
 }

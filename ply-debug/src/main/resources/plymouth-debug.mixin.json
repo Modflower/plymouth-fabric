@@ -6,6 +6,7 @@
   "mixins": [
     "anti_xray.MetaMixinShadowChunk",
     "anti_xray.client.MixinClientPlayNetworkHandler",
+    "database.MixinDatabaseHelper",
     "tracker.MixinExplosion",
     "tracker.MixinSlot"
   ],

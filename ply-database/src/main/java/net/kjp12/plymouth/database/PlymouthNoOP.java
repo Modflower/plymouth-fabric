@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -29,24 +30,24 @@ public class PlymouthNoOP implements Plymouth {
     }
 
     public void queue(PlymouthRecord record) {
-        if (record instanceof CompletableRecord) {
-            ((CompletableRecord<?>) record).fail(new UnsupportedOperationException("no-op: record unsupported"));
+        if (record instanceof CompletableRecord<?> completable) {
+            completable.fail(new UnsupportedOperationException("no-op: record unsupported"));
         }
     }
 
-    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, Target cause) {
+    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, @Nullable Target cause) {
     }
 
-    public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Target cause) {
+    public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Target cause) {
     }
 
-    public void placeBlock(ServerWorld world, BlockPos pos, Block block, Target cause) {
+    public void placeBlock(ServerWorld world, BlockPos pos, Block block, @Nullable Target cause) {
     }
 
-    public void useBlock(ServerWorld world, BlockPos pos, Item w, Target user) {
+    public void useBlock(ServerWorld world, BlockPos pos, Item w, @Nullable Target user) {
     }
 
-    public void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, Target replacer) {
+    public void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, @Nullable Target replacer) {
     }
 
     public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
@@ -55,10 +56,10 @@ public class PlymouthNoOP implements Plymouth {
     public void createEntity(Entity target, Entity creator) {
     }
 
-    public void takeItems(Target inventory, ItemStack i, int c, Target mutator) {
+    public void takeItems(Target inventory, ItemStack i, int c, @Nullable Target mutator) {
     }
 
-    public void putItems(Target inventory, ItemStack i, int c, Target mutator) {
+    public void putItems(Target inventory, ItemStack i, int c, @Nullable Target mutator) {
     }
 
     public String getPlayerName(UUID uuid) {

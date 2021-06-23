@@ -5,7 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -14,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
@@ -133,7 +133,7 @@ public final class TextUtils {
      * @param entityId The raw UUID of the entity should it not be a player.
      * @return Either the literal or translatable text based off of the input.
      */
-    public static MutableText playerToText(ServerWorld world, BlockPos pos, String userName, UUID userId, @Nullable UUID entityId) {
+    public static MutableText playerToText(World world, BlockPos pos, String userName, UUID userId, @Nullable UUID entityId) {
         if (UUIDHelper.isBlock(userId)) {
             return blockToText(pos, userName);
         } else if (UUIDHelper.isEntity(userId)) {

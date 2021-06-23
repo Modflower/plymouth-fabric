@@ -36,16 +36,14 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
-    implementation(project(":ply-common"))
     implementation(project(":ply-database"))
-    implementation(project(":utilities")) { include(this) }
     // implementation(project(":commander")) { include(this) }
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
 
 tasks {

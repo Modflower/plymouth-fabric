@@ -3,18 +3,18 @@ package net.kjp12.plymouth.database;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import net.kjp12.plymouth.common.UUIDHelper;
+import net.kjp12.plymouth.database.cache.*;
 import net.kjp12.plymouth.database.records.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.level.ServerWorldProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +22,7 @@ import org.postgresql.Driver;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 
@@ -34,6 +35,15 @@ import static net.kjp12.plymouth.database.DatabaseHelper.*;
  * @author kjp12
  * @since 0.0.0
  */
+@Query(query = "cause_id=?",
+        values = "causeUuid",
+        mask = LookupRecord.FLAG_BY)
+@Query(query = "cause_pos=(?,?,?,?)::ipos",
+        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.worldIndex(causeWorld)>0"},
+        mask = LookupRecord.FLAG_AT | LookupRecord.FLAG_AREA, maskRq = LookupRecord.FLAG_AT)
+@Query(query = "cause_pos>=(?,?,?,?)::ipos and cause_pos<=(?,?,?,?)::ipos",
+        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.worldIndex(causeWorld)>0", "maxPos.getX()", "maxPos.getY()", "maxPos.getZ()", "<0"},
+        mask = LookupRecord.FLAG_AT | LookupRecord.FLAG_AREA, maskRq = LookupRecord.FLAG_AREA)
 public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     private static final Logger log = LogManager.getLogger(PlymouthPostgres.class);
     // We don't need reverse lookup, this is perfectly acceptable.
@@ -50,6 +60,16 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
 
     public PlymouthPostgres(String uri, Properties properties) throws PlymouthException, NoClassDefFoundError {
         super(new Driver(), uri, properties);
+    }
+
+    {
+        try {
+            blockLookupCache = new StatementCache<>(this, BlockLookupRecord.class, PlymouthPostgres.class.getMethod("blockRecordFromLookup", int.class, int.class, int.class, String.class, UUID.class, UUID.class, int.class, int.class, int.class, String.class, String.class, String.class, Timestamp.class, boolean.class));
+            deathLookupCache = new StatementCache<>(this, DeathLookupRecord.class, PlymouthPostgres.class.getMethod("deathRecordFromLookup", int.class, int.class, int.class, String.class, UUID.class, UUID.class, double.class, double.class, double.class, String.class, UUID.class, UUID.class, Timestamp.class, boolean.class));
+            inventoryLookupCache = new StatementCache<>(this, InventoryLookupRecord.class, PlymouthPostgres.class.getMethod("inventoryRecordFromLookup", int.class, int.class, int.class, String.class, UUID.class, UUID.class, int.class, int.class, int.class, String.class, UUID.class, UUID.class, Timestamp.class, boolean.class, String.class, InputStream.class, int.class));
+        } catch (ReflectiveOperationException roe) {
+            throw new PlymouthException(roe, "Failed to initialise lookup caches.", blockLookupCache, deathLookupCache, inventoryLookupCache);
+        }
     }
 
     /**
@@ -86,45 +106,14 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
             insertDeaths = connection.prepareStatement("INSERT INTO deaths (cause_id, cause_raw, target_id, target_raw, target_pos, time) VALUES (?, ?, ?, ?, (?, ?, ?, ?)::dpos, ?);");
             insertItems = connection.prepareStatement("INSERT INTO items (cause_id, cause_raw, target_id, target_raw, target_pos, item, nbt, delta, time) VALUES (?, ?, ?, ?, (?, ?, ?, ?)::ipos, ?, ?, ?, ?);");
             getUsername = connection.prepareStatement("SELECT name FROM users_table WHERE index = ?;");
-            getBlocks = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block)                                                                                                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE                                                                               b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE                                                                                                  time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE                                                                               b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksAt = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z,                                                       b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                                                                     ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksAtBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z,                                                       b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                        AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksAtDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z,                                                       b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                                           AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksAtDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z,                                                       b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                        AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksInArea = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksInAreaBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksInAreaDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos                    AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getBlocksInAreaDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.action, bt.name, bt.properties FROM blocks b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = b.block) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
+            // getBlocksInAreaDuring =   connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name, cause_id, cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, (target_pos).x, (target_pos).y, (target_pos).z, action, bt.name, bt.properties FROM blocks LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = block) WHERE target_pos >= (?, ?, ?, ?)::ipos AND target_pos <= (?, ?, ?, ?)::ipos                  AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
+            // getBlocksInAreaDuringBy = connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name,           cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, (target_pos).x, (target_pos).y, (target_pos).z, action, bt.name, bt.properties FROM blocks LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN blocks_table bt ON (bt.index = block) WHERE target_pos >= (?, ?, ?, ?)::ipos AND target_pos <= (?, ?, ?, ?)::ipos AND cause_id = ? AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
 
-            getDeaths = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id)                                                                                                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                               b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                                                  time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                               b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsAt = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::dpos                                                                                     ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsAtBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::dpos                                        AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsAtDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::dpos                                                           AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsAtDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::dpos                                        AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsInArea = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::dpos AND b.target_pos <= (?, ?, ?, ?)::dpos                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsInAreaBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::dpos AND b.target_pos <= (?, ?, ?, ?)::dpos AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsInAreaDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::dpos AND b.target_pos <= (?, ?, ?, ?)::dpos                    AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getDeathsInAreaDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z FROM deaths b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::dpos AND b.target_pos <= (?, ?, ?, ?)::dpos AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
+            // getDeathsInAreaDuring =   connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name, cause_id, cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, tt.name, target_id, target_raw, (target_pos).x, (target_pos).y, (target_pos).z FROM deaths LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = target_id) WHERE target_pos >= (?, ?, ?, ?)::dpos AND target_pos <= (?, ?, ?, ?)::dpos                  AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
+            // getDeathsInAreaDuringBy = connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name,           cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, tt.name, target_id, target_raw, (target_pos).x, (target_pos).y, (target_pos).z FROM deaths LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = target_id) WHERE target_pos >= (?, ?, ?, ?)::dpos AND target_pos <= (?, ?, ?, ?)::dpos AND cause_id = ? AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
 
-            getInventory = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id)                                                                                                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                               b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                                                  time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE                                                                               b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryAt = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw,                                                       b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                                                                     ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryAtBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw,                                                       b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                        AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryAtDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw,                                                       b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                                           AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryAtDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw,                                                       b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos  = (?, ?, ?, ?)::ipos                                        AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryInArea = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos                                              ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryInAreaBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos AND b.cause_id = ?                           ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryInAreaDuring = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name, b.cause_id, b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos                    AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            getInventoryInAreaDuringBy = connection.prepareStatement("SELECT b.time AT TIME ZONE 'UTC', b.undone, ct.name,             b.cause_raw, (b.cause_pos).x, (b.cause_pos).y, (b.cause_pos).z, tt.name, b.target_id, b.target_raw, (b.target_pos).x, (b.target_pos).y, (b.target_pos).z, b.item, b.nbt, b.delta FROM items b LEFT OUTER JOIN users_table ct ON (ct.index = b.cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = b.target_id) WHERE b.target_pos >= (?, ?, ?, ?)::ipos AND b.target_pos <= (?, ?, ?, ?)::ipos AND b.cause_id = ? AND time > ? AND time < ? ORDER BY b.time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
-            initModArray();
+            // getInventoryInAreaDuring =   connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name, cause_id, cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, tt.name, target_id, target_raw, (target_pos).x, (target_pos).y, (target_pos).z, item, nbt, delta FROM items LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = target_id) WHERE target_pos >= (?, ?, ?, ?)::ipos AND target_pos <= (?, ?, ?, ?)::ipos                  AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
+            // getInventoryInAreaDuringBy = connection.prepareStatement("SELECT time AT TIME ZONE 'UTC', undone, ct.name,           cause_raw, (cause_pos).x, (cause_pos).y, (cause_pos).z, tt.name, target_id, target_raw, (target_pos).x, (target_pos).y, (target_pos).z, item, nbt, delta FROM items LEFT OUTER JOIN users_table ct ON (ct.index = cause_id) LEFT OUTER JOIN users_table tt ON (tt.index = target_id) WHERE target_pos >= (?, ?, ?, ?)::ipos AND target_pos <= (?, ?, ?, ?)::ipos AND cause_id = ? AND time > ? AND time < ? ORDER BY time DESC LIMIT " + PAGE_SIZE + " OFFSET ?;");
             try {
                 //noinspection unused - We don't have any schema bumps that'd require a change at the moment.
                 var results = connection.prepareStatement("SELECT schema FROM plymouth_metadata;").executeQuery();
@@ -356,174 +345,6 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         insertItems.addBatch();
     }
 
-    @Override
-    protected void handleLookupRecord(LookupRecord lr, PreparedStatement st) throws PlymouthException {
-        var fl = lr.flags();
-        var i = 1;
-        ResultSet re = null;
-        try {
-            switch (fl >>> 2 & 3) {
-                case 0:
-                    // no-op
-                    break;
-                case 1:
-                    i = addVec3i(st, i, lr.minPosition);
-                    st.setInt(i++, getWorldIndex(lr.world));
-                    break;
-                case 2:
-                    var wi = getWorldIndex(lr.world);
-                    i = addVec3i(st, i, lr.minPosition);
-                    st.setInt(i++, wi);
-                    i = addVec3i(st, i, lr.maxPosition);
-                    st.setInt(i++, wi);
-                    break;
-                default:
-                    throw new IllegalStateException("Excepted 0-2, got 3: " + Integer.toHexString(fl));
-            }
-            boolean by = (fl & LookupRecord.FLAG_BY) != 0,
-                    at = (fl & LookupRecord.FLAG_AT) != 0,
-                    ti = (fl & LookupRecord.FLAG_TIME) != 0,
-                    ub;
-            if (by) {
-                st.setObject(i++, lr.causeUuid);
-                ub = UUIDHelper.isBlock(lr.causeUuid);
-            } else {
-                ub = false;
-            }
-            if (ti) {
-                st.setTimestamp(i++, Timestamp.from(lr.minTime));
-                st.setTimestamp(i++, Timestamp.from(lr.maxTime));
-            }
-            st.setInt(i, lr.page * PAGE_SIZE);
-            re = st.executeQuery();
-            var rl = new ArrayList<PlymouthRecord>();
-            switch (fl >>> 4 & 3) {
-                case 0:
-                    while (re.next()) {
-                        i = 1;
-                        var time = re.getTimestamp(i++).toInstant();
-                        var undone = re.getBoolean(i++);
-                        var cn = re.getString(i++);
-                        var cu = by ? lr.causeUuid : re.getObject(i++, UUID.class);
-                        var cr = re.getObject(i++, UUID.class);
-                        BlockPos cp;
-                        if (ub || UUIDHelper.isBlock(cu)) {
-                            cp = new BlockPos(re.getInt(i++), re.getInt(i++), re.getInt(i++));
-                        } else {
-                            cp = null;
-                            i += 3;
-                        }
-                        var tp = at ? lr.minPosition : new BlockPos(re.getInt(i++), re.getInt(i++), re.getInt(i++));
-                        var ba = BlockAction.valueOf(re.getString(i++));
-                        var bl = Registry.BLOCK.get(Identifier.tryParse(re.getString(i++)));
-                        var bp = re.getString(i);
-                        var bs = bl.getDefaultState();
-                        if (bp != null && !bp.isBlank()) {
-                            var mgr = bl.getStateManager();
-                            var obj = GSON.fromJson(bp, JsonObject.class);
-                            for (var e : obj.entrySet()) {
-                                var prop = mgr.getProperty(e.getKey());
-                                if (prop == null) continue;
-                                var opt = prop.parse(e.getValue().getAsString());
-                                if (opt.isEmpty()) continue;
-                                //noinspection rawtypes,unchecked
-                                bs = bs.with((Property) prop, (Comparable) opt.get());
-                            }
-                        }
-                        rl.add(new BlockRecord(time, undone, null, cp, cn, cu, cr, null, tp, ba, bs, null));
-                    }
-                    break;
-                case 1:
-                    while (re.next()) {
-                        i = 1;
-                        var time = re.getTimestamp(i++).toInstant();
-                        var undone = re.getBoolean(i++);
-                        var cn = re.getString(i++);
-                        var cu = by ? lr.causeUuid : re.getObject(i++, UUID.class);
-                        var cr = re.getObject(i++, UUID.class);
-                        BlockPos cp;
-                        if (ub || UUIDHelper.isBlock(cu)) {
-                            cp = new BlockPos(re.getInt(i++), re.getInt(i++), re.getInt(i++));
-                        } else {
-                            cp = null;
-                            i += 3;
-                        }
-                        var tn = re.getString(i++);
-                        var tu = re.getObject(i++, UUID.class);
-                        var tr = re.getObject(i++, UUID.class);
-                        var tp = new Vec3d(re.getDouble(i++), re.getDouble(i++), re.getDouble(i));
-                        rl.add(new DeathRecord(time, undone, null, cp, cn, cu, cr, null, tp, tn, tu, tr));
-                    }
-                    break;
-                case 2:
-                    while (re.next()) {
-                        i = 1;
-                        var time = re.getTimestamp(i++).toInstant();
-                        var undone = re.getBoolean(i++);
-                        var cn = re.getString(i++);
-                        var cu = by ? lr.causeUuid : re.getObject(i++, UUID.class);
-                        var cr = re.getObject(i++, UUID.class);
-                        BlockPos cp;
-                        if (ub || UUIDHelper.isBlock(cu)) {
-                            cp = new BlockPos(re.getInt(i++), re.getInt(i++), re.getInt(i++));
-                        } else {
-                            cp = null;
-                            i += 3;
-                        }
-                        var tn = re.getString(i++);
-                        var tu = re.getObject(i++, UUID.class);
-                        var tr = re.getObject(i++, UUID.class);
-                        BlockPos tp;
-                        if (!at)
-                            if (UUIDHelper.isBlock(tu)) {
-                                tp = new BlockPos(re.getInt(i++), re.getInt(i++), re.getInt(i++));
-                            } else {
-                                tp = null;
-                                i += 3;
-                            }
-                        else {
-                            tp = null;
-                        }
-                        var io = Registry.ITEM.get(Identifier.tryParse(re.getString(i++)));
-                        NbtCompound in = null;
-                        try (var dbs = re.getBinaryStream(i++)) {
-                            if (dbs != null) try (var dis = new DataInputStream(dbs)) {
-                                in = NbtIo.read(dis);
-                            }
-                        } catch (IOException ioe) {
-                            log.error("Failed to read NBT from database for item {}", io, ioe);
-                        }
-                        var id = re.getInt(i);
-                        var is = new ItemStack(io, 1);
-                        is.setTag(in);
-                        rl.add(new InventoryRecord(null, cp, cn, cu, cr, null, tp, tn, tu, tr, time, undone, io, in, id, is, 0));
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Expected 0-2, got 3: " + Integer.toHexString(fl));
-            }
-            lr.complete(rl);
-        } catch (SQLException sql) {
-            i -= 1;
-            Throwable suppressed = null;
-            ResultSetMetaData rsmd;
-            int type = -1;
-            String name = null;
-            Object raw = null;
-            try {
-                rsmd = re.getMetaData();
-                type = rsmd.getColumnType(i);
-                name = rsmd.getColumnName(i);
-                raw = re.getObject(i);
-            } catch (SQLException | RuntimeException r) {
-                suppressed = r;
-            }
-            var p = new PlymouthException(sql, st, re, "index = " + i + ", name = " + name + ", type = " + type, raw);
-            if (suppressed != null) p.addSuppressed(suppressed);
-            throw p;
-        }
-    }
-
     protected int getBlockIndex(BlockState state) throws PlymouthException {
         boolean f0 = areStatesUnnecessary(state);
         return blocks.computeIfAbsent(f0 ? state == null ? 0 : state.getBlock().hashCode() : state.hashCode(), (int h) -> {
@@ -552,7 +373,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         return uuid;
     }
 
-    protected int getWorldIndex(ServerWorld world) throws PlymouthException {
+    protected int getWorldIndex(World world) throws PlymouthException {
         return worlds.computeIfAbsent(DatabaseHelper.getHash(world), $ -> {
             try {
                 getElseInsertWorld.setObject(1, ((ServerWorldProperties) world.getLevelProperties()).getLevelName());
@@ -564,6 +385,10 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
                 throw new PlymouthException(sql, getElseInsertWorld);
             }
         });
+    }
+
+    public int worldIndex(World world) throws PlymouthException {
+        return getWorldIndex(world);
     }
 
     @Override
@@ -584,5 +409,71 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         } finally {
             databaseLock.unlock();
         }
+    }
+
+    // unfortunately, the scope of this requires a fair amount of work
+    @Table("blocks")
+    @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
+    @Table(table = 2, value = "blocks_table", match = @Match(primary = "block", secondary = "index"))
+    public static BlockRecord blockRecordFromLookup(
+            @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
+            @Value({"target_pos", "x"}) int tx, @Value({"target_pos", "y"}) int ty, @Value({"target_pos", "z"}) int tz, @Deprecated @Value(value = "action") String ba, @Value(table = 2, value = "name") String bn, @Value(table = 2, value = "properties") String bp,
+            @Value("time at time zone 'utc'") Timestamp time, @Value("undone") boolean u
+    ) {
+        var bl = Registry.BLOCK.get(Identifier.tryParse(bn));
+        var bs = bl.getDefaultState();
+        if (bp != null && !bp.isBlank()) {
+            var mgr = bl.getStateManager();
+            var obj = GSON.fromJson(bp, JsonObject.class);
+            for (var e : obj.entrySet()) {
+                var prop = mgr.getProperty(e.getKey());
+                if (prop == null) continue;
+                var opt = prop.parse(e.getValue().getAsString());
+                if (opt.isEmpty()) continue;
+                //noinspection rawtypes,unchecked
+                bs = bs.with((Property) prop, (Comparable) opt.get());
+            }
+        }
+        return new BlockRecord(time.toInstant(), u, null, new BlockPos(cx, cy, cz), cn, cu, ce, null, new BlockPos(tx, ty, tz), BlockAction.valueOf(ba), bs, null);
+    }
+
+    @Table("deaths")
+    @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
+    @Table(table = 2, value = "users_table", match = @Match(primary = "target_id", secondary = "index"))
+    public static DeathRecord deathRecordFromLookup(
+            @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
+            @Value({"target_pos", "x"}) double tx, @Value({"target_pos", "y"}) double ty, @Value({"target_pos", "z"}) double tz, @Value(table = 2, value = "name") String tn, @Value("target_id") UUID tu, @Value("target_raw") UUID te,
+            @Value("time at time zone 'utc'") Timestamp time, @Value("undone") boolean u
+    ) {
+        return new DeathRecord(time.toInstant(), u, null, new BlockPos(cx, cy, cz), cn, cu, ce, null, new Vec3d(tx, ty, tz), tn, tu, te);
+    }
+
+    @Table("items")
+    @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
+    @Table(table = 2, value = "users_table", match = @Match(primary = "target_id", secondary = "index"))
+    public static InventoryRecord inventoryRecordFromLookup(
+            @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
+            @Value({"target_pos", "x"}) int tx, @Value({"target_pos", "y"}) int ty, @Value({"target_pos", "z"}) int tz, @Value(table = 2, value = "name") String tn, @Value("target_id") UUID tu, @Value("target_raw") UUID te,
+            @Value("time at time zone 'utc'") Timestamp time, @Value("undone") boolean u, @Value("item") String i, @Value("nbt") InputStream in, @Value("delta") int id
+    ) {
+        var item = Registry.ITEM.get(Identifier.tryParse(i));
+        var is = new ItemStack(item, 1);
+        var nbt = nbt(in);
+        is.setTag(nbt);
+        return new InventoryRecord(
+                null, new BlockPos(cx, cy, cz), cn, cu, ce,
+                null, new BlockPos(tx, ty, tz), tn, tu, te,
+                time.toInstant(), u, item, nbt, id, is, 0);
+    }
+
+    public static NbtCompound nbt(InputStream stream) {
+        if (stream == null) return null;
+        NbtCompound in = null;
+        try (var s = stream; var dis = new DataInputStream(s)) {
+            in = NbtIo.read(dis);
+        } catch (IOException ioe) {
+            log.error("Failed to read NBT from database.", ioe);
+        }
+        return in;
     }
 }

@@ -10,23 +10,21 @@ public enum RecordType {
     /**
      * Indicates that the class is a {@link BlockRecord}.
      */
-    BLOCK(LookupRecord.MOD_BLOCK),
+    BLOCK,
     /**
      * Indicates that the class is a {@link DeathRecord}.
      */
-    DEATH(LookupRecord.MOD_DEATH),
+    DEATH,
     /**
      * Indicates that the class is a {@link InventoryRecord}.
      */
-    INVENTORY(LookupRecord.MOD_INVEN),
+    INVENTORY,
     /**
      * Indicates that the class is a {@link LookupRecord}.
      */
-    LOOKUP(-1),
-    ;
-    public final int bits;
-
-    RecordType(int bits) {
-        this.bits = bits;
-    }
+    @Deprecated(forRemoval = true)
+    LOOKUP,
+    LOOKUP_BLOCK,
+    LOOKUP_DEATH,
+    LOOKUP_INVENTORY
 }

@@ -1,5 +1,7 @@
 package net.kjp12.plymouth.database.records;// Created 2021-07-05T01:42:06
 
+import java.util.concurrent.CompletionStage;
+
 /**
  * A record that is a request and carries a future that can either be completed or failed.
  *
@@ -20,4 +22,9 @@ public interface CompletableRecord<T> {
      * @param throwable The error that was thrown when the request failed.
      */
     void fail(Throwable throwable);
+
+    /**
+     * @return The future to hook into.
+     */
+    CompletionStage<T> getFuture();
 }

@@ -20,8 +20,8 @@ public class PlymouthException extends RuntimeException {
      */
     public PlymouthException(Throwable cause) {
         super(cause);
-        if (cause instanceof SQLException) {
-            addBatchedSuppressed((SQLException) cause);
+        if (cause instanceof SQLException sql) {
+            addBatchedSuppressed(sql);
         }
     }
 
@@ -30,8 +30,8 @@ public class PlymouthException extends RuntimeException {
      */
     public PlymouthException(Throwable cause, Object statement) {
         super(Objects.toString(statement), cause);
-        if (cause instanceof SQLException) {
-            addBatchedSuppressed((SQLException) cause);
+        if (cause instanceof SQLException sql) {
+            addBatchedSuppressed(sql);
         }
     }
 
@@ -40,8 +40,8 @@ public class PlymouthException extends RuntimeException {
      */
     public PlymouthException(Throwable cause, Object... statements) {
         super(writeOut(statements), cause);
-        if (cause instanceof SQLException) {
-            addBatchedSuppressed((SQLException) cause);
+        if (cause instanceof SQLException sql) {
+            addBatchedSuppressed(sql);
         }
     }
 

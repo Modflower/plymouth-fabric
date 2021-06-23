@@ -14,9 +14,7 @@ import net.kjp12.hachimitsu.utilities.StringSpliterator;
 import net.kjp12.plymouth.common.InjectableInteractionManager;
 import net.kjp12.plymouth.database.DatabaseHelper;
 import net.kjp12.plymouth.database.PlymouthNoOP;
-import net.kjp12.plymouth.database.records.LookupRecord;
-import net.kjp12.plymouth.database.records.PlymouthRecord;
-import net.kjp12.plymouth.database.records.RecordType;
+import net.kjp12.plymouth.database.records.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
@@ -31,7 +29,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -360,11 +357,17 @@ public class TrackerCommand {
     @Cmd(suggestions = "^lookupSuggestions(*CommandContext;*SuggestionsBuilder;)*CompletableFuture;", bridge = "^lookup(*CommandContext;)I")
     private static int lookup(CommandContext<ServerCommandSource> ctx, @Param RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition,
                               UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
-        var future = new CompletableFuture<List<PlymouthRecord>>();
-        var lookup = new LookupRecord(future, world, minPosition, maxPosition, causeUuid, minTime, maxTime, page, type.bits | flags);
+        var lookup = switch (type) {
+            case BLOCK -> new BlockLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime,
+                    null, null, null, null, null, page, flags);
+            case DEATH -> new DeathLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime, page, flags);
+            case INVENTORY -> new InventoryLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime,
+                    null, null, null, null, null, null, page, flags);
+            default -> throw new IllegalArgumentException(type.toString());
+        };
         DatabaseHelper.database.queue(lookup);
         final var player = ctx.getSource();
-        future.thenAcceptAsync(l -> {
+        lookup.getFuture().thenAcceptAsync(l -> {
             try {
                 if ((lookup.flags() & LookupRecord.FLAG_AT) != 0) {
                     for (var r : l) {

@@ -1,0 +1,191 @@
+package net.kjp12.plymouth.debug.database;// Created 2021-12-06T00:45:20
+
+import net.kjp12.plymouth.database.Plymouth;
+import net.kjp12.plymouth.database.PlymouthException;
+import net.kjp12.plymouth.database.Target;
+import net.kjp12.plymouth.database.records.PlymouthRecord;
+import net.kjp12.plymouth.debug.Debug;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
+
+/**
+ * Logger implementation of the database driver that serves to log on null or error.
+ * <p>
+ * This typically delegates to the underlying implementation, which then handles it accordingly.
+ *
+ * @author KJP12
+ * @since ${version}
+ **/
+public class PlymouthLoggingDelegate implements Plymouth {
+    @NotNull
+    private final Plymouth delegate;
+
+    public PlymouthLoggingDelegate(@NotNull Plymouth delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public void initializeDatabase() throws PlymouthException {
+        try {
+            delegate.initializeDatabase();
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception initialising database.", delegate, exception);
+            Debug.printRichStack();
+            // Rethrow the exception as the caller generally needs to handle this failure as well.
+            throw exception;
+        }
+    }
+
+    @Override
+    public void sendBatches() {
+        try {
+            delegate.sendBatches();
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception sending batches.", delegate, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void queue(PlymouthRecord record) {
+        if (record == null) {
+            Debug.logger.warn("Null detected on queue on driver {}.", delegate);
+            Debug.printRichStack();
+        } else try {
+            delegate.queue(record);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing queue. record={}", delegate, record, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, @Nullable Target cause) {
+        if (world == null || pos == null || state == null || cause == null) {
+            Debug.logger.warn("Null detected on breakBlock on driver {}; world={}, pos={}, state={}, nbt={}, cause={}", delegate, world, pos, state, nbt, cause);
+            Debug.printRichStack();
+        } else try {
+            delegate.breakBlock(world, pos, state, nbt, cause);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing breakBlock. world={}, pos={}, state={}, nbt={}, cause={}", delegate, world, pos, state, nbt, cause, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void placeBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Target cause) {
+        if (world == null || pos == null || state == null || cause == null) {
+            Debug.logger.warn("Null detected on placeBlock on driver {}; world={}, pos={}, state={}, cause={}", delegate, world, pos, state, cause);
+            Debug.printRichStack();
+        } else try {
+            delegate.placeBlock(world, pos, state, cause);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing breakBlock. world={}, pos={}, state={}, cause={}", delegate, world, pos, state, cause, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void useBlock(ServerWorld world, BlockPos pos, Item i, @Nullable Target user) {
+        if (world == null || pos == null || i == null || user == null) {
+            Debug.logger.warn("Null detected on useBlock on driver {}; world={}, pos={}, item={}, user={}", delegate, world, pos, i, user);
+        } else try {
+            delegate.useBlock(world, pos, i, user);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing useBlock. world={}, pos={}, item={}, cause={}", delegate, world, pos, i, user, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, @Nullable Target replacer) {
+        if (world == null || pos == null || o == null || n == null || replacer == null) {
+            Debug.logger.warn("Null detected on replaceBlock on driver {}; world={}, pos={}, old={}, new={}, replacer={}", delegate, world, pos, o, n, replacer);
+            Debug.printRichStack();
+        } else try {
+            delegate.replaceBlock(world, pos, o, n, replacer);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing replaceBlock. world={}, pos={}, old={}, new={}, replacer={}", delegate, world, pos, o, n, replacer, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
+        if (target == null || source == null) {
+            Debug.logger.warn("Null detected on hurtEntity on driver {}; target={}, amount={}, source={}", delegate, target, amount, source);
+            Debug.printRichStack();
+        } else try {
+            delegate.hurtEntity(target, amount, source);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing hurtEntity. target={}, amount={}, source={}", delegate, target, amount, source, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void createEntity(Entity target, Entity creator) {
+        if (target == null || creator == null) {
+            Debug.logger.warn("Null detected on createEntity on driver {}; target={}, creator={}", delegate, target, creator);
+            Debug.printRichStack();
+        } else try {
+            delegate.createEntity(target, creator);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing createEntity. target={}, creator={}", delegate, target, creator, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void takeItems(Target inventory, ItemStack stack, int count, @Nullable Target taker) {
+        if (inventory == null || stack == null || stack.isEmpty() || taker == null) {
+            Debug.logger.warn("Null detected on takeItems on driver {}; inventory={}, stack={}, count={}, taker={}", delegate, inventory, stack, count, taker);
+            Debug.printRichStack();
+        } else try {
+            delegate.takeItems(inventory, stack, count, taker);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing takeItems. inventory={}, stack={}, count={}, taker={}", delegate, inventory, stack, count, taker, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public void putItems(Target inventory, ItemStack stack, int count, @Nullable Target placer) {
+        if (inventory == null || stack == null || stack.isEmpty() || placer == null) {
+            Debug.logger.warn("Null detected on putItems on driver {}; inventory={}, stack={}, count={}, placer={}", delegate, inventory, stack, count, placer);
+            Debug.printRichStack();
+        } else try {
+            delegate.putItems(inventory, stack, count, placer);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing putItems. inventory={}, stack={}, count={}, placer={}", delegate, inventory, stack, count, placer, exception);
+            Debug.printRichStack();
+        }
+    }
+
+    @Override
+    public String getPlayerName(UUID uuid) throws PlymouthException {
+        if (uuid == null) {
+            Debug.logger.warn("Null detected on getPlayerName on driver {}. Attempting request regardless.", delegate);
+            Debug.printRichStack();
+        }
+        try {
+            return delegate.getPlayerName(uuid);
+        } catch (Throwable exception) {
+            Debug.logger.error("Driver {} threw exception processing getPlayerName. uuid={}", delegate, uuid, exception);
+            Debug.printRichStack();
+            // Rethrow the exception as the caller still has to handle it.
+            throw exception;
+        }
+    }
+}

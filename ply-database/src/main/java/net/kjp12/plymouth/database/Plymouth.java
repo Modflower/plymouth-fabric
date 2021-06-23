@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -63,7 +64,7 @@ public interface Plymouth {
      * @param nbt   The NBT of the block pre-removal.
      * @param cause Who broke this?
      */
-    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, Target cause);
+    void breakBlock(ServerWorld world, BlockPos pos, BlockState state, NbtCompound nbt, @Nullable Target cause);
 
     /**
      * @param world The world the block was placed in.
@@ -71,7 +72,7 @@ public interface Plymouth {
      * @param state The new blockstate.
      * @param cause Who placed this?
      */
-    void placeBlock(ServerWorld world, BlockPos pos, BlockState state, Target cause);
+    void placeBlock(ServerWorld world, BlockPos pos, BlockState state, @Nullable Target cause);
 
     /**
      * Same as {@link #placeBlock(ServerWorld, BlockPos, BlockState, Target)} but for when blockstates are meaningless, ie. FIRE.
@@ -81,7 +82,7 @@ public interface Plymouth {
      * @param block The new block.
      * @param cause Who placed this?
      */
-    default void placeBlock(ServerWorld world, BlockPos pos, Block block, Target cause) {
+    default void placeBlock(ServerWorld world, BlockPos pos, Block block, @Nullable Target cause) {
         placeBlock(world, pos, block.getDefaultState(), cause);
     }
 
@@ -96,7 +97,7 @@ public interface Plymouth {
      * @param i     The item that was used.
      * @param user  Who used this?
      */
-    void useBlock(ServerWorld world, BlockPos pos, Item i, Target user);
+    void useBlock(ServerWorld world, BlockPos pos, Item i, @Nullable Target user);
 
     /**
      * Redstone components, such as redstone dust, dispensers, droppers, observers and anything else with a state change
@@ -108,15 +109,15 @@ public interface Plymouth {
      * @param n        The new blockstate.
      * @param replacer Who replaced this?
      */
-    void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, Target replacer);
+    void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, @Nullable Target replacer);
 
     void hurtEntity(LivingEntity target, float amount, DamageSource source);
 
     void createEntity(Entity target, Entity creator);
 
-    void takeItems(Target inventory, ItemStack stack, int count, Target taker);
+    void takeItems(Target inventory, ItemStack stack, int count, @Nullable Target taker);
 
-    void putItems(Target inventory, ItemStack stack, int count, Target placer);
+    void putItems(Target inventory, ItemStack stack, int count, @Nullable Target placer);
 
     /**
      * Player lookup by database.
