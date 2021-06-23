@@ -17,7 +17,10 @@
     "explosions.MixinFireballEntity",
     "explosions.MixinRespawnAnchorBlock",
     "targets.MixinBlockEntity",
-    "targets.MixinEntity"
+    "targets.MixinEnderInventory",
+    "targets.MixinEntity",
+    "targets.MixinPlayerEntity",
+    "targets.MixinPlayerInventory"
   ],
   "injectors": {
     "defaultRequire": 1

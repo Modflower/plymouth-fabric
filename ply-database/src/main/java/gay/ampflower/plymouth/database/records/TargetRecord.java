@@ -5,9 +5,9 @@ import gay.ampflower.plymouth.database.DatabaseHelper;
 import gay.ampflower.plymouth.database.Target;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -21,14 +21,14 @@ import java.util.UUID;
  * @since ${version}
  **/
 public final class TargetRecord implements Target {
-    public final ServerWorld world;
+    public final World world;
     public final BlockPos pos;
     public final Vec3d dpos;
     // This isn't counted in the hash, it is effectively equal regardless of if the name matches.
     public final String name;
     public final UUID userId, entityId;
 
-    public TargetRecord(ServerWorld world, BlockPos pos, Vec3d dpos, String name, UUID userId, UUID entityId) {
+    public TargetRecord(World world, BlockPos pos, Vec3d dpos, String name, UUID userId, UUID entityId) {
         this.world = world;
         this.pos = pos == null ? dpos == null ? null : new BlockPos(dpos) : pos.toImmutable();
         this.dpos = dpos == null ? pos == null ? null : Vec3d.ofCenter(pos) : dpos;
@@ -38,12 +38,12 @@ public final class TargetRecord implements Target {
         this.entityId = entityId;
     }
 
-    public TargetRecord(ServerWorld world, BlockPos pos) {
+    public TargetRecord(World world, BlockPos pos) {
         this(world, pos, null, null, null, null);
     }
 
     public TargetRecord(Entity entity) {
-        this((ServerWorld) entity.world, entity.getBlockPos(), entity.getPos(), DatabaseHelper.getName(entity), UUIDHelper.getUUID(entity), entity instanceof PlayerEntity ? null : entity.getUuid());
+        this(entity.world, entity.getBlockPos(), entity.getPos(), DatabaseHelper.getName(entity), UUIDHelper.getUUID(entity), entity instanceof PlayerEntity ? null : entity.getUuid());
     }
 
     public static TargetRecord ofEntityNoPosition(Entity entity) {
@@ -84,7 +84,7 @@ public final class TargetRecord implements Target {
     }
 
     @Override
-    public ServerWorld ply$world() {
+    public World ply$world() {
         return world;
     }
 

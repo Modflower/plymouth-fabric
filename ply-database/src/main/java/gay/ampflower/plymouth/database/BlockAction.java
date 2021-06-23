@@ -9,7 +9,9 @@ import net.minecraft.util.Formatting;
  *
  * @author Ampflower
  * @since ${version}
+ * @deprecated Will be replaced with old->new when possible.
  **/
+@Deprecated
 public enum BlockAction {
     BREAK(new TranslatableText("plymouth.tracker.action.broke").formatted(Formatting.RED)),
     PLACE(new TranslatableText("plymouth.tracker.action.placed").formatted(Formatting.GREEN)),

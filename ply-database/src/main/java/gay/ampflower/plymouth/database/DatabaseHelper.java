@@ -16,6 +16,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.minecraft.world.level.ServerWorldProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +47,7 @@ public final class DatabaseHelper {
 
     static final Calendar UTC = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC));
     final static Gson GSON = new Gson();
-    final static ScheduledExecutorService SERVICE = Executors.newSingleThreadScheduledExecutor();
+    final static ScheduledExecutorService SERVICE = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "Akka"));
 
     public static Plymouth database;
 
@@ -169,7 +170,7 @@ public final class DatabaseHelper {
         }
     }
 
-    public static int getHash(ServerWorld world) {
+    public static int getHash(World world) {
         if (world == null) return HASHED_WORLD;
         var id = world.getRegistryKey().getValue();
         return HASHED_WORLD ^ ((ServerWorldProperties) world.getLevelProperties()).getLevelName().hashCode() ^ id.getNamespace().hashCode() ^ id.getPath().hashCode();

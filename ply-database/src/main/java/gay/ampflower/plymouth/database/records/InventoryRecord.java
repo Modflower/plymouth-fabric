@@ -6,11 +6,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,7 @@ import static gay.ampflower.plymouth.database.DatabaseHelper.tookText;
  * @since ${version}
  **/
 public final class InventoryRecord implements PlymouthRecord {
-    public final ServerWorld causeWorld, targetWorld;
+    public final World causeWorld, targetWorld;
     public final BlockPos causePos, targetPos;
     public final Instant time;
     public final boolean isUndone;
@@ -47,8 +47,8 @@ public final class InventoryRecord implements PlymouthRecord {
     public final transient ItemStack stack;
     private final int flags;
 
-    public InventoryRecord(ServerWorld causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
-                           ServerWorld targetWorld, BlockPos targetPos, String targetName, UUID targetUserId, UUID targetEntityId,
+    public InventoryRecord(World causeWorld, BlockPos causePos, String causeName, UUID causeUserId, UUID causeEntityId,
+                           World targetWorld, BlockPos targetPos, String targetName, UUID targetUserId, UUID targetEntityId,
                            Instant time, boolean isUndone, Item item, NbtCompound nbt, int delta, ItemStack stack, int flags) {
         this.causeWorld = causeWorld;
         this.causePos = causePos;

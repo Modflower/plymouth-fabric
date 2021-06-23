@@ -6,7 +6,6 @@ import gay.ampflower.plymouth.database.Target;
 import gay.ampflower.plymouth.database.records.TargetRecord;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -39,8 +38,8 @@ public class MixinEntity implements Target {
     }
 
     @Override
-    public ServerWorld ply$world() {
-        return (ServerWorld) world;
+    public World ply$world() {
+        return world;
     }
 
     @Override
