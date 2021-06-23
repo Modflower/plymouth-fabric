@@ -56,6 +56,9 @@ tasks {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
     }
+    remapJar {
+        dependsOn(":utilities:jar")
+    }
     processResources {
         val map = mapOf(
             "version" to project.version,
