@@ -2,16 +2,15 @@ package net.kjp12.plymouth.locking.mixins;
 
 import net.kjp12.plymouth.locking.ILockable;
 import net.kjp12.plymouth.locking.Locking;
-import net.kjp12.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -22,15 +21,12 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.Objects;
-import java.util.UUID;
-
+import static net.kjp12.plymouth.locking.Locking.PERMISSIONS_BYPASS;
 import static net.kjp12.plymouth.locking.Locking.toText;
 
 @Mixin(ServerPlayerInteractionManager.class)
@@ -68,76 +64,39 @@ public abstract class MixinServerPlayerInteractionManager {
         if (!blockState.hasBlockEntity()) return;
         var blockEntity = (ILockable) world.getBlockEntity(pos);
         if (blockEntity == null) return;
-        if (!blockEntity.helium$canOpenBlock(player)) {
-            cbir.setReturnValue(ActionResult.FAIL);
-        } else if (player.isSneaking()) {
-            var src = player.getCommandSource();
-            // I don't expect people to have more than two hands, but if feet becomes a replacement for hands, this is ready.
-            var otherPos = Locking.getOtherPos(world, pos);
+        var src = player.getCommandSource();
+        var lock = Locking.surrogate(world, pos, src);
+        if (player.isSneaking()) {
             if (hand == Hand.MAIN_HAND &&
                     player.getStackInHand(Hand.OFF_HAND).isEmpty() &&
-                    player.getStackInHand(Hand.MAIN_HAND).isEmpty() &&
-                    Locking.LOCKING_LOCK_PERMISSION.test(src)) {
-                var obe = otherPos == null ? null : (ILockable) world.getBlockEntity(otherPos);
-                var puid = player.getUuid();
-                if (obe == null) {
-                    var handler = blockEntity.plymouth$getPermissionHandler();
-                    if (handler == null) {
-                        setClaimed(player, cbir, pos, block, blockEntity, puid);
-                    } else  // note for the check: If you own this block, we're assuming that you have sufficient permission to disown it.
-                        // Admins or operators can however override.
-                        if (handler.isOwner(puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
-                            setUnclaimed(player, cbir, pos, block, blockEntity);
-                        } else {
-                            player.sendMessage(new LiteralText(handler.getOwner() + " already claimed this block!").formatted(Formatting.RED), true);
-                            cbir.setReturnValue(ActionResult.FAIL);
-                        }
+                    player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
+                if (lock.isOwner() || (lock.effective() & PERMISSIONS_BYPASS) != 0) {
+                    lock.unclaim();
+                    player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", toText(block), toText(pos)).formatted(Formatting.YELLOW), true);
+                    cbir.setReturnValue(ActionResult.SUCCESS);
+                } else if (lock.plymouth$isOwned()) {
+                    player.sendMessage(new TranslatableText("plymouth.locking.locked", toText(block), lock.getOwner()).formatted(Formatting.RED), true);
+                    cbir.setReturnValue(ActionResult.FAIL);
                 } else {
-                    IPermissionHandler ha = blockEntity.plymouth$getPermissionHandler(), hb = obe.plymouth$getPermissionHandler();
-                    if (ha == null && hb == null) {
-                        blockEntity.helium$setOwner(puid);
-                        setClaimed(player, cbir, pos, block, obe, puid);
-                    } else if (isOwner(ha, puid) || isOwner(hb, puid) || Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(src)) {
-                        blockEntity.helium$setOwner(null);
-                        setUnclaimed(player, cbir, pos, block, obe);
+                    if (Locking.LOCKING_LOCK_PERMISSION.test(src)) {
+                        lock.claim(player.getUuid());
+                        player.sendMessage(new TranslatableText("plymouth.locking.claimed", toText(block), toText(pos)).formatted(Formatting.GREEN), true);
+                        cbir.setReturnValue(ActionResult.SUCCESS);
                     } else {
-                        player.sendMessage(new LiteralText(Objects.requireNonNullElse(ha, hb).getOwner() + " already claimed !").formatted(Formatting.RED), true);
+                        player.sendMessage(new TranslatableText("plymouth.locking.denied").formatted(Formatting.RED), true);
                         cbir.setReturnValue(ActionResult.FAIL);
                     }
                 }
             } else {
-                var item = player.getStackInHand(hand).getItem();
-                if (item instanceof BlockItem) {
-                    var blockInHand = ((BlockItem) item).getBlock();
-                    if (blockInHand instanceof ChestBlock && otherPos == null && isNotNullAndNotOwner(blockEntity.plymouth$getPermissionHandler(), player.getUuid())) {
-                        cbir.setReturnValue(ActionResult.FAIL);
-                    }
+                // TODO: Proper multiblock handling, making them ignore each other if chests and alike.
+                if (player.getStackInHand(hand).getItem() instanceof BlockItem blockItem &&
+                        lock.plymouth$isOwned() && !lock.isOwner() && blockItem.getBlock() instanceof ChestBlock &&
+                        block instanceof ChestBlock && blockState.get(ChestBlock.CHEST_TYPE) == ChestType.SINGLE) {
+                    cbir.setReturnValue(ActionResult.FAIL);
                 }
             }
+        } else if (!lock.canOpen()) {
+            cbir.setReturnValue(ActionResult.FAIL);
         }
-    }
-
-    @Unique
-    private static void setClaimed(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> cbir, BlockPos pos, Block block, ILockable blockEntity, UUID puid) {
-        blockEntity.helium$setOwner(puid);
-        player.sendMessage(new TranslatableText("plymouth.locking.claimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), toText(pos)).formatted(Formatting.GREEN), true);
-        cbir.setReturnValue(ActionResult.SUCCESS);
-    }
-
-    @Unique
-    private static void setUnclaimed(ServerPlayerEntity player, CallbackInfoReturnable<ActionResult> cbir, BlockPos pos, Block block, ILockable blockEntity) {
-        blockEntity.helium$setOwner(null);
-        player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA), toText(pos)).formatted(Formatting.YELLOW), true);
-        cbir.setReturnValue(ActionResult.SUCCESS);
-    }
-
-    @Unique
-    private static boolean isOwner(IPermissionHandler handler, UUID check) {
-        return handler != null && handler.isOwner(check);
-    }
-
-    @Unique
-    private static boolean isNotNullAndNotOwner(IPermissionHandler handler, UUID check) {
-        return handler != null && !handler.isOwner(check);
     }
 }

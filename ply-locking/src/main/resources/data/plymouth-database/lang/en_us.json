@@ -4,6 +4,7 @@
   "plymouth.locking.modified": "Successfully modified permissions for %s on %s at %s.",
   "plymouth.locking.claimed": "Successfully claimed %s at %s.",
   "plymouth.locking.unclaimed": "Successfully unclaimed %s at %s.",
+  "plymouth.locking.locked": "%s is claimed by %s.",
   "plymouth.locking.dump.basic": "Locked by %s:%s with permissions of %s.",
   "commands.plymouth.locking.prompt": "Punch or use a block to set permissions.",
   "commands.plymouth.locking.block.not_owned": "%s is not owned by anyone.",

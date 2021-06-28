@@ -31,6 +31,9 @@ import java.util.Collection;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
+import static com.mojang.brigadier.arguments.StringArgumentType.getString;
+import static com.mojang.brigadier.arguments.StringArgumentType.word;
+import static net.kjp12.plymouth.locking.Locking.fromString;
 import static net.kjp12.plymouth.locking.Locking.toText;
 import static net.minecraft.command.argument.BlockPosArgumentType.*;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayers;
@@ -45,6 +48,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @since 0.0.0
  **/
 public class LockCommand {
+    @Deprecated(forRemoval = true)
     private static final IntegerArgumentType PERMISSIONS = integer(0, 1 | 2 | 4 | 8);
     private static final SimpleCommandExceptionType
             BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
@@ -55,17 +59,24 @@ public class LockCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
         var add = literal("add")
-                .then(argument("players", players()).then(argument("permission", PERMISSIONS)
-                        .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), getInteger(ctx, "permission")))))
-                .then(argument("pos", blockPos()).then(argument("players", players()).then(argument("permission", PERMISSIONS)
-                        .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players"), getInteger(ctx, "permission"))))));
+                .then(argument("players", players())
+                        .then(argument("permission", PERMISSIONS)
+                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), getInteger(ctx, "permission"))))
+                        .then(argument("pstring", word())
+                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), fromString(getString(ctx, "pstring"))))))
+                .then(argument("pos", blockPos()).then(argument("players", players())
+                        .then(argument("permission", PERMISSIONS)
+                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players"), getInteger(ctx, "permission"))))
+                        .then(argument("pstring", word())
+                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players"), fromString(getString(ctx, "pstring")))))));
         var rm = literal("remove")
                 .then(argument("players", players())
                         .executes(ctx -> removePlayers(ctx.getSource(), getPlayers(ctx, "players"))))
                 .then(argument("pos", blockPos()).then(argument("players", players())
                         .executes(ctx -> removePlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players")))));
         var set = literal("set")
-                .then(argument("permissions", PERMISSIONS).executes(ctx -> setPermissions(ctx.getSource(), getInteger(ctx, "permissions"))));
+                .then(argument("permissions", PERMISSIONS).executes(ctx -> setPermissions(ctx.getSource(), getInteger(ctx, "permissions"))))
+                .then(argument("pstring", word()).executes(ctx -> setPermissions(ctx.getSource(), fromString(getString(ctx, "pstring")))));
         var get = literal("get")
                 .then(argument("pos", blockPos())
                         .executes(ctx -> getLock(ctx.getSource(), getLoadedBlockPos(ctx, "pos"))))
