@@ -1,8 +1,11 @@
 package gay.ampflower.plymouth.locking.mixins;
 
 import gay.ampflower.plymouth.locking.ILockable;
+import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -10,6 +13,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static gay.ampflower.plymouth.locking.Locking.toText;
 
 /**
  * @author Ampflower
@@ -26,8 +31,11 @@ public abstract class MixinServerWorld implements WorldAccess {
     public void plymouth$canPlayerModifyAt(PlayerEntity player, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) {
             var be = (ILockable) getBlockEntity(pos);
-            if (be != null && be.plymouth$isOwned() && !be.plymouth$getPermissionHandler().allowDelete(player))
+            IPermissionHandler handler;
+            if (be != null && be.plymouth$isOwned() && !(handler = be.plymouth$getPermissionHandler()).hasAnyPermissions(player.getCommandSource())) {
+                player.sendMessage(new TranslatableText("plymouth.locking.locked", toText(getBlockState(pos).getBlock()), handler.getOwner()).formatted(Formatting.RED), true);
                 cir.setReturnValue(Boolean.FALSE);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package gay.ampflower.plymouth.locking.handler;
 
+import gay.ampflower.plymouth.locking.Locking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
@@ -71,26 +72,6 @@ public class BasicPermissionHandler implements IPermissionHandler {
     }
 
     @Override
-    public boolean allowRead(UUID uuid) {
-        return owner.equals(uuid);
-    }
-
-    @Override
-    public boolean allowWrite(UUID uuid) {
-        return owner.equals(uuid);
-    }
-
-    @Override
-    public boolean allowDelete(UUID uuid) {
-        return owner.equals(uuid);
-    }
-
-    @Override
-    public boolean allowPermissions(UUID uuid) {
-        return owner.equals(uuid);
-    }
-
-    @Override
     public void fromTag(NbtCompound tag) {
         IPermissionHandler.super.fromTag(tag);
         // public for legacy handling
@@ -106,6 +87,6 @@ public class BasicPermissionHandler implements IPermissionHandler {
     @Override
     public void dumpLock(ServerCommandSource to) {
         // Lock owned by, group, and permissions
-        to.sendFeedback(new TranslatableText("plymouth.locking.dump.basic", owner, group, permissions), false);
+        to.sendFeedback(new TranslatableText("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions)), false);
     }
 }

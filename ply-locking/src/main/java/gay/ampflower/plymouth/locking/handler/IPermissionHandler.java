@@ -1,13 +1,14 @@
 package gay.ampflower.plymouth.locking.handler;
 
 import gay.ampflower.plymouth.common.UUIDHelper;
-import gay.ampflower.plymouth.locking.Locking;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
+
+import static gay.ampflower.plymouth.locking.Locking.*;
 
 /**
  * @author Ampflower
@@ -32,13 +33,21 @@ public interface IPermissionHandler {
 
     void setPermissions(short permissions);
 
-    boolean allowRead(UUID uuid);
+    default boolean allowRead(UUID uuid) {
+        return isOwner(uuid);
+    }
 
-    boolean allowWrite(UUID uuid);
+    default boolean allowWrite(UUID uuid) {
+        return isOwner(uuid);
+    }
 
-    boolean allowDelete(UUID uuid);
+    default boolean allowDelete(UUID uuid) {
+        return isOwner(uuid);
+    }
 
-    boolean allowPermissions(UUID uuid);
+    default boolean allowPermissions(UUID uuid) {
+        return isOwner(uuid);
+    }
 
     default boolean allowRead(Entity entity) {
         return allowRead(UUIDHelper.getUUID(entity));
@@ -57,19 +66,38 @@ public interface IPermissionHandler {
     }
 
     default boolean allowRead(ServerCommandSource source) {
-        return Locking.LOCKING_BYPASS_READ_PERMISSION.test(source) || allowRead(source.getEntity());
+        return LOCKING_BYPASS_READ_PERMISSION.test(source) || allowRead(source.getEntity());
     }
 
     default boolean allowWrite(ServerCommandSource source) {
-        return Locking.LOCKING_BYPASS_WRITE_PERMISSION.test(source) || allowWrite(source.getEntity());
+        return LOCKING_BYPASS_WRITE_PERMISSION.test(source) || allowWrite(source.getEntity());
     }
 
     default boolean allowDelete(ServerCommandSource source) {
-        return Locking.LOCKING_BYPASS_DELETE_PERMISSION.test(source) || allowDelete(source.getEntity());
+        return LOCKING_BYPASS_DELETE_PERMISSION.test(source) || allowDelete(source.getEntity());
     }
 
     default boolean allowPermissions(ServerCommandSource source) {
-        return Locking.LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source) || allowPermissions(source.getEntity());
+        return LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source) || allowPermissions(source.getEntity());
+    }
+
+    default int effectivePermissions(ServerCommandSource source) {
+        if (isOwner(UUIDHelper.getUUID(source.getEntity()))) return -1;
+        int permissions = OWNED; // group handling logic
+        if (LOCKING_BYPASS_READ_PERMISSION.test(source)) permissions |= READ_PERMISSION | READ_BYPASS;
+        if (LOCKING_BYPASS_WRITE_PERMISSION.test(source)) permissions |= WRITE_PERMISSION | WRITE_BYPASS;
+        if (LOCKING_BYPASS_DELETE_PERMISSION.test(source)) permissions |= DELETE_PERMISSION | DELETE_BYPASS;
+        if (LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source))
+            permissions |= PERMISSIONS_PERMISSION | PERMISSIONS_BYPASS;
+        return permissions;
+    }
+
+    default boolean hasAnyPermissions(ServerCommandSource source) {
+        return isOwner(UUIDHelper.getUUID(source.getEntity())) ||
+                LOCKING_BYPASS_READ_PERMISSION.test(source) ||
+                LOCKING_BYPASS_WRITE_PERMISSION.test(source) ||
+                LOCKING_BYPASS_DELETE_PERMISSION.test(source) ||
+                LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source);
     }
 
     default void fromTag(NbtCompound tag) {

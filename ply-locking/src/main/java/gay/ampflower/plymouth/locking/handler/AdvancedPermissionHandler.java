@@ -6,13 +6,17 @@ import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMaps;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
+import gay.ampflower.plymouth.common.UUIDHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.command.ServerCommandSource;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.UUID;
+
+import static gay.ampflower.plymouth.locking.Locking.*;
 
 /**
  * @author Ampflower
@@ -91,22 +95,40 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
 
     @Override
     public boolean allowRead(UUID uuid) {
-        return (playerAccess.getByte(uuid) & 8) != 0 || super.allowRead(uuid);
+        return (playerAccess.getByte(uuid) & READ_PERMISSION) != 0 || super.allowRead(uuid);
     }
 
     @Override
     public boolean allowWrite(UUID uuid) {
-        return (playerAccess.getByte(uuid) & 4) != 0 || super.allowWrite(uuid);
+        return (playerAccess.getByte(uuid) & WRITE_PERMISSION) != 0 || super.allowWrite(uuid);
     }
 
     @Override
     public boolean allowDelete(UUID uuid) {
-        return (playerAccess.getByte(uuid) & 2) != 0 || super.allowDelete(uuid);
+        return (playerAccess.getByte(uuid) & DELETE_PERMISSION) != 0 || super.allowDelete(uuid);
     }
 
     @Override
     public boolean allowPermissions(UUID uuid) {
-        return (playerAccess.getByte(uuid) & 1) != 0 || super.allowPermissions(uuid);
+        return (playerAccess.getByte(uuid) & PERMISSIONS_PERMISSION) != 0 || super.allowPermissions(uuid);
+    }
+
+    @Override
+    public int effectivePermissions(ServerCommandSource source) {
+        if (isOwner(UUIDHelper.getUUID(source.getEntity()))) return -1;
+        int permissions = playerAccess.getByte(UUIDHelper.getUUID(source.getEntity())) | OWNED; // | group handling logic
+        if (LOCKING_BYPASS_READ_PERMISSION.test(source)) permissions |= READ_PERMISSION | READ_BYPASS;
+        if (LOCKING_BYPASS_WRITE_PERMISSION.test(source)) permissions |= WRITE_PERMISSION | WRITE_BYPASS;
+        if (LOCKING_BYPASS_DELETE_PERMISSION.test(source)) permissions |= DELETE_PERMISSION | DELETE_BYPASS;
+        if (LOCKING_BYPASS_PERMISSIONS_PERMISSION.test(source))
+            permissions |= PERMISSIONS_PERMISSION | PERMISSIONS_BYPASS;
+        return permissions;
+    }
+
+    @Override
+    public boolean hasAnyPermissions(ServerCommandSource source) {
+        var uuid = UUIDHelper.getUUID(source.getEntity());
+        return isOwner(uuid) || playerAccess.getByte(uuid) != 0 || super.hasAnyPermissions(source);
     }
 
     @Override
