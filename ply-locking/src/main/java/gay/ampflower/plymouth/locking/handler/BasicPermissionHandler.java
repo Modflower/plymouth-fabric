@@ -25,19 +25,17 @@ public class BasicPermissionHandler implements IPermissionHandler {
     }
 
     public BasicPermissionHandler(IPermissionHandler handler) {
-        this(handler.getOwner(), handler.getGroup());
-        if (handler instanceof BasicPermissionHandler) {
-            this.permissions = ((BasicPermissionHandler) handler).permissions;
-        }
+        this(handler.getOwner(), handler.getGroup(), handler.getPermissions());
     }
 
     public BasicPermissionHandler(UUID owner) {
-        this.owner = owner;
+        this(owner, null, (short) Locking.DEFAULT_UMASK);
     }
 
-    public BasicPermissionHandler(UUID owner, String group) {
+    public BasicPermissionHandler(UUID owner, String group, short permissions) {
         this.owner = owner;
         this.group = group;
+        this.permissions = permissions;
     }
 
     @Override
@@ -72,6 +70,11 @@ public class BasicPermissionHandler implements IPermissionHandler {
     }
 
     @Override
+    public void modifyPermissions(int permissions) {
+        this.permissions = (short) ((this.permissions & ~(permissions >>> 16)) | permissions & 0xFFFF);
+    }
+
+    @Override
     public void fromTag(NbtCompound tag) {
         IPermissionHandler.super.fromTag(tag);
         // public for legacy handling
@@ -87,6 +90,6 @@ public class BasicPermissionHandler implements IPermissionHandler {
     @Override
     public void dumpLock(ServerCommandSource to) {
         // Lock owned by, group, and permissions
-        to.sendFeedback(new TranslatableText("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions)), false);
+        to.sendFeedback(new TranslatableText("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions), Locking.toString(effectivePermissions(to))), false);
     }
 }

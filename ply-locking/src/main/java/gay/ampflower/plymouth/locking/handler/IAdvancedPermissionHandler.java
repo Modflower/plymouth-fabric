@@ -16,6 +16,8 @@ public interface IAdvancedPermissionHandler extends IPermissionHandler {
 
     void addPlayers(Collection<? extends PlayerEntity> players, byte permissions);
 
+    void modifyPlayers(Collection<? extends PlayerEntity> players, short permissions);
+
     void removePlayers(Collection<? extends PlayerEntity> players);
 
     Collection<UUID> getPlayersByUuid();

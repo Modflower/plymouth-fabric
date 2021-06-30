@@ -2,16 +2,12 @@ package gay.ampflower.plymouth.locking;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import gay.ampflower.plymouth.common.InjectableInteractionManager;
 import gay.ampflower.plymouth.common.InteractionManagerInjection;
 import gay.ampflower.plymouth.locking.handler.AdvancedPermissionHandler;
-import gay.ampflower.plymouth.locking.handler.BasicPermissionHandler;
-import gay.ampflower.plymouth.locking.handler.IAdvancedPermissionHandler;
-import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
@@ -29,13 +25,11 @@ import net.minecraft.world.chunk.ChunkStatus;
 
 import java.util.Collection;
 
-import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.word;
-import static gay.ampflower.plymouth.locking.Locking.fromString;
-import static gay.ampflower.plymouth.locking.Locking.toText;
-import static net.minecraft.command.argument.BlockPosArgumentType.*;
+import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
+import static gay.ampflower.plymouth.locking.Locking.*;
+import static net.minecraft.command.argument.BlockPosArgumentType.blockPos;
+import static net.minecraft.command.argument.BlockPosArgumentType.getBlockPos;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayers;
 import static net.minecraft.command.argument.EntityArgumentType.players;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -48,8 +42,6 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @since 0.0.0
  **/
 public class LockCommand {
-    @Deprecated(forRemoval = true)
-    private static final IntegerArgumentType PERMISSIONS = integer(0, 1 | 2 | 4 | 8);
     private static final SimpleCommandExceptionType
             BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
     private static final DynamicCommandExceptionType
@@ -57,31 +49,28 @@ public class LockCommand {
             BLOCK_ENTITY_NOT_OWNER = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owner", i)),
             BLOCK_ENTITY_OUT_OF_RANGE = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.out_range", i));
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
-        var add = literal("add")
-                .then(argument("players", players())
-                        .then(argument("permission", PERMISSIONS)
-                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), getInteger(ctx, "permission"))))
-                        .then(argument("pstring", word())
-                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), fromString(getString(ctx, "pstring"))))))
-                .then(argument("pos", blockPos()).then(argument("players", players())
-                        .then(argument("permission", PERMISSIONS)
-                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players"), getInteger(ctx, "permission"))))
-                        .then(argument("pstring", word())
-                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players"), fromString(getString(ctx, "pstring")))))));
-        var rm = literal("remove")
-                .then(argument("players", players())
-                        .executes(ctx -> removePlayers(ctx.getSource(), getPlayers(ctx, "players"))))
-                .then(argument("pos", blockPos()).then(argument("players", players())
-                        .executes(ctx -> removePlayers(ctx.getSource(), getBlockPos(ctx, "pos"), getPlayers(ctx, "players")))));
-        var set = literal("set")
-                .then(argument("permissions", PERMISSIONS).executes(ctx -> setPermissions(ctx.getSource(), getInteger(ctx, "permissions"))))
-                .then(argument("pstring", word()).executes(ctx -> setPermissions(ctx.getSource(), fromString(getString(ctx, "pstring")))));
-        var get = literal("get")
-                .then(argument("pos", blockPos())
-                        .executes(ctx -> getLock(ctx.getSource(), getLoadedBlockPos(ctx, "pos"))))
-                .executes(ctx -> getLock(ctx.getSource()));
-        dispatcher.register(literal("lock").requires(Locking.LOCKING_LOCK_PERMISSION).then(add).then(rm).then(set).then(get));
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, @SuppressWarnings("unused") boolean dedicated) {
+        var at = literal("at").then(argument("position", blockPos())
+                .then(literal("player")
+                        .then(literal("modify").then(argument("players", players()).then(argument("permissions", greedyString())
+                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "position"), getPlayers(ctx, "players"), fromString(getString(ctx, "permissions")))))))
+                        .then(literal("remove").then(argument("players", players())
+                                .executes(ctx -> removePlayers(ctx.getSource(), getBlockPos(ctx, "position"), getPlayers(ctx, "players"))))))
+                .then(literal("modify").then(argument("permissions", greedyString())
+                        .executes(ctx -> setPermissions(ctx.getSource(), getBlockPos(ctx, "position"), fromString(getString(ctx, "permissions"))))))
+                .then(literal("get").executes(ctx -> getLock(ctx.getSource(), getBlockPos(ctx, "position")))));
+
+        var interact = literal("interact")
+                .then(literal("player")
+                        .then(literal("modify").then(argument("players", players()).then(argument("permissions", greedyString())
+                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), fromString(getString(ctx, "permissions")))))))
+                        .then(literal("remove").then(argument("players", players())
+                                .executes(ctx -> removePlayers(ctx.getSource(), getPlayers(ctx, "players"))))))
+                .then(literal("modify").then(argument("permissions", greedyString())
+                        .executes(ctx -> setPermissions(ctx.getSource(), fromString(getString(ctx, "permissions"))))))
+                .then(literal("get").executes(ctx -> getLock(ctx.getSource())));
+
+        dispatcher.register(literal("lock").requires(Locking.LOCKING_LOCK_PERMISSION).then(at).then(interact));
     }
 
     // generics are the only thing that can compile this
@@ -102,44 +91,47 @@ public class LockCommand {
         return block;
     }
 
-    private static IPermissionHandler getPermissionHandlerIfAllowedModifyPermissions(ServerCommandSource source, ServerWorld world, BlockPos pos, boolean requiresAdvanced) throws CommandSyntaxException {
-        var block = getBlockEntity(world, pos);
-        var handler = block.plymouth$getPermissionHandler();
+    private static LockDelegate getPermissionHandlerIfAllowedModifyPermissions(ServerCommandSource source, ServerWorld world, BlockPos pos, boolean requiresAdvanced) throws CommandSyntaxException {
+        var handler = Locking.surrogate(world, pos, source);
         // If runner == null, and by extension, uuid == anon, we're either the server, a function, or a command block, which can be assumed to be of high privilege.
-        if (handler == null) {
+        if (!handler.plymouth$isOwned()) {
             // Auto-own if the block is within reasonable distance of the player, and can be raytraced.
             var runner = source.getPlayer();
-            if (runner.world == world && Locking.canReach(runner, block.getPos())) {
-                block.plymouth$setPermissionHandler(handler = requiresAdvanced ? new AdvancedPermissionHandler(runner.getUuid()) : new BasicPermissionHandler(runner.getUuid()));
+            if (runner.world == world && Locking.canReach(runner, pos)) {
+                if (requiresAdvanced) {
+                    handler.claimAdvanced(runner.getUuid());
+                } else {
+                    handler.claim(runner.getUuid());
+                }
             } else {
-                throw BLOCK_ENTITY_OUT_OF_RANGE.create(new TranslatableText(block.getCachedState().getBlock().getTranslationKey()));
+                throw BLOCK_ENTITY_OUT_OF_RANGE.create(new TranslatableText(handler.getBlock().getTranslationKey()));
             }
         } else {
-            if (!handler.allowPermissions(source)) {
-                throw BLOCK_ENTITY_NOT_OWNER.create(new TranslatableText(block.getCachedState().getBlock().getTranslationKey()));
+            if ((handler.effective() & PERMISSIONS_PERMISSION) == 0) {
+                throw BLOCK_ENTITY_NOT_OWNER.create(new TranslatableText(handler.getBlock().getTranslationKey()));
             }
-            if (requiresAdvanced && !(handler instanceof IAdvancedPermissionHandler)) {
-                block.plymouth$setPermissionHandler(handler = new AdvancedPermissionHandler(handler));
+            if (requiresAdvanced) {
+                handler.compute(iph -> iph instanceof AdvancedPermissionHandler aph ? aph : new AdvancedPermissionHandler(iph));
             }
         }
         // Premarking for the sake of the handler's ease.
-        block.markDirty();
+        handler.markDirty();
         return handler;
     }
 
-    private static IPermissionHandler getPermissionHandlerIfAllowedModifyPermissions(ServerCommandSource source, BlockPos pos, boolean requiresAdvanced) throws CommandSyntaxException {
+    private static LockDelegate getPermissionHandlerIfAllowedModifyPermissions(ServerCommandSource source, BlockPos pos, boolean requiresAdvanced) throws CommandSyntaxException {
         return getPermissionHandlerIfAllowedModifyPermissions(source, source.getWorld(), pos, requiresAdvanced);
     }
 
     private static int addPlayers(ServerCommandSource source, Collection<ServerPlayerEntity> players, int permission) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
-        iim.setManager(new AddPlayersInteractionManager(iim, source, players, (byte) (permission & 0xF)));
+        iim.setManager(new AddPlayersInteractionManager(iim, source, players, (short) (permission & 0xFF | ((permission >>> 12) & 0xFF00))));
         source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int addPlayers(ServerCommandSource source, BlockPos pos, Collection<ServerPlayerEntity> players, int permission) throws CommandSyntaxException {
-        ((IAdvancedPermissionHandler) getPermissionHandlerIfAllowedModifyPermissions(source, pos, true)).addPlayers(players, (byte) (permission & 0xF));
+        getPermissionHandlerIfAllowedModifyPermissions(source, pos, true).modifyPlayers(players, (short) (permission & 0xFF | ((permission >>> 12) & 0xFF00)));
         source.sendFeedback(new TranslatableText("plymouth.locking.allowed", toText(players), new TranslatableText(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
         return players.size();
     }
@@ -152,20 +144,20 @@ public class LockCommand {
     }
 
     private static int removePlayers(ServerCommandSource source, BlockPos pos, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
-        ((IAdvancedPermissionHandler) getPermissionHandlerIfAllowedModifyPermissions(source, pos, true)).removePlayers(players);
+        getPermissionHandlerIfAllowedModifyPermissions(source, pos, true).removePlayers(players);
         source.sendFeedback(new TranslatableText("plymouth.locking.removed", toText(players), new TranslatableText(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
         return players.size();
     }
 
     private static int setPermissions(ServerCommandSource source, int permissions) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
-        iim.setManager(new ModifyPermissionsInteractionManager(iim, source, (short) (permissions & 0xFFF)));
+        iim.setManager(new ModifyPermissionsInteractionManager(iim, source, permissions));
         source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int setPermissions(ServerCommandSource source, BlockPos pos, int permissions) throws CommandSyntaxException {
-        getPermissionHandlerIfAllowedModifyPermissions(source, pos, false).setPermissions((short) (permissions & 0xFFF));
+        getPermissionHandlerIfAllowedModifyPermissions(source, pos, false).modifyPermissions(permissions);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -221,7 +213,7 @@ public class LockCommand {
 
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
-                ((IAdvancedPermissionHandler) getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true)).removePlayers(players);
+                getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true).removePlayers(players);
                 source.sendFeedback(new TranslatableText("plymouth.locking.removed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
@@ -237,9 +229,9 @@ public class LockCommand {
 
     private static class AddPlayersInteractionManager extends InteractionManager {
         private final Collection<ServerPlayerEntity> players;
-        private final byte permissions;
+        private final short permissions;
 
-        private AddPlayersInteractionManager(InjectableInteractionManager manager, ServerCommandSource source, Collection<ServerPlayerEntity> players, byte permissions) {
+        private AddPlayersInteractionManager(InjectableInteractionManager manager, ServerCommandSource source, Collection<ServerPlayerEntity> players, short permissions) {
             super(manager, source);
             this.players = players;
             this.permissions = permissions;
@@ -247,7 +239,7 @@ public class LockCommand {
 
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
-                ((IAdvancedPermissionHandler) getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true)).addPlayers(players, permissions);
+                getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true).modifyPlayers(players, permissions);
                 source.sendFeedback(new TranslatableText("plymouth.locking.allowed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
@@ -262,16 +254,16 @@ public class LockCommand {
     }
 
     private static class ModifyPermissionsInteractionManager extends InteractionManager {
-        private final short permissions;
+        private final int permissions;
 
-        private ModifyPermissionsInteractionManager(InjectableInteractionManager manager, ServerCommandSource source, short permissions) {
+        private ModifyPermissionsInteractionManager(InjectableInteractionManager manager, ServerCommandSource source, int permissions) {
             super(manager, source);
             this.permissions = permissions;
         }
 
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
-                getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, false).setPermissions(permissions);
+                getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, false).modifyPermissions(permissions);
                 source.sendFeedback(new TranslatableText("plymouth.locking.modified", "~", new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();

@@ -173,16 +173,96 @@ public class Locking implements ModInitializer {
         return otherPos;
     }
 
+    private static final int A = 0, O = 16, G = 32, U = O | G, RA = 0, RM = 64, RE = 128, R = RM | RE;
+
+    /**
+     * <ul>
+     *     <li><code>u</code> - user</li>
+     *     <li><code>g</code> - group</li>
+     *     <li><code>o</code> - other</li>
+     *     <li><code>a</code> - all, default</li>
+     * </ul>
+     * <ul>
+     *     <li><code>r</code> - read</li>
+     *     <li><code>w</code> - write</li>
+     *     <li><code>d</code> - delete</li>
+     *     <li><code>p</code> - modify permissions</li>
+     * </ul>
+     */
     public static int fromString(String str) {
-        int p = 0;
-        for (int i = 0, l = Math.min(str.length() - (str.length() & 3) >> 2, 4); i < l; i++) {
-            int s = (l - i - 1) * 4, m = i * 4;
-            if (str.charAt(m) == 'r') p |= READ_PERMISSION << s;
-            if (str.charAt(m + 1) == 'w') p |= WRITE_PERMISSION << s;
-            if (str.charAt(m + 2) == 'd') p |= DELETE_PERMISSION << s;
-            if (str.charAt(m + 3) == 'p') p |= PERMISSIONS_PERMISSION << s;
+        int state = A, ret = 0;
+        for (int i = 0, l = str.length(); i < l; i++) {
+            char c = str.charAt(i);
+            switch (c) {
+                case ' ', ',' -> {
+                }
+
+                case 'r' -> state |= READ_PERMISSION;
+                case 'w' -> state |= WRITE_PERMISSION;
+                case 'd' -> state |= DELETE_PERMISSION;
+                case 'p' -> state |= PERMISSIONS_PERMISSION;
+
+                case '-' -> {
+                    ret = computeReturn(state, ret);
+                    state = (state & ~R) | RM;
+                }
+                case '=' -> {
+                    ret = computeReturn(state, ret);
+                    state = (state & ~R) | RE;
+                }
+                case '+' -> {
+                    ret = computeReturn(state, ret);
+                    state &= ~R;
+                }
+
+                case 'o' -> {
+                    ret = computeReturn(state, ret);
+                    state = O;
+                }
+                case 'g' -> {
+                    ret = computeReturn(state, ret);
+                    state = G;
+                }
+                case 'u' -> {
+                    ret = computeReturn(state, ret);
+                    state = U;
+                }
+                case 'a' -> {
+                    ret = computeReturn(state, ret);
+                    state = A;
+                }
+
+                default -> throw new IllegalArgumentException("Unexpected value " + c + " at " + i + " in " + str);
+            }
         }
-        return p;
+        return computeReturn(state, ret);
+    }
+
+    private static int computeReturn(int state, int ret) {
+        if (state == 0) return ret;
+        int m = state & FULL_PERMISSION, u;
+        switch (state & U) {
+            case A -> {
+                m |= (m << 4) | (m << 8);
+                u = 0x0FFF;
+            }
+            case U -> {
+                m <<= 8;
+                u = 0x0F00;
+            }
+            case G -> {
+                m <<= 4;
+                u = 0x00F0;
+            }
+            case O -> u = 0x000F;
+            default -> throw new AssertionError("I think your JVM broke.");
+        }
+        return switch (state & R) {
+            case RM -> (ret & ~m) | m << 16;
+            case RE -> (ret & ~u) | m | u << 16;
+            case RA -> (ret & ~(m << 16)) | m;
+            default -> throw new IllegalArgumentException("invalid state");
+        };
     }
 
     public static String toString(byte permissions) {

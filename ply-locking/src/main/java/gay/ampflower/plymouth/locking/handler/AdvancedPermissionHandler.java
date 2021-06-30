@@ -7,10 +7,12 @@ import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMaps;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
 import gay.ampflower.plymouth.common.UUIDHelper;
+import gay.ampflower.plymouth.locking.Locking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -38,8 +40,8 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
         super(owner);
     }
 
-    public AdvancedPermissionHandler(@NotNull UUID owner, String group) {
-        super(owner, group);
+    public AdvancedPermissionHandler(@NotNull UUID owner, String group, short permissions) {
+        super(owner, group, permissions);
     }
 
     @Override
@@ -60,6 +62,14 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
     public void addPlayers(Collection<? extends PlayerEntity> players, byte permissions) {
         for (var player : players) {
             playerAccess.put(player.getUuid(), permissions);
+        }
+    }
+
+    @Override
+    public void modifyPlayers(Collection<? extends PlayerEntity> players, short permissions) {
+        for (var player : players) {
+            var uuid = player.getUuid();
+            playerAccess.put(uuid, (byte) (playerAccess.getByte(uuid) & ~(permissions >>> 8) | permissions & 0xFF));
         }
     }
 
@@ -199,6 +209,22 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
                 groups.add(group);
             }
             tag.put("groups", groups);
+        }
+    }
+
+    @Override
+    public void dumpLock(ServerCommandSource to) {
+        // Lock owned by, group, and permissions
+        super.dumpLock(to);
+        var playerIterator = Object2ByteMaps.fastIterator(playerAccess);
+        while (playerIterator.hasNext()) {
+            var e = playerIterator.next();
+            to.sendFeedback(new TranslatableText("plymouth.locking.dump.advanced.player", e.getKey(), Locking.toString(e.getByteValue())), false);
+        }
+        var groupIterator = Long2ByteMaps.fastIterator(groupAccess);
+        while (groupIterator.hasNext()) {
+            var e = groupIterator.next();
+            to.sendFeedback(new TranslatableText("plymouth.locking.dump.advanced.group", e.getLongKey(), Locking.toString(e.getByteValue())), false);
         }
     }
 }
