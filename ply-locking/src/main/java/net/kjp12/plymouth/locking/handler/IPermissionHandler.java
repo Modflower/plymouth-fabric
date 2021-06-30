@@ -33,6 +33,8 @@ public interface IPermissionHandler {
 
     void setPermissions(short permissions);
 
+    void modifyPermissions(int permissions);
+
     default boolean allowRead(UUID uuid) {
         return isOwner(uuid);
     }
