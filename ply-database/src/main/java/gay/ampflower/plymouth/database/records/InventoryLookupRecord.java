@@ -3,6 +3,7 @@ package gay.ampflower.plymouth.database.records;
 import net.minecraft.item.Item;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -29,7 +30,11 @@ public final class InventoryLookupRecord extends LookupRecord<InventoryRecord> {
     }
 
     public InventoryLookupRecord(ServerWorld world, BlockPos pos, int page) {
-        this(world, pos, null, null, null, null, null, null, null, null, null, null, page, 0x20 | FLAG_AT);
+        this(world, pos, null, null, null, null, null, null, null, null, null, null, page, FLAG_C_AT);
+    }
+
+    public String item() {
+        return Registry.ITEM.getId(item).toString();
     }
 
     @Override

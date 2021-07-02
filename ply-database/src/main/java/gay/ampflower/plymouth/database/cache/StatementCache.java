@@ -33,7 +33,6 @@ public final class StatementCache<I extends LookupRecord<O>, O extends PlymouthR
     private static final MethodHandles.Lookup SELF = MethodHandles.lookup();
 
     private static final String
-            WHERE = "where ", ORDER = " order by time desc limit ? offset ?;", AND = " and ",
             STATEMENT_TYPE = Type.getInternalName(PreparedStatement.class),
             STATEMENT_DESCRIPTOR = Type.getDescriptor(PreparedStatement.class),
             RESULT_SET_TYPE = Type.getInternalName(ResultSet.class),
@@ -164,17 +163,8 @@ public final class StatementCache<I extends LookupRecord<O>, O extends PlymouthR
                     }
                     if (value == null)
                         throw new IllegalArgumentException(proxy + " does not contain Value annotation on parameter " + i + ": param: " + params[a] + ", annotations: " + Arrays.toString(annots[a]));
-                    String[] nameStack = value.value();
-                    c = sqlQuery.length();
-                    if (value.table() == 0) {
-                        sqlQuery.append(nameStack[0]);
-                    } else {
-                        sqlQuery.append((char) ('`' + value.table())).append('.').append(nameStack[0]);
-                    }
-                    for (int v = 1; v < nameStack.length; v++) {
-                        sqlQuery.insert(c, '(').append(").").append(nameStack[v]);
-                    }
-                    sqlQuery.append(',');
+
+                    appendQuery(sqlQuery, value.table(), value.value());
 
                     query.visitVarInsn(Opcodes.ALOAD, 2);
                     int stack = a + 1;
@@ -234,109 +224,60 @@ public final class StatementCache<I extends LookupRecord<O>, O extends PlymouthR
             submit.visitVarInsn(Opcodes.ASTORE, 2);
 
             // JVM is a stack machine; only the amount of params necessary will be taken from the stack.
-            { // Writes the query. This also writes the query instructions.
+            // Writes the query. This also writes the query instructions.
+            C0 c0 = new C0(iClass, sqlImpl.getClass());
+            {
                 Query[] classQueries = proxy.getDeclaringClass().getAnnotationsByType(Query.class),
                         proxyQueries = proxy.getAnnotationsByType(Query.class),
                         totalQueries = new Query[classQueries.length + proxyQueries.length];
                 System.arraycopy(classQueries, 0, totalQueries, 0, classQueries.length);
                 System.arraycopy(proxyQueries, 0, totalQueries, classQueries.length, proxyQueries.length);
-                C0 c0 = new C0(iClass, sqlImpl.getClass());
                 boolean ran = false;
                 for (var q : totalQueries) {
                     var check = i.flags() & q.mask();
                     if (check != (q.maskRq() == -1 ? q.mask() : q.maskRq())) continue;
                     if (!ran) {
                         ran = true;
-                        sqlQuery.append(WHERE);
+                        sqlQuery.append("where ");
                     } else {
-                        sqlQuery.append(AND);
+                        sqlQuery.append(" and ");
                     }
                     sqlQuery.append(q.query());
 
-                    // TODO:
                     for (var v : q.values())
                         try {
                             c0.compile(submit, v);
-                        /*
-                        submit.visitVarInsn(Opcodes.ALOAD, 2);
-                        if(++stack <= 5)
-                            // Use the single-instruction opcodes where applicable.
-                            submit.visitInsn(Opcodes.ICONST_0 + stack);
-                        else
-                            submit.visitIntInsn(Opcodes.BIPUSH, stack);
-
-                        Class<?> current = void.class;
-                        level = 1;
-                        // Recursion without the recursion
-                        akka: while(level > 0) {
-                            int ia, ib, il = v.length();
-                            switch (v.charAt(0)) {
-                                case '>' -> {
-                                    int id = Integer.parseInt(v.substring(1));
-                                    submit.visitInsn(Opcodes.DUP);
-                                    submit.visitVarInsn(Opcodes.ISTORE, id + 4);
-                                    locals.put(id, int.class);
-                                    break akka;
-                                }
-                                case '<' -> {
-                                    int id = Integer.parseInt(v.substring(1));
-                                    submit.visitVarInsn(ClassMap.findMapper(locals.get(id)).load, id + 4);
-                                    break akka;
-                                }
-                                case '^' -> {
-                                    ib = 1;
-                                    current = SqlConnectionProvider.class;
-                                    if (carrot) {
-                                        submit.visitVarInsn(Opcodes.ALOAD, 3);
-                                    } else {
-                                        carrot = true;
-                                        submit.visitVarInsn(Opcodes.ALOAD, 0);
-                                        submit.visitFieldInsn(Opcodes.GETFIELD, statementHandler, "provider", provider.getDescriptor());
-                                        submit.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(sqlImpl.getClass()));
-                                        submit.visitInsn(Opcodes.DUP);
-                                        submit.visitVarInsn(Opcodes.ASTORE, 3);
-                                    }
-                                }
-                                default -> {
-                                    ib = 0;
-                                    current = iClass;
-                                    submit.visitVarInsn(Opcodes.ALOAD, 0);
-                                }
-                            }
-                            while(ib < il) {
-                                ib = StringUtils.seekToDelimiter(v, ".():", il, ia = ib);
-                                switch (ib == il ? '\0' : v.charAt(ib)) {
-                                    case '.' -> {
-                                        var name = v.substring(ia, ib);
-                                        var field = current.getField(name);
-                                        submit.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(current), name, field.getClass().descriptorString());
-                                    }
-                                    case '(' -> ;
-                                    case ':' -> ;
-                                    case '\0' -> ;
-                                }
-                                submit.visitFieldInsn();
-                            }
-                            level--;
-                        }
-                        */
                         } catch (Throwable roe) {
                             throw new PlymouthException(roe, v, q, c0, i, sqlQuery, sqlImpl);
                         }
-
-                    // submit.visitVarInsn(Opcodes.ALOAD, 1);
-
-
-                    // var clazz = params[a];
-                    // var mapper = ClassMap.findMapper(clazz);
-                    // if(mapper.passClass) {
-                    //     var type = Type.getType(clazz);
-                    //     query.visitLdcInsn(type);
-                    //     query.visitMethodInsn(Opcodes.INVOKEINTERFACE, RESULT_SET_TYPE, mapper.getter, "(ILjava/lang/Class;)Ljava/lang/Object;", true);
-                    //     query.visitTypeInsn(Opcodes.CHECKCAST, type.getInternalName());
-                    // } else {
-                    //     query.visitMethodInsn(Opcodes.INVOKEINTERFACE, RESULT_SET_TYPE, mapper.getter, "(I)" + mapper.internal.descriptorString(), true);
-                    // }
+                }
+            }
+            {
+                Pagination pagination = proxy.getAnnotation(Pagination.class);
+                var sort = pagination.sort();
+                var sortValue = sort.value();
+                if (sortValue.length != 0) {
+                    appendQuery(sqlQuery.append(" order by "), sort.table(), sortValue);
+                    var l = sqlQuery.length();
+                    sqlQuery.replace(l - 1, l, " desc");
+                }
+                var limit = pagination.limit();
+                if (!limit.isBlank()) {
+                    sqlQuery.append(" limit ?");
+                    try {
+                        c0.compile(submit, limit);
+                    } catch (Throwable roe) {
+                        throw new PlymouthException(roe, limit, pagination, sqlQuery, sqlImpl);
+                    }
+                }
+                var offset = pagination.offset();
+                if (!offset.isBlank()) {
+                    sqlQuery.append(" offset ?");
+                    try {
+                        c0.compile(submit, offset);
+                    } catch (Throwable roe) {
+                        throw new PlymouthException(roe, offset, pagination, sqlQuery, sqlImpl);
+                    }
                 }
             }
 
@@ -393,5 +334,18 @@ public final class StatementCache<I extends LookupRecord<O>, O extends PlymouthR
         } catch (Throwable throwable) {
             throw new AssertionError("This should never occur.", throwable);
         }
+    }
+
+    private static void appendQuery(StringBuilder sqlQuery, int table, String[] nameStack) {
+        int c = sqlQuery.length();
+        if (table == 0) {
+            sqlQuery.append(nameStack[0]);
+        } else {
+            sqlQuery.append((char) ('`' + table)).append('.').append(nameStack[0]);
+        }
+        for (int v = 1; v < nameStack.length; v++) {
+            sqlQuery.insert(c, '(').append(").").append(nameStack[v]);
+        }
+        sqlQuery.append(',');
     }
 }

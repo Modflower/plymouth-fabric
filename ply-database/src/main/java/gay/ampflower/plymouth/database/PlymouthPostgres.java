@@ -27,6 +27,7 @@ import java.sql.*;
 import java.util.*;
 
 import static gay.ampflower.plymouth.database.DatabaseHelper.*;
+import static gay.ampflower.plymouth.database.records.LookupRecord.*;
 
 /**
  * Driver Adaptor for PostgreSQL. Due to how many features that Postgres has that standard SQL does not,
@@ -35,15 +36,16 @@ import static gay.ampflower.plymouth.database.DatabaseHelper.*;
  * @author Ampflower
  * @since 0.0.0
  */
-@Query(query = "cause_id=?",
-        values = "causeUuid",
-        mask = LookupRecord.FLAG_BY)
+@Query(query = "cause_id=?", values = "causeUserId", mask = FLAG_C_UID)
+@Query(query = "cause_raw=?", values = "causeEntityId", mask = FLAG_C_EID)
+@Query(query = "time>?", values = "minTime", mask = FLAG_MIN_TIME)
+@Query(query = "time<?", values = "maxTime", mask = FLAG_MAX_TIME)
 @Query(query = "cause_pos=(?,?,?,?)::ipos",
-        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.worldIndex(causeWorld)>0"},
-        mask = LookupRecord.FLAG_AT | LookupRecord.FLAG_AREA, maskRq = LookupRecord.FLAG_AT)
+        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.getWorldIndex(causeWorld)>0"},
+        mask = FLAG_C_AT | FLAG_C_AREA, maskRq = FLAG_C_AT)
 @Query(query = "cause_pos>=(?,?,?,?)::ipos and cause_pos<=(?,?,?,?)::ipos",
-        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.worldIndex(causeWorld)>0", "maxPos.getX()", "maxPos.getY()", "maxPos.getZ()", "<0"},
-        mask = LookupRecord.FLAG_AT | LookupRecord.FLAG_AREA, maskRq = LookupRecord.FLAG_AREA)
+        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.getWorldIndex(causeWorld)>0", "maxPos.getX()", "maxPos.getY()", "maxPos.getZ()", "<0"},
+        mask = FLAG_C_AT | FLAG_C_AREA, maskRq = FLAG_C_AREA)
 public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     private static final Logger log = LogManager.getLogger(PlymouthPostgres.class);
     // We don't need reverse lookup, this is perfectly acceptable.
@@ -345,7 +347,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         insertItems.addBatch();
     }
 
-    protected int getBlockIndex(BlockState state) throws PlymouthException {
+    public int getBlockIndex(BlockState state) throws PlymouthException {
         boolean f0 = areStatesUnnecessary(state);
         return blocks.computeIfAbsent(f0 ? state == null ? 0 : state.getBlock().hashCode() : state.hashCode(), (int h) -> {
             try {
@@ -373,7 +375,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         return uuid;
     }
 
-    protected int getWorldIndex(World world) throws PlymouthException {
+    public int getWorldIndex(World world) throws PlymouthException {
         return worlds.computeIfAbsent(DatabaseHelper.getHash(world), $ -> {
             try {
                 getElseInsertWorld.setObject(1, ((ServerWorldProperties) world.getLevelProperties()).getLevelName());
@@ -385,10 +387,6 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
                 throw new PlymouthException(sql, getElseInsertWorld);
             }
         });
-    }
-
-    public int worldIndex(World world) throws PlymouthException {
-        return getWorldIndex(world);
     }
 
     @Override
@@ -415,6 +413,14 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Table("blocks")
     @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
     @Table(table = 2, value = "blocks_table", match = @Match(primary = "block", secondary = "index"))
+    @Query(query = "target_pos=(?,?,?,?)::ipos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
+    @Query(query = "target_pos>=(?,?,?,?)::ipos and target_pos<=(?,?,?,?)::ipos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
+    // C0 is not capable of evaluation at this time. As such, it will be delegated to a method within
+    @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")
     public static BlockRecord blockRecordFromLookup(
             @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
             @Value({"target_pos", "x"}) int tx, @Value({"target_pos", "y"}) int ty, @Value({"target_pos", "z"}) int tz, @Deprecated @Value(value = "action") String ba, @Value(table = 2, value = "name") String bn, @Value(table = 2, value = "properties") String bp,
@@ -440,6 +446,15 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Table("deaths")
     @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
     @Table(table = 2, value = "users_table", match = @Match(primary = "target_id", secondary = "index"))
+    @Query(query = "target_id=?", values = "targetUserId", mask = FLAG_T_UID)
+    @Query(query = "target_raw=?", values = "targetEntityId", mask = FLAG_T_EID)
+    @Query(query = "target_pos=(?,?,?,?)::dpos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
+    @Query(query = "target_pos>=(?,?,?,?)::dpos and target_pos<=(?,?,?,?)::dpos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
+    @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")
     public static DeathRecord deathRecordFromLookup(
             @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
             @Value({"target_pos", "x"}) double tx, @Value({"target_pos", "y"}) double ty, @Value({"target_pos", "z"}) double tz, @Value(table = 2, value = "name") String tn, @Value("target_id") UUID tu, @Value("target_raw") UUID te,
@@ -451,6 +466,16 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Table("items")
     @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
     @Table(table = 2, value = "users_table", match = @Match(primary = "target_id", secondary = "index"))
+    @Query(query = "target_id=?", values = "targetUserId", mask = FLAG_T_UID)
+    @Query(query = "target_raw=?", values = "targetEntityId", mask = FLAG_T_EID)
+    @Query(query = "target_pos=(?,?,?,?)::ipos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
+    @Query(query = "target_pos>=(?,?,?,?)::ipos and target_pos<=(?,?,?,?)::ipos",
+            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
+    @Query(query = "item=?", values = "item()", mask = FLAG_ITEM)
+    @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")
     public static InventoryRecord inventoryRecordFromLookup(
             @Value({"cause_pos", "x"}) int cx, @Value({"cause_pos", "y"}) int cy, @Value({"cause_pos", "z"}) int cz, @Value(table = 1, value = "name") String cn, @Value("cause_id") UUID cu, @Value("cause_raw") UUID ce,
             @Value({"target_pos", "x"}) int tx, @Value({"target_pos", "y"}) int ty, @Value({"target_pos", "z"}) int tz, @Value(table = 2, value = "name") String tn, @Value("target_id") UUID tu, @Value("target_raw") UUID te,
