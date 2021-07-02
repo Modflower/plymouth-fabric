@@ -34,6 +34,7 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
+    implementation(project(":"))
     implementation(project(":ply-anti-xray"))
     implementation(project(":ply-common"))
     implementation(project(":ply-database"))
