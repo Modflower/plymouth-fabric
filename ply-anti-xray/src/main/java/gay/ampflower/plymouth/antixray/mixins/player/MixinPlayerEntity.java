@@ -1,6 +1,6 @@
-package gay.ampflower.plymouth.anti_xray.mixins.player;
+package gay.ampflower.plymouth.antixray.mixins.player;
 
-import gay.ampflower.plymouth.anti_xray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;

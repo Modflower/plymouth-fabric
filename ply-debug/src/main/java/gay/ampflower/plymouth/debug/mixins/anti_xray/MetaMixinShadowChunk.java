@@ -1,6 +1,6 @@
 package gay.ampflower.plymouth.debug.mixins.anti_xray;
 
-import gay.ampflower.plymouth.anti_xray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.IShadowChunk;
 import gay.ampflower.plymouth.debug.Debug;
 import gay.ampflower.plymouth.debug.anti_xray.AntiXrayDebugger;
 import net.minecraft.block.BlockState;

@@ -1,4 +1,4 @@
-package gay.ampflower.plymouth.anti_xray;
+package gay.ampflower.plymouth.antixray;
 
 /**
  * Helper interface to allow trivial cloning of mixin'd objects.

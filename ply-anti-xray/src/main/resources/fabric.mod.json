@@ -18,7 +18,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "gay.ampflower.plymouth.anti_xray.Constants::init"
+      "gay.ampflower.plymouth.antixray.Constants::init"
     ]
   },
   "mixins": [

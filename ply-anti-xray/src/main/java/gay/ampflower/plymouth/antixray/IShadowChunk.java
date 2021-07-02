@@ -1,4 +1,4 @@
-package gay.ampflower.plymouth.anti_xray;
+package gay.ampflower.plymouth.antixray;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

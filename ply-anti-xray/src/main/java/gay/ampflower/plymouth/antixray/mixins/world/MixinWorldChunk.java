@@ -1,8 +1,8 @@
-package gay.ampflower.plymouth.anti_xray.mixins.world;
+package gay.ampflower.plymouth.antixray.mixins.world;
 
-import gay.ampflower.plymouth.anti_xray.CloneAccessible;
-import gay.ampflower.plymouth.anti_xray.Constants;
-import gay.ampflower.plymouth.anti_xray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.CloneAccessible;
+import gay.ampflower.plymouth.antixray.Constants;
+import gay.ampflower.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.BitSet;
 
-import static gay.ampflower.plymouth.anti_xray.Constants.HIDDEN_BLOCKS;
+import static gay.ampflower.plymouth.antixray.Constants.HIDDEN_BLOCKS;
 
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk implements Chunk, IShadowChunk {

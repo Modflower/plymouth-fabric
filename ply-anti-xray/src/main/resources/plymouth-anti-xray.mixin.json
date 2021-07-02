@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "gay.ampflower.plymouth.anti_xray.mixins",
+  "package": "gay.ampflower.plymouth.antixray.mixins",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
     "AccessorBlockTag",

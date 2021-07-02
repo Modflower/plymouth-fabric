@@ -1,6 +1,6 @@
-package gay.ampflower.plymouth.anti_xray.mixins.packets.s2c;
+package gay.ampflower.plymouth.antixray.mixins.packets.s2c;
 
-import gay.ampflower.plymouth.anti_xray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.BlockPos;

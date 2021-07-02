@@ -1,6 +1,6 @@
-package gay.ampflower.plymouth.anti_xray.mixins.world;
+package gay.ampflower.plymouth.antixray.mixins.world;
 
-import gay.ampflower.plymouth.anti_xray.CloneAccessible;
+import gay.ampflower.plymouth.antixray.CloneAccessible;
 import net.minecraft.util.collection.PackedIntegerArray;
 import org.spongepowered.asm.mixin.*;
 

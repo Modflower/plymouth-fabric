@@ -1,4 +1,4 @@
-package gay.ampflower.plymouth.anti_xray.mixins;
+package gay.ampflower.plymouth.antixray.mixins;
 
 import net.minecraft.block.Block;
 import net.minecraft.tag.BlockTags;
