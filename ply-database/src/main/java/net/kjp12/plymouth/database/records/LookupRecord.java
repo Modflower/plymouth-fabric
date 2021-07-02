@@ -1,5 +1,6 @@
 package net.kjp12.plymouth.database.records;// Created 2021-02-05T23:19:10
 
+import net.kjp12.plymouth.database.DatabaseHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -29,51 +31,49 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Plymouth
     /**
      * Indicates that lookup is by user.
      */
-    public static final int FLAG_BY = 0x01;
+    public static final int FLAG_C_UID = 0x01, FLAG_T_UID = 0x10, FLAG_C_EID = 0x100, FLAG_T_EID = 0x1000;
     /**
      * Indicates that lookup is by time.
      */
-    public static final int FLAG_TIME = 0x02;
+    public static final int FLAG_MIN_TIME = 0x02, FLAG_MAX_TIME = 0x20;
     /**
      * Indicates that lookup is by location.
      * <p>
-     * Mutually exclusive with {@link #FLAG_AREA}.
+     * Mutually exclusive with {@link #FLAG_C_AREA}.
      */
-    public static final int FLAG_AT = 0x04;
+    public static final int FLAG_C_AT = 0x04, FLAG_T_AT = 0x40;
     /**
      * Indicates that lookup is by area.
      * <p>
-     * Mutually exclusive with {@link #FLAG_AT}.
+     * Mutually exclusive with {@link #FLAG_C_AT}.
      */
-    public static final int FLAG_AREA = 0x08;
+    public static final int FLAG_C_AREA = 0x08, FLAG_T_AREA = 0x80;
 
-    /**
-     * Indicates that lookup is for deaths.
-     */
-    @Deprecated(forRemoval = true)
-    public static final int MOD_DEATH = 0x10;
+    public static final int FLAG_ITEM = 0x200;
 
     private final CompletableFuture<List<T>> future;
     public final ServerWorld causeWorld;
     public final BlockPos minPos, maxPos;
-    public final UUID causeUuid;
+    public final UUID causeUserId;
     public final Instant minTime, maxTime;
-    public final int page;
+    public final int page, limit;
     private final int flags;
 
-    public LookupRecord(ServerWorld causeWorld, BlockPos minPos, BlockPos maxPos, UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
+    public LookupRecord(ServerWorld causeWorld, BlockPos minPos, BlockPos maxPos, UUID causeUserId, Instant minTime, Instant maxTime, int page, int flags) {
         this.future = new CompletableFuture<>();
-        this.causeWorld = causeWorld;
         switch (flags >>> 2 & 3) {
-            case 0:
+            case 0 -> {
+                this.causeWorld = null;
                 this.minPos = null;
                 this.maxPos = null;
-                break;
-            case 1:
+            }
+            case 1 -> {
+                this.causeWorld = Objects.requireNonNull(causeWorld, "causeWorld");
                 this.minPos = minPos.toImmutable();
                 this.maxPos = null;
-                break;
-            case 2:
+            }
+            case 2 -> {
+                this.causeWorld = Objects.requireNonNull(causeWorld, "causeWorld");
                 int ax = minPos.getX(), ay = minPos.getY(), az = minPos.getZ(),
                         bx = maxPos.getX(), by = maxPos.getY(), bz = maxPos.getZ(),
                         ix = Math.min(ax, bx), iy = Math.min(ay, by), iz = Math.min(az, bz);
@@ -84,14 +84,14 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Plymouth
                     this.minPos = new BlockPos(ix, iy, iz);
                     this.maxPos = new BlockPos(Math.max(ax, bx), Math.max(ay, by), Math.max(az, bz));
                 }
-                break;
-            default:
-                throw new IllegalStateException("Illegal state 3 on AT & AREA for given flags " + flags);
+            }
+            default -> throw new IllegalStateException("Illegal state 3 on AT & AREA for given flags " + flags);
         }
-        this.causeUuid = causeUuid;
+        this.causeUserId = causeUserId;
         this.minTime = minTime;
         this.maxTime = maxTime;
         this.page = page;
+        this.limit = DatabaseHelper.PAGE_SIZE;
         this.flags = flags;
     }
 
@@ -112,34 +112,21 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Plymouth
 
     @Override
     public @NotNull Text toText() {
-        switch (flags & 0b1111) {
-            case 0b0000:
-                return new TranslatableText("plymouth.tracker.record.lookup", page);
-            case 0b0001:
-                return new TranslatableText("plymouth.tracker.record.lookup.by", lookupPlayerToText(null, causeUuid), page);
-            case 0b0010:
-                return new TranslatableText("plymouth.tracker.record.lookup.time", minTime, maxTime, page);
-            case 0b0011:
-                return new TranslatableText("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
-            case 0b0100:
-                return new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPos), page);
-            case 0b0101:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPos), lookupPlayerToText(null, causeUuid), page);
-            case 0b0110:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPos), minTime, maxTime, page);
-            case 0b0111:
-                return new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPos), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
-            case 0b1000:
-                return new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPos), positionToText(maxPos), page);
-            case 0b1001:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPos), positionToText(maxPos), lookupPlayerToText(null, causeUuid), page);
-            case 0b1010:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPos), positionToText(maxPos), minTime, maxTime, page);
-            case 0b1011:
-                return new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPos), positionToText(maxPos), minTime, maxTime, lookupPlayerToText(null, causeUuid), page);
-            default:
-                return new TranslatableText("plymouth.tracker.record.lookup.invalid");
-        }
+        return switch (flags & 0b1111) {
+            case 0b0000 -> new TranslatableText("plymouth.tracker.record.lookup", page);
+            case 0b0001 -> new TranslatableText("plymouth.tracker.record.lookup.by", lookupPlayerToText(null, causeUserId), page);
+            case 0b0010 -> new TranslatableText("plymouth.tracker.record.lookup.time", minTime, maxTime, page);
+            case 0b0011 -> new TranslatableText("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            case 0b0100 -> new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPos), page);
+            case 0b0101 -> new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPos), lookupPlayerToText(null, causeUserId), page);
+            case 0b0110 -> new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPos), minTime, maxTime, page);
+            case 0b0111 -> new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            case 0b1000 -> new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPos), positionToText(maxPos), page);
+            case 0b1001 -> new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPos), positionToText(maxPos), lookupPlayerToText(null, causeUserId), page);
+            case 0b1010 -> new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPos), positionToText(maxPos), minTime, maxTime, page);
+            case 0b1011 -> new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPos), positionToText(maxPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            default -> new TranslatableText("plymouth.tracker.record.lookup.invalid");
+        };
     }
 
     /**
@@ -147,18 +134,11 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Plymouth
      *
      * <h3>Bits 3-0: Flags</h3>
      * <ul>
-     *     <li><code>0x0</code> {@link #FLAG_NONE ALL}</li>
-     *     <li><code>0x1</code> {@link #FLAG_BY BY}</li>
-     *     <li><code>0x2</code> {@link #FLAG_TIME TIME}</li>
-     *     <li><code>0x4</code> {@link #FLAG_AT AT}</li>
-     *     <li><code>0x8</code> {@link #FLAG_AREA AREA}</li>
-     * </ul>
-     * <h3>Bits 5-4: Type</h3>
-     * <ul>
-     *     <li><code>0</code> {@link #MOD_BLOCK Block}</li>
-     *     <li><code>1</code> {@link #MOD_DEATH Death}</li>
-     *     <li><code>2</code> {@link #MOD_INVEN Inventory}</li>
-     *     <li><code>3</code> Invalid.</li>
+     *     <li><code>0x0</code> ALL
+     *     <li><code>0x1</code> {@link #FLAG_C_UID BY}</li>
+     *     <li><code>0x2</code> {@link #FLAG_MIN_TIME TIME}</li>
+     *     <li><code>0x4</code> {@link #FLAG_C_AT AT}</li>
+     *     <li><code>0x8</code> {@link #FLAG_C_AREA AREA}</li>
      * </ul>
      */
     @Override
@@ -166,9 +146,12 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Plymouth
         return flags;
     }
 
-    @Override
-    public RecordType getType() {
-        return RecordType.LOOKUP;
+    public int limit() {
+        return this.limit;
+    }
+
+    public int offset() {
+        return page * limit;
     }
 
     public abstract Class<T> getOutput();

@@ -11,22 +11,21 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-// < -> CTX L*.0   -> 1, *LOAD  \d + 4 ; +4 offset for required variables, the selected opcode is dependent on the variable at call time.
-// > -> CTX L*.0   -> 2, *STORE \d + 4 ; ^ See < - *LOAD doc.
-// ? -> CTX L*.1   -> 0, IFNUL         ; C0 intrinsic candidate
-// ^ -> CTX L*.0   -> 0, ALOAD  3
-// ( -> CTX L*.3   -> 0, PUSH   L2
-// ) -> CTX L2.0   -> 0, POP    L2     ; Implicit break on L1
-// , -> CTX L1.0   -> 0, POP    L1
-// . -> CTX L*.0-3 -> 3, DREF   CTX
-//\0 -> CTX L*.*   ->  , POP    *      ; EOF, must pop or crash
+// < -> CTX L*.0 -> 1, *LOAD  \d + 4 ; +4 offset for required variables, the selected opcode is dependent on the variable at call time.
+// > -> CTX L*.0 -> 2, *STORE \d + 4 ; ^ See < - *LOAD doc.
+// ? -> CTX L*.1 -> 0, IFNUL         ; C0 intrinsic candidate
+// ^ -> CTX L*.0 -> 0, ALOAD  3
+// ( -> CTX L*.0 -> 0, PUSH   L2
+// ) -> CTX L2.0 -> 0, POP    L2     ; Implicit break on L1
+// , -> CTX L1.0 -> 0, POP    L1
+// . -> CTX L*.* -> 0, DREF   CTX
+//\0 -> CTX L*.* ->  , POP    *      ; EOF, must pop or crash
 
-// Allowed off of L*.0 = "<>^.\0"
+// Allowed off of L*.0 = "<>^.(\0"
 // Allowed off of L*.1 = "?.\0"
 // Allowed off of L*.2 = ".\0"
-// Allowed off of L*.3 = ".(\0"
 
-// Allowed off of L1.0 = "<>^.,)\0"
+// Allowed off of L1.0 = "<>^.,()\0"
 
 // <0?^.worldIndex(causeWorld)>0
 
@@ -67,10 +66,9 @@ import java.util.Arrays;
  **/
 class C0 implements Opcodes {
     private static final char[]
-            T_NONE = StringUtils.createCharHashArray("<>^.,)\0"),
+            T_NONE = StringUtils.createCharHashArray("<>^.,()\0"),
             T_LOAD = StringUtils.createCharHashArray("?.,)\0"),
-            T_STORE = StringUtils.createCharHashArray(".,)\0"),
-            T_FIELD = StringUtils.createCharHashArray(".,()\0");
+            T_STORE = StringUtils.createCharHashArray(".,)\0");
 
     private static final String
             statementHandler = Type.getInternalName(StatementHandler.class),
@@ -79,8 +77,7 @@ class C0 implements Opcodes {
     private static final int
             C_NONE = 0,
             C_LOAD = 1,
-            C_STORE = 2,
-            C_FIELD = 3;
+            C_STORE = 2;
 
     private int ia, ib, is;
     private String value;
@@ -115,8 +112,8 @@ class C0 implements Opcodes {
     /**
      * Linear single-return compiler
      *
-     * @param submit  The visitor
-     * @param context The current class context. First input is typically {@link Void#TYPE void.class}.
+     * @param submit The visitor
+     * @param nested If this is nested within a method call.
      * @return The last class context. May be {@link Void#TYPE void.class}.
      */
     private Class<?> l1(MethodVisitor submit, boolean nested) throws NoSuchMethodException, NoSuchFieldException {
@@ -125,7 +122,7 @@ class C0 implements Opcodes {
             char e = ib >= value.length() ? '\0' : value.charAt(ib);
             boolean dropL1 = e == ')' || e == ',';
             if (!nested && dropL1)
-                throw new IllegalArgumentException(value + " @ " + ib + " not valid for unnested. " + this);
+                throw new IllegalArgumentException(value + " @ " + ib + " `" + e + "` not valid for unnested. " + this);
             switch (is) {
                 case C_NONE -> {
                     switch (e) {
@@ -135,7 +132,7 @@ class C0 implements Opcodes {
                             lc(submit);
                             context = sqlImpl;
                         }
-                        case '.' -> {
+                        case '.', ',', ')', '\0' -> {
                             if (ib - ia > 1) {
                                 if (context == void.class) {
                                     submit.visitVarInsn(ALOAD, 1);
@@ -143,16 +140,26 @@ class C0 implements Opcodes {
                                 }
                                 context = vf(submit, context.getField(value.substring(ia, ib)));
                             }
-                            is = C_FIELD;
                         }
-                        case ',', ')', '\0' -> {
-                            if (ib - ia > 1) {
-                                if (context == void.class) {
-                                    submit.visitVarInsn(ALOAD, 1);
-                                    context = fallback;
-                                }
-                                context = vf(submit, context.getField(value.substring(ia, ib)));
+                        case '(' -> {
+                            if (ib - ia <= 1)
+                                throw new IllegalStateException(this.toString());
+                            if (context == void.class) {
+                                submit.visitVarInsn(ALOAD, 1);
+                                context = fallback;
                             }
+                            var name = value.substring(ia, ib);
+                            var params = l2(submit);
+                            var m = Arrays.stream(context.getMethods())
+                                    .filter(method -> method.getName().equals(name) && method.getParameterCount() == params.length)
+                                    .filter(method -> {
+                                        var other = method.getParameterTypes();
+                                        for (int i = 0; i < other.length; i++) {
+                                            if (!other[i].isAssignableFrom(params[i])) return false;
+                                        }
+                                        return true;
+                                    }).findFirst().get();
+                            context = vm(submit, m);
                         }
                     }
                 }
@@ -167,58 +174,24 @@ class C0 implements Opcodes {
                                 var ne = value.indexOf(';');
                                 ib = ne == -1 ? value.length() : ne;
                                 return clazz;
-                            } else {
-                                is = C_NONE;
                             }
                         }
                         case '.', ',', ')', '\0' -> {
                             context = locals.get(v);
                             if (context == null) throw new IllegalStateException("local " + v + " not stored " + this);
                             submit.visitVarInsn(ClassMap.findMapper(context).load, v + 4);
-                            is = C_FIELD;
                         }
                     }
+                    is = C_NONE;
                 }
                 case C_STORE -> {
                     if (context == void.class) throw new IllegalStateException("attempted store on void " + this);
                     int v = Integer.parseInt(value.substring(ia, ib));
-                    switch (e) {
-                        case '.', ',', ')', '\0' -> {
-                            locals.put(v, context);
-                            submit.visitInsn(DUP);
-                            submit.visitVarInsn(ClassMap.findMapper(context).store, v + 4);
-                            is = C_FIELD;
-                        }
-                    }
-                }
-                case C_FIELD -> {
-                    if (ib - ia > 1 && context == void.class) {
-                        submit.visitVarInsn(ALOAD, 1);
-                        context = fallback;
-                    }
-                    switch (e) {
-                        case '.', ',', ')', '\0' -> {
-                            if (ib - ia > 1) context = vf(submit, context.getField(value.substring(ia, ib)));
-                        }
-                        case '(' -> {
-                            if (ib - ia <= 1)
-                                throw new IllegalStateException(this.toString());
-                            var name = value.substring(ia, ib);
-                            var params = l2(submit);
-                            var m = Arrays.stream(context.getMethods())
-                                    .filter(method -> method.getName().equals(name) && method.getParameterCount() == params.length)
-                                    .filter(method -> {
-                                        var other = method.getParameterTypes();
-                                        for (int i = 0; i < other.length; i++) {
-                                            if (!other[i].isAssignableFrom(params[i])) return false;
-                                        }
-                                        return true;
-                                    }).findFirst().get();
-                            context = vm(submit, m);
-                            //context = vm(submit, context.getMethod(value.substring(ia, ib), l2(submit)));
-                            is = C_NONE;
-                        }
-                    }
+                    // Originally matches `.`, `,`, `)`
+                    locals.put(v, context);
+                    submit.visitInsn(DUP);
+                    submit.visitVarInsn(ClassMap.findMapper(context).store, v + 4);
+                    is = C_NONE;
                 }
             }
             if (dropL1) {
@@ -311,7 +284,6 @@ class C0 implements Opcodes {
             case C_NONE -> T_NONE;
             case C_LOAD -> T_LOAD;
             case C_STORE -> T_STORE;
-            case C_FIELD -> T_FIELD;
             default -> throw new IllegalStateException(is + " is an invalid state; expected 0 - 3");
         }, value.length(), ia = ib + 1);
         return true;

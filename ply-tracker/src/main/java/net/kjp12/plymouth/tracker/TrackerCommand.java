@@ -22,6 +22,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -198,7 +199,7 @@ public class TrackerCommand {
         }
         // TODO: Make the suggestions quote aware.
         switch (s) {
-            case 1:
+            case 1 -> {
                 parser.anchor(32);
                 boolean sf = false;
                 var server = context.getSource().getMinecraftServer();
@@ -212,14 +213,13 @@ public class TrackerCommand {
                 }
                 // TODO: plymouth identifiers
                 if (!sf) s = 0;
-                break;
-            case 2:
+            }
+            case 2 -> {
                 psb = mkSb(builder.getRemaining());
                 DateTimeFormatter.ISO_INSTANT.formatTo(Instant.now(), psb);
                 builder.suggest(psb.toString());
-                break;
-            case 3:
-            case 4:
+            }
+            case 3, 4 -> {
                 var source = context.getSource();
                 var entity = source.getEntity();
                 var cast = entity != null ? entity.raycast(5, 0, false) : null;
@@ -236,15 +236,15 @@ public class TrackerCommand {
                     case 2:
                         builder.suggest(psb.append(pos.getZ()).toString());
                 }
-                break;
-            case 5:
+            }
+            case 5 -> {
                 psb = mkSb(builder.getRemaining());
                 var len = psb.length();
                 builder.suggest(psb.replace(len, psb.length(), "8").toString());
                 builder.suggest(psb.replace(len, psb.length(), "16").toString());
                 builder.suggest(psb.replace(len, psb.length(), "32").toString());
                 builder.suggest(psb.replace(len, psb.length(), "64").toString());
-                break;
+            }
         }
         if (s == 0) {
             parser.anchor(16);
@@ -283,7 +283,7 @@ public class TrackerCommand {
                 case 2135: // BY u
                     if ((s & u) == 0 && parser.contentEquals("by", true)) {
                         s |= u;
-                        f |= LookupRecord.FLAG_BY;
+                        f |= LookupRecord.FLAG_C_UID;
                         parser.next();
                         if (parser.isUUID()) {
                             causeUuid = parser.currentUUID();
@@ -300,7 +300,7 @@ public class TrackerCommand {
                 case 2575053: // TIME s e
                     if ((s & t) == 0 && parser.contentEquals("time", true)) {
                         s |= t;
-                        f |= LookupRecord.FLAG_TIME;
+                        f |= LookupRecord.FLAG_MIN_TIME;
                         minTime = Instant.parse(parser.nextString());
                         maxTime = Instant.parse(parser.nextString());
                     }
@@ -308,14 +308,14 @@ public class TrackerCommand {
                 case 2099: // AT x y z
                     if ((s & a) == 0 && parser.contentEquals("at", true)) {
                         s |= a;
-                        f |= LookupRecord.FLAG_AT;
+                        f |= LookupRecord.FLAG_T_AT;
                         minPos = mkPos(parser);
                     }
                     break;
                 case 2017421: // AREA x y z x y z
                     if ((s & a) == 0 && parser.contentEquals("area", true)) {
                         s |= a;
-                        f |= LookupRecord.FLAG_AREA;
+                        f |= LookupRecord.FLAG_T_AREA;
                         minPos = mkPos(parser);
                         maxPos = mkPos(parser);
                     }
@@ -323,7 +323,7 @@ public class TrackerCommand {
                 case -1885249390: // RADIUS r
                     if ((s & a) == 0 && parser.contentEquals("radius", true)) {
                         s |= a;
-                        f |= LookupRecord.FLAG_AREA;
+                        f |= LookupRecord.FLAG_T_AREA;
                         int $0 = parser.nextInt(), $1 = -$0;
                         var pos = new BlockPos(source.getPosition());
                         minPos = pos.add($1, $1, $1);
@@ -358,18 +358,19 @@ public class TrackerCommand {
     private static int lookup(CommandContext<ServerCommandSource> ctx, @Param RecordType type, ServerWorld world, BlockPos minPosition, BlockPos maxPosition,
                               UUID causeUuid, Instant minTime, Instant maxTime, int page, int flags) {
         var lookup = switch (type) {
-            case BLOCK -> new BlockLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime,
-                    null, null, null, null, null, page, flags);
-            case DEATH -> new DeathLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime, page, flags);
-            case INVENTORY -> new InventoryLookupRecord(world, minPosition, maxPosition, causeUuid, minTime, maxTime,
-                    null, null, null, null, null, null, page, flags);
+            case BLOCK -> new BlockLookupRecord(null, null, null, causeUuid, minTime, maxTime,
+                    world, minPosition, maxPosition, null, null, page, flags);
+            case DEATH -> new DeathLookupRecord(null, null, null, causeUuid, minTime, maxTime,
+                    world, Vec3d.ofCenter(minPosition), Vec3d.ofCenter(maxPosition), null, null, page, flags);
+            case INVENTORY -> new InventoryLookupRecord(null, null, null, causeUuid, minTime, maxTime,
+                    world, minPosition, maxPosition, null, null, null, page, flags);
             default -> throw new IllegalArgumentException(type.toString());
         };
         DatabaseHelper.database.queue(lookup);
         final var player = ctx.getSource();
         lookup.getFuture().thenAcceptAsync(l -> {
             try {
-                if ((lookup.flags() & LookupRecord.FLAG_AT) != 0) {
+                if ((lookup.flags() & LookupRecord.FLAG_C_AT) != 0) {
                     for (var r : l) {
                         player.sendFeedback(r.toTextNoPosition(), false);
                     }

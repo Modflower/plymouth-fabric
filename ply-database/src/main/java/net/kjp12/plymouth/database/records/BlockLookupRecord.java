@@ -5,6 +5,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -19,15 +20,38 @@ public final class BlockLookupRecord extends LookupRecord<BlockRecord> {
     public BlockLookupRecord(ServerWorld world, BlockPos minPosition, BlockPos maxPosition, UUID causeUuid, Instant minTime, Instant maxTime,
                              ServerWorld targetWorld, BlockPos minTPos, BlockPos maxTPos, BlockState beforeState, BlockState afterState, int page, int flags) {
         super(world, minPosition, maxPosition, causeUuid, minTime, maxTime, page, flags);
-        this.targetWorld = targetWorld;
-        this.minTPos = minTPos;
-        this.maxTPos = maxTPos;
+        switch (flags >>> 6 & 3) {
+            case 0 -> {
+                this.targetWorld = null;
+                this.minTPos = null;
+                this.maxTPos = null;
+            }
+            case 1 -> {
+                this.targetWorld = Objects.requireNonNull(targetWorld, "targetWorld");
+                this.minTPos = minTPos.toImmutable();
+                this.maxTPos = null;
+            }
+            case 2 -> {
+                this.targetWorld = Objects.requireNonNull(targetWorld, "targetWorld");
+                int ax = minTPos.getX(), ay = minTPos.getY(), az = minTPos.getZ(),
+                        bx = maxTPos.getX(), by = maxTPos.getY(), bz = maxTPos.getZ(),
+                        ix = Math.min(ax, bx), iy = Math.min(ay, by), iz = Math.min(az, bz);
+                if (ax == ix && ay == iy && az == iz) {
+                    this.minTPos = minTPos.toImmutable();
+                    this.maxTPos = maxTPos.toImmutable();
+                } else {
+                    this.minTPos = new BlockPos(ix, iy, iz);
+                    this.maxTPos = new BlockPos(Math.max(ax, bx), Math.max(ay, by), Math.max(az, bz));
+                }
+            }
+            default -> throw new IllegalStateException("Illegal state 3 on AT & AREA for given flags " + flags);
+        }
         this.beforeState = beforeState;
         this.afterState = afterState;
     }
 
     public BlockLookupRecord(ServerWorld world, BlockPos pos, int page) {
-        this(world, pos, null, null, null, null, null, null, null, null, null, page, 0x00 | FLAG_AT);
+        this(null, null, null, null, null, null, world, pos, null, null, null, page, FLAG_T_AT);
     }
 
     @Override
