@@ -1,6 +1,6 @@
-package net.kjp12.plymouth.anti_xray.mixins.world;
+package net.kjp12.plymouth.antixray.mixins.world;
 
-import net.kjp12.plymouth.anti_xray.IShadowChunk;
+import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;

@@ -1,6 +1,6 @@
 package net.kjp12.plymouth.debug.mixins.anti_xray;// Created 2021-03-29T02:29:50
 
-import net.kjp12.plymouth.anti_xray.IShadowChunk;
+import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.kjp12.plymouth.debug.Debug;
 import net.kjp12.plymouth.debug.anti_xray.AntiXrayDebugger;
 import net.minecraft.block.BlockState;

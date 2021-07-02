@@ -1,6 +1,6 @@
-package net.kjp12.plymouth.anti_xray.mixins.world;// Created 2021-03-30T18:14:40
+package net.kjp12.plymouth.antixray.mixins.world;// Created 2021-03-30T18:14:40
 
-import net.kjp12.plymouth.anti_xray.CloneAccessible;
+import net.kjp12.plymouth.antixray.CloneAccessible;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.world.chunk.IdListPalette;
 import net.minecraft.world.chunk.Palette;

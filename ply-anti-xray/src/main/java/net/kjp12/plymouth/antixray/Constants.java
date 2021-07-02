@@ -1,6 +1,6 @@
-package net.kjp12.plymouth.anti_xray;// Created Mar. 02, 2021 @ 22:16
+package net.kjp12.plymouth.antixray;// Created Mar. 02, 2021 @ 22:16
 
-import net.kjp12.plymouth.anti_xray.mixins.AccessorBlockTag;
+import net.kjp12.plymouth.antixray.mixins.AccessorBlockTag;
 import net.minecraft.block.Block;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;

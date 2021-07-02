@@ -1,6 +1,6 @@
-package net.kjp12.plymouth.anti_xray.mixins.player;// Created Feb. 03, 2021 @ 21:11
+package net.kjp12.plymouth.antixray.mixins.player;// Created Feb. 03, 2021 @ 21:11
 
-import net.kjp12.plymouth.anti_xray.IShadowChunk;
+import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;

@@ -1,8 +1,8 @@
-package net.kjp12.plymouth.anti_xray.mixins.world;
+package net.kjp12.plymouth.antixray.mixins.world;
 
-import net.kjp12.plymouth.anti_xray.CloneAccessible;
-import net.kjp12.plymouth.anti_xray.Constants;
-import net.kjp12.plymouth.anti_xray.IShadowChunk;
+import net.kjp12.plymouth.antixray.CloneAccessible;
+import net.kjp12.plymouth.antixray.Constants;
+import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.BitSet;
 
-import static net.kjp12.plymouth.anti_xray.Constants.HIDDEN_BLOCKS;
+import static net.kjp12.plymouth.antixray.Constants.HIDDEN_BLOCKS;
 
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk implements Chunk, IShadowChunk {

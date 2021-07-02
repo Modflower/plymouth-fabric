@@ -1,4 +1,4 @@
-package net.kjp12.plymouth.anti_xray;
+package net.kjp12.plymouth.antixray;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

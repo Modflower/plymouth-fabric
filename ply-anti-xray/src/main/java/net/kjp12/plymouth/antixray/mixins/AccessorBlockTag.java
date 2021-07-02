@@ -1,4 +1,4 @@
-package net.kjp12.plymouth.anti_xray.mixins;
+package net.kjp12.plymouth.antixray.mixins;
 
 import net.minecraft.block.Block;
 import net.minecraft.tag.BlockTags;

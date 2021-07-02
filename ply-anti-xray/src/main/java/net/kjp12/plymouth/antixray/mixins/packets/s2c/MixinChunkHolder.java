@@ -1,6 +1,6 @@
-package net.kjp12.plymouth.anti_xray.mixins.packets.s2c;
+package net.kjp12.plymouth.antixray.mixins.packets.s2c;
 
-import net.kjp12.plymouth.anti_xray.IShadowChunk;
+import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.BlockPos;

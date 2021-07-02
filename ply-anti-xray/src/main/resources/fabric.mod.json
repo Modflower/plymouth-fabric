@@ -18,7 +18,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.kjp12.plymouth.anti_xray.Constants::init"
+      "net.kjp12.plymouth.antixray.Constants::init"
     ]
   },
   "mixins": [
