@@ -13,7 +13,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.net.http.HttpClient;
 
 /**
  * This class is a late-init-type class. It's expecting that
@@ -24,7 +23,6 @@ import java.net.http.HttpClient;
  * @since ${version}
  */
 public class Helium {
-    public static final HttpClient httpClient = HttpClient.newHttpClient();
     public static final Text
             SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(Formatting.ITALIC);
 
