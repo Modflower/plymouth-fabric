@@ -1,16 +1,29 @@
 package gay.ampflower.plymouth.antixray.mixins.world;
 
 import gay.ampflower.plymouth.antixray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.transformers.GudAsmTransformer;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.MutableWorldProperties;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.function.Supplier;
+
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld {
+public abstract class MixinServerWorld extends World {
+    protected MixinServerWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DimensionType dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
+        super(properties, registryRef, dimensionType, profiler, isClient, debugWorld, seed);
+    }
+
     /**
      * Null Router for {@link ServerChunkManager#markForUpdate(BlockPos)} at {@link ServerWorld#updateListeners(BlockPos, BlockState, BlockState, int)}
      *
@@ -28,5 +41,20 @@ public abstract class MixinServerWorld {
         if (before == after && after.hasBlockEntity() && !((IShadowChunk) self.getWorldChunk(pos.getX() >> 4, pos.getZ() >> 4, false)).plymouth$isMasked(pos)) {
             self.markForUpdate(pos);
         }
+    }
+
+    /**
+     * Redirecter stub for {@link GudAsmTransformer}.
+     *
+     * @param pos The position to lookup in the shadow chunk.
+     * @return The shadow block.
+     */
+    // This doesn't need any interface stub as it'll be called directly from asm.
+    @SuppressWarnings("unused")
+    public BlockState plymouth$getShadowBlock(BlockPos pos) {
+        if (isOutOfHeightLimit(pos)) {
+            return Blocks.VOID_AIR.getDefaultState();
+        }
+        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
     }
 }
