@@ -26,8 +26,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import static net.kjp12.plymouth.locking.Locking.PERMISSIONS_BYPASS;
-import static net.kjp12.plymouth.locking.Locking.toText;
+import static net.kjp12.plymouth.locking.Locking.*;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager {
@@ -68,8 +67,8 @@ public abstract class MixinServerPlayerInteractionManager {
         var lock = Locking.surrogate(world, pos, src);
         if (player.isSneaking()) {
             if (hand == Hand.MAIN_HAND &&
-                    player.getStackInHand(Hand.OFF_HAND).isEmpty() &&
-                    player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
+                    isItemNoop(player, player.getStackInHand(Hand.OFF_HAND)) &&
+                    isItemNoop(player, player.getStackInHand(Hand.MAIN_HAND))) {
                 if (lock.isOwner() || (lock.effective() & PERMISSIONS_BYPASS) != 0) {
                     lock.unclaim();
                     player.sendMessage(new TranslatableText("plymouth.locking.unclaimed", toText(block), toText(pos)).formatted(Formatting.YELLOW), true);
