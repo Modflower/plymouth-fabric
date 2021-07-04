@@ -11,7 +11,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import static net.kjp12.plymouth.antixray.transformers.Transformers.walk;
+import static net.kjp12.plymouth.antixray.transformers.Transformers.walkBackwards;
 
 /**
  * ASM Transformer for GudASM when available.
@@ -68,7 +68,7 @@ public class GudAsmTransformer implements Transformer, AsmInitializer {
         boolean transformed = false;
         for (var method : classNode.methods) {
             for (var call : AsmUtils.findMethodCalls(method, 0, Opcodes.INVOKESPECIAL, constructor)) {
-                var node = walk(call, 3).getPrevious(); // up 3 arguments then up 1 to invoke
+                var node = walkBackwards(call, 3).getPrevious(); // up 3 arguments then up 1 to invoke
                 if (!(node instanceof MethodInsnNode m1)) {
                     new Throwable("Unexpected node " + node).printStackTrace();
                     break;
