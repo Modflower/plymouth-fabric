@@ -13,6 +13,10 @@ import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ShieldItem;
+import net.minecraft.item.ToolItem;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -114,6 +118,15 @@ public class Locking implements ModInitializer {
 
     public static boolean canBreak0(IPermissionHandler block, Entity breaker) {
         return breaker instanceof PlayerEntity ? block.allowDelete(breaker.getCommandSource()) : block.allowDelete(breaker);
+    }
+
+    public static boolean isItemNoop(ServerPlayerEntity entity, ItemStack stack) {
+        if (stack.isEmpty()) return true;
+        var item = stack.getItem();
+        return (item.getClass() == Item.class && !item.isFood()) ||
+                // Allow tool items, only if the player isn't being attacked.
+                ((item instanceof ToolItem || item instanceof ShieldItem) && entity.getAttacker() == null) ||
+                !entity.getHungerManager().isNotFull();
     }
 
     public static LockDelegate surrogate(World world, BlockPos pos, ServerCommandSource source) {
