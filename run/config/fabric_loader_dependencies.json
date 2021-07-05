@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "overrides": {
+    "gud_asm": {
+      "-depends": {
+        "minecraft": ""
+      }
+    }
+  }
+}
