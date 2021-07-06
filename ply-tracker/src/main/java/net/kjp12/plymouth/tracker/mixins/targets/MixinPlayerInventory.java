@@ -21,63 +21,63 @@ import java.util.UUID;
  * @since ${version}
  **/
 @Mixin(PlayerInventory.class)
-public class MixinPlayerInventory<T extends PlayerEntity & Target> implements Target {
+public class MixinPlayerInventory implements Target {
     @Shadow
     @Final
-    public T player;
+    public PlayerEntity player;
 
     @Override
     public TargetRecord plymouth$toRecord() {
-        return player.plymouth$toRecord();
+        return ((Target) player).plymouth$toRecord();
     }
 
     @Override
     public boolean ply$isBlock() {
-        return player.ply$isBlock();
+        return ((Target) player).ply$isBlock();
     }
 
     @Override
     public World ply$world() {
-        return player.ply$world();
+        return ((Target) player).ply$world();
     }
 
     @Override
     public World ply$blockWorld() {
-        return player.ply$blockWorld();
+        return ((Target) player).ply$blockWorld();
     }
 
     @Override
     public BlockPos ply$pos3i() {
-        return player.ply$pos3i();
+        return ((Target) player).ply$pos3i();
     }
 
     @Override
     public BlockPos ply$blockPos3i() {
-        return player.ply$blockPos3i();
+        return ((Target) player).ply$blockPos3i();
     }
 
     @Override
     public Vec3d ply$pos3d() {
-        return player.ply$pos3d();
+        return ((Target) player).ply$pos3d();
     }
 
     @Override
     public String ply$name() {
-        return player.ply$name();
+        return ((Target) player).ply$name();
     }
 
     @Override
     public UUID ply$userId() {
-        return player.ply$userId();
+        return ((Target) player).ply$userId();
     }
 
     @Override
     public UUID ply$entityId() {
-        return player.ply$entityId();
+        return ((Target) player).ply$entityId();
     }
 
     @Override
     public boolean ply$targetMatches(@Nullable Target other) {
-        return player.ply$targetMatches(other);
+        return ((Target) player).ply$targetMatches(other);
     }
 }
