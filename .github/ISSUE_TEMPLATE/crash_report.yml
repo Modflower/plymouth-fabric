@@ -1,0 +1,61 @@
+name: Crash report
+description: Submit a crash report to help us improve.
+labels: [ 'bug', 'critical' ]
+
+body:
+  - type: input
+    attributes:
+      label: Environment
+      description: |
+        What platform, side and version of Minecraft, Plymouth and Java are you using?
+
+        Example:
+          - **Minecraft**: 1.17 Server
+          - **Plymouth**: 0.0.0-beta.5
+          - **Loader**: Fabric
+          - **Java**: AdoptOpenJDK 16.0.1
+      value: |
+        - **Minecraft**:
+        - **Plymouth**:
+        - **Mod Loader**:
+        - **Java**:
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: To reproduce
+      description: Steps to reproduce the behaviour.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Crash logs
+      description: |
+        The crash report.
+
+        Tip: You can click the text box then drag the files into here in place of the details tags.
+      value: |
+        <details><summary>Latest logs</summary><code>
+
+        <!-- Paste the log here. Usually located at <server-root>/logs/latest.log -->
+
+        </code></details>
+        <details><summary>Crash Report</summary><code>
+
+        <!-- Paste the crash report here. Usually located at <server-root>/crash-reports/ -->
+
+        </code></details>
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: Any additional logs, screenshots and videos should go here.
+    validations:
+      required: false
