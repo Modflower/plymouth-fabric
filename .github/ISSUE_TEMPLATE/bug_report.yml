@@ -3,19 +3,35 @@ description: Create a bug report to help us improve.
 labels: [ 'bug' ]
 
 body:
-  - type: input
+  - type: checkboxes
     attributes:
-      label: Plymouth Module & Version
-      description: The full version of the module, which can be found with the file name or in the logs.
-      placeholder: e.g. Tracker v0.0.0-rc.0
-    validations:
-      required: true
+      label: What module(s) is this issue related to?
+      description: If you don't know, select all that were installed.
+      options:
+        - label: Anti-Xray `ply-anti-xray`
+        - label: Common `ply-common`
+        - label: Database `ply-database`
+        - label: Locking `ply-locking`
+        - label: Tracker `ply-tracker`
+        - label: Miscallenious `plymouth`
+        - label: Debug `ply-debug`
 
   - type: input
     attributes:
       label: Environment
-      description: What platform, side and version of Minecraft and Java are you using?
-      placeholder: e.g. Minecraft Server 1.16.4 with Fabric running on Java 11.0.5
+      description: |
+        What platform, side and version of Minecraft, Plymouth and Java are you using?
+
+        Example:
+          - **Minecraft**: 1.17 Server
+          - **Plymouth**: 0.0.0-beta.5
+          - **Loader**: Fabric
+          - **Java**: AdoptOpenJDK 16.0.1
+      value: |
+        - **Minecraft**:
+        - **Plymouth**:
+        - **Mod Loader**:
+        - **Java**:
     validations:
       required: true
 
@@ -48,5 +64,6 @@ body:
   - type: textarea
     attributes:
       label: Anything else?
+      description: Crash reports, server logs, screenshots and videos should go here.
     validations:
       required: false
