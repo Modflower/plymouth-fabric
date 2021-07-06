@@ -16,7 +16,7 @@ body:
         - label: Miscallenious `plymouth`
         - label: Debug `ply-debug`
 
-  - type: input
+  - type: textarea
     attributes:
       label: Environment
       description: |
