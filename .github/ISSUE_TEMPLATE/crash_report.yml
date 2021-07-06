@@ -3,7 +3,7 @@ description: Submit a crash report to help us improve.
 labels: [ 'bug', 'critical' ]
 
 body:
-  - type: input
+  - type: textarea
     attributes:
       label: Environment
       description: |
