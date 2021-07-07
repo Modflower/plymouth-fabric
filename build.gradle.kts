@@ -6,6 +6,7 @@ plugins {
     id("fabric-loom")
     `maven-publish`
     id("io.github.juuxel.loom-quiltflower")
+    id("com.diffplug.spotless")
 }
 
 val minecraft_version: String by project
@@ -42,6 +43,20 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
+}
+
+spotless {
+    java {
+        importOrder()
+        removeUnusedImports()
+
+        licenseHeaderFile(rootDir.resolve(".internal/license-header.java"))
+    }
+    kotlinGradle {
+        target("*.gradle.kts", "ply-*/*.gradle.kts")
+        ktfmt().googleStyle()
+        licenseHeaderFile(rootDir.resolve(".internal/license-header.java"), "import \\w+(\\.\\w+)*|plugins\\s*\\{")
+    }
 }
 
 tasks {
