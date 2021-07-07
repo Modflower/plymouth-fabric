@@ -123,10 +123,11 @@ public class Locking implements ModInitializer {
     public static boolean isItemNoop(ServerPlayerEntity entity, ItemStack stack) {
         if (stack.isEmpty()) return true;
         var item = stack.getItem();
-        return (item.getClass() == Item.class && !item.isFood()) ||
-                // Allow tool items, only if the player isn't being attacked.
-                ((item instanceof ToolItem || item instanceof ShieldItem) && entity.getAttacker() == null) ||
-                !entity.getHungerManager().isNotFull();
+        return item.isFood() ?
+                item.getFoodComponent().isAlwaysEdible() || !entity.getHungerManager().isNotFull() :
+                (item.getClass() == Item.class) ||
+                        // Allow tool items, only if the player isn't being attacked.
+                        ((item instanceof ToolItem || item instanceof ShieldItem) && entity.getAttacker() == null);
     }
 
     public static LockDelegate surrogate(World world, BlockPos pos, ServerCommandSource source) {
