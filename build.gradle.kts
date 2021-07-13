@@ -27,7 +27,7 @@ version = when {
     else -> "$baseVersion-build.local"
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }

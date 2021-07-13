@@ -41,7 +41,7 @@ dependencies {
     modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_16
     targetCompatibility = JavaVersion.VERSION_16
 }

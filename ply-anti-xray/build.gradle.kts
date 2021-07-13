@@ -41,7 +41,7 @@ dependencies {
     modImplementation("net.gudenau.minecraft", "gudasm", "0.2.10")
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_16
     targetCompatibility = JavaVersion.VERSION_16
 }

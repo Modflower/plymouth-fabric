@@ -33,7 +33,7 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
 }
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
