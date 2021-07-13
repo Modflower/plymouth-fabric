@@ -30,7 +30,7 @@ public final class InventoryLookupRecord extends LookupRecord<InventoryRecord> {
     }
 
     public InventoryLookupRecord(ServerWorld world, BlockPos pos, int page) {
-        this(world, pos, null, null, null, null, null, null, null, null, null, null, page, FLAG_C_AT);
+        this(null, null, null, null, null, null, world, pos, null, null, null, null, page, FLAG_T_AT);
     }
 
     public String item() {
