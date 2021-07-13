@@ -3,6 +3,11 @@
 
 # Plymouth
 
+[![Java CI with Gradle](https://github.com/Modflower/plymouth-fabric/actions/workflows/build.yml/badge.svg)](https://github.com/Modflower/plymouth-fabric/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/Modflower/plymouth-fabric)](LICENSE)
+[![Stable](https://img.shields.io/github/v/release/Modflower/plymouth-fabric?label=stable)](https://github.com/Modflower/plymouth-fabric/releases)
+[![Beta](https://img.shields.io/github/v/release/Modflower/plymouth-fabric?include_prereleases&label=beta)](https://github.com/Modflower/plymouth-fabric/releases)
+
 An anti-xray engine, claiming system and world tracker.
 
 ## [Plymouth: Anti-Xray](ply-anti-xray/README.md)
