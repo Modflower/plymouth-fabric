@@ -1,3 +1,9 @@
+/* Copyright (c) 2021 Ampflower
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package gay.ampflower.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -28,7 +34,8 @@ public abstract class MixinCommandManager {
     }
 
     @Inject(method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)I", at = @At("HEAD"))
-    public void helium$execute$logCommandExecution(ServerCommandSource source, String str, CallbackInfoReturnable<Integer> cbir) {
+    public void helium$execute$logCommandExecution(ServerCommandSource source, String str,
+            CallbackInfoReturnable<Integer> cbir) {
         Helium.logger.info("{} has executed the following command: {}", source.getName(), str);
     }
 }

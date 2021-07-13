@@ -1,3 +1,9 @@
+/* Copyright (c) 2021 Ampflower
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package gay.ampflower.helium.commands;
 
 import com.mojang.brigadier.Command;
@@ -20,26 +26,27 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
- * Player inventory lookup. Does not do offline players, only those that are online at the time.
+ * Player inventory lookup. Does not do offline players, only those that are
+ * online at the time.
  *
  * @author Ampflower
  * @since 0.0.0
  **/
 public class InventoryLookupCommand {
-    public static final Predicate<ServerCommandSource>
-            REQUIRE_INVSEE_PERMISSION = Permissions.require("helium.admin.moderation.invsee", 3),
+    public static final Predicate<ServerCommandSource> REQUIRE_INVSEE_PERMISSION = Permissions
+            .require("helium.admin.moderation.invsee", 3),
             REQUIRE_ENDSEE_PERMISSION = Permissions.require("helium.admin.moderation.endsee", 3);
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        var e0 = argument("target", player())
-                .requires(REQUIRE_ENDSEE_PERMISSION).executes(s -> {
-                    var p = getPlayer(s, "target");
-                    var sp = s.getSource().getPlayer();
-                    sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) ->
-                            GenericContainerScreenHandler.createGeneric9x3(i, pi, p.getEnderChestInventory()),
-                            p.getDisplayName().shallowCopy().append(" - ").append(Helium.ENDER_CHEST)));
-                    return Command.SINGLE_SUCCESS;
-                });
+        var e0 = argument("target", player()).requires(REQUIRE_ENDSEE_PERMISSION).executes(s -> {
+            var p = getPlayer(s, "target");
+            var sp = s.getSource().getPlayer();
+            sp.openHandledScreen(new SimpleNamedScreenHandlerFactory(
+                    (i, pi, pe) -> GenericContainerScreenHandler.createGeneric9x3(i, pi, p.getEnderChestInventory()),
+                    p.getDisplayName().shallowCopy().append(" - ")
+                            .append(Helium.ENDER_CHEST)));
+            return Command.SINGLE_SUCCESS;
+        });
 
         var p0 = argument("target", player()).requires(REQUIRE_INVSEE_PERMISSION).executes(s -> {
             var p = getPlayer(s, "target");
@@ -47,9 +54,9 @@ public class InventoryLookupCommand {
             if (sp.equals(p)) {
                 sp.sendSystemMessage(Helium.DID_YOU_MEAN, Util.NIL_UUID);
             } else {
-                // TODO: Replace with a better screen handler that accounts for hidden player inventory.
-                sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) ->
-                        new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, i, pi, ((AccessorPlayerEntity) p).getInventory(), 4) {
+                sp.openHandledScreen(new SimpleNamedScreenHandlerFactory(
+                        (i, pi, pe) -> new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X4, i, pi,
+                                ((AccessorPlayerEntity) p).getInventory(), 4) {
                             @Override
                             public boolean canUse(PlayerEntity player) {
                                 return true;

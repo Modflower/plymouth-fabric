@@ -1,3 +1,9 @@
+/* Copyright (c) 2021 Ampflower
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 rootProject.name = "plymouth"
 
 pluginManagement {
@@ -20,4 +26,12 @@ pluginManagement {
     }
 }
 
-include("utilities", "database", "ply-common", "ply-anti-xray", "ply-locking", "ply-tracker", "ply-database", "ply-debug")
+include(
+    "utilities",
+    "database",
+    "ply-common",
+    "ply-anti-xray",
+    "ply-locking",
+    "ply-tracker",
+    "ply-database",
+    "ply-debug")

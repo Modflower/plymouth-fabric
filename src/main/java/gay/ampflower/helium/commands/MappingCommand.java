@@ -1,3 +1,9 @@
+/* Copyright (c) 2021 Ampflower
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package gay.ampflower.helium.commands;
 
 import com.mojang.brigadier.Command;
@@ -28,8 +34,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @since 0.0.0
  **/
 public class MappingCommand {
-    public static final Predicate<ServerCommandSource>
-            REQUIRE_MAPPING_PERMISSION = scs -> scs.hasPermissionLevel(3);
+    public static final Predicate<ServerCommandSource> REQUIRE_MAPPING_PERMISSION = scs -> scs.hasPermissionLevel(3);
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         var m0 = argument("id", IntegerArgumentType.integer())

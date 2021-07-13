@@ -1,3 +1,9 @@
+/* Copyright (c) 2021 Ampflower
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package gay.ampflower.helium;
 
 import com.mojang.datafixers.DataFixer;
@@ -18,24 +24,24 @@ import java.io.PushbackInputStream;
 import static net.minecraft.util.Formatting.*;
 
 /**
- * This class is a late-init-type class. It's expecting that
- * by the time that it's called, all blocks would have been
- * registered.
+ * This class is a late-init-type class. It's expecting that by the time that
+ * it's called, all blocks would have been registered.
  *
  * @author Ampflower
  * @since ${version}
  */
 public class Helium {
     public static final Style LINK = Style.EMPTY.withFormatting(AQUA, UNDERLINE);
-    public static final Text
-            SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(ITALIC),
+    public static final Text SEE_LOGS = new LiteralText("See the server logs for more information.")
+            .formatted(ITALIC),
             DID_YOU_MEAN = new TranslatableText("plymouth.dym", new KeybindText("key.inventory").formatted(AQUA))
                     .formatted(ITALIC, RED),
             ENDER_CHEST = new TranslatableText(Blocks.ENDER_CHEST.getTranslationKey()).formatted(DARK_PURPLE);
     public static final Logger logger = LogManager.getLogger("Plymouth");
 
     /**
-     * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readNbt(String, int)}
+     * [vanilla-copy]
+     * {@link net.minecraft.world.PersistentStateManager#readNbt(String, int)}
      *
      * @param stream      Stream to read NBT data from.
      * @param dfu         Server's DataFixer
@@ -58,7 +64,8 @@ public class Helium {
     }
 
     /**
-     * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#isCompressed(PushbackInputStream)}
+     * [vanilla-copy]
+     * {@link net.minecraft.world.PersistentStateManager#isCompressed(PushbackInputStream)}
      */
     public static boolean isCompressed(PushbackInputStream pushback) throws IOException {
         byte[] bytes = new byte[2];
