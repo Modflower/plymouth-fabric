@@ -36,7 +36,6 @@ dependencies {
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     api(project(":ply-common"))
     api(project(":database")) { include(this) }
-    api(project(":utilities")) { include(this) }
     include(implementation("org.postgresql", "postgresql", postgres_version))
     modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }

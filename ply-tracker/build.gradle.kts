@@ -37,6 +37,7 @@ dependencies {
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
     implementation(project(":ply-database"))
+    implementation(project(":utilities")) { include(this) }
     // implementation(project(":commander")) { include(this) }
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
