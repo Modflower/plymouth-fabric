@@ -3,6 +3,11 @@
 
 # Plymouth
 
+[![Java CI with Gradle](https://github.com/the-glitch-network/plymouth-fabric/actions/workflows/build.yml/badge.svg)](https://github.com/the-glitch-network/plymouth-fabric/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/the-glitch-network/plymouth-fabric)](LICENSE)
+[![Stable](https://img.shields.io/github/v/release/the-glitch-network/plymouth-fabric?label=stable)](https://github.com/the-glitch-network/plymouth-fabric/releases)
+[![Beta](https://img.shields.io/github/v/release/the-glitch-network/plymouth-fabric?include_prereleases&label=beta)](https://github.com/the-glitch-network/plymouth-fabric/releases)
+
 An anti-xray engine, claiming system and world tracker.
 
 ## [Plymouth: Anti-Xray](ply-anti-xray/README.md)
