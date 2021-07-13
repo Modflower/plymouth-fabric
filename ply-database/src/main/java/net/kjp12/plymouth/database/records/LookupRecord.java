@@ -1,5 +1,6 @@
 package net.kjp12.plymouth.database.records;// Created 2021-02-05T23:19:10
 
+import net.kjp12.hachimitsu.database.api.DatabaseRecord;
 import net.kjp12.plymouth.database.DatabaseHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -27,7 +28,7 @@ import static net.kjp12.plymouth.database.TextUtils.positionToText;
  * @author KJP12
  * @since ${version}
  **/
-public abstract class LookupRecord<T extends PlymouthRecord> implements PlymouthRecord, CompletableRecord<List<T>> {
+public abstract class LookupRecord<T extends PlymouthRecord> implements DatabaseRecord<List<T>>, PlymouthRecord, CompletableRecord<List<T>> {
     /**
      * Indicates that lookup is by user.
      */

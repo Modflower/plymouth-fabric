@@ -3,8 +3,9 @@ package net.kjp12.plymouth.database;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
-import net.kjp12.plymouth.database.cache.SqlConnectionProvider;
-import net.kjp12.plymouth.database.cache.StatementCache;
+import net.kjp12.hachimitsu.database.api.DatabaseException;
+import net.kjp12.hachimitsu.database.api.SqlConnectionProvider;
+import net.kjp12.hachimitsu.database.api.StatementCache;
 import net.kjp12.plymouth.database.records.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -47,9 +48,9 @@ public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
     protected Driver driver;
     protected Connection connection;
 
-    protected StatementCache<BlockLookupRecord, BlockRecord> blockLookupCache;
-    protected StatementCache<DeathLookupRecord, DeathRecord> deathLookupCache;
-    protected StatementCache<InventoryLookupRecord, InventoryRecord> inventoryLookupCache;
+    protected StatementCache<BlockLookupRecord> blockLookupCache;
+    protected StatementCache<DeathLookupRecord> deathLookupCache;
+    protected StatementCache<InventoryLookupRecord> inventoryLookupCache;
 
     protected PreparedStatement
             insertBlocks, insertDeaths, insertItems,
@@ -153,7 +154,7 @@ public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
                     default:
                         log.warn("Unknown type {} for record {}.", r.getType(), r);
                 }
-            } catch (IllegalStateException | NullPointerException | PlymouthException | SQLException exception) {
+            } catch (IllegalStateException | NullPointerException | PlymouthException | DatabaseException | SQLException exception) {
                 if (r instanceof CompletableRecord<?> completable) completable.fail(exception);
                 log.error("Failed to add record {} to batch.\n{}", r, lastStatement, exception);
             }

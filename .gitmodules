@@ -1,3 +1,6 @@
 [submodule "utilities"]
 	path = utilities
 	url = git@github.com:the-glitch-network/hachimitsu-utilities.git
+[submodule "database"]
+	path = database
+	url = git@github.com:the-glitch-network/hachimitsu-database.git
