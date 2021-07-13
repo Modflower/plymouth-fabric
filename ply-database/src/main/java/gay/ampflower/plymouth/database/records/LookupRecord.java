@@ -1,5 +1,6 @@
 package gay.ampflower.plymouth.database.records;
 
+import gay.ampflower.hachimitsu.database.api.DatabaseRecord;
 import gay.ampflower.plymouth.database.DatabaseHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -27,7 +28,7 @@ import static gay.ampflower.plymouth.database.TextUtils.positionToText;
  * @author Ampflower
  * @since ${version}
  **/
-public abstract class LookupRecord<T extends PlymouthRecord> implements PlymouthRecord, CompletableRecord<List<T>> {
+public abstract class LookupRecord<T extends PlymouthRecord> implements DatabaseRecord<List<T>>, PlymouthRecord, CompletableRecord<List<T>> {
     /**
      * Indicates that lookup is by user.
      */

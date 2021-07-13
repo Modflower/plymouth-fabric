@@ -1,3 +1,6 @@
 [submodule "utilities"]
 	path = utilities
 	url = git@github.com:Ampflower/hachimitsu-utilities.git
+[submodule "database"]
+	path = database
+	url = git@github.com:Ampflower/hachimitsu-database.git
