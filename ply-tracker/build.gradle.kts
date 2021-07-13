@@ -41,7 +41,7 @@ dependencies {
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_16
     targetCompatibility = JavaVersion.VERSION_16
 }
