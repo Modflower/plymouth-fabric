@@ -1,7 +1,7 @@
 package net.kjp12.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.kjp12.helium.HeliumEarlyRiser;
+import net.kjp12.helium.Helium;
 import net.kjp12.helium.commands.InventoryLookupCommand;
 import net.kjp12.helium.commands.MappingCommand;
 import net.minecraft.server.command.CommandManager;
@@ -29,6 +29,6 @@ public abstract class MixinCommandManager {
 
     @Inject(method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)I", at = @At("HEAD"))
     public void helium$execute$logCommandExecution(ServerCommandSource source, String str, CallbackInfoReturnable<Integer> cbir) {
-        HeliumEarlyRiser.LOGGER.info("{} has executed the following command: {}", source.getName(), str);
+        Helium.logger.info("{} has executed the following command: {}", source.getName(), str);
     }
 }

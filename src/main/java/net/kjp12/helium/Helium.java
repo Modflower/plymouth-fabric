@@ -1,18 +1,21 @@
 package net.kjp12.helium;
 
 import com.mojang.datafixers.DataFixer;
+import net.minecraft.block.Blocks;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.text.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+
+import static net.minecraft.util.Formatting.*;
 
 /**
  * This class is a late-init-type class. It's expecting that
@@ -23,8 +26,13 @@ import java.io.PushbackInputStream;
  * @since ${version}
  */
 public class Helium {
+    public static final Style LINK = Style.EMPTY.withFormatting(AQUA, UNDERLINE);
     public static final Text
-            SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(Formatting.ITALIC);
+            SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(ITALIC),
+            DID_YOU_MEAN = new TranslatableText("plymouth.dym", new KeybindText("key.inventory").formatted(AQUA))
+                    .formatted(ITALIC, RED),
+            ENDER_CHEST = new TranslatableText(Blocks.ENDER_CHEST.getTranslationKey()).formatted(DARK_PURPLE);
+    public static final Logger logger = LogManager.getLogger("Plymouth");
 
     /**
      * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readNbt(String, int)}
