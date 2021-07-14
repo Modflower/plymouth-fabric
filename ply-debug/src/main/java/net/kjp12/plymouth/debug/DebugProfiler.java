@@ -1,10 +1,10 @@
 package net.kjp12.plymouth.debug;// Created 2021-03-29T00:14:15
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
@@ -15,7 +15,7 @@ import net.minecraft.util.math.MathHelper;
 @Environment(EnvType.CLIENT)
 public class DebugProfiler {
     private final long[] points;
-    private final float r, g, b, s;
+    private final float r, g, b, s, s1;
     private final int mask;
     private int index;
 
@@ -26,37 +26,18 @@ public class DebugProfiler {
         this.r = r;
         this.g = g;
         this.b = b;
-        this.s = s;
+        this.s = -s;
+        this.s1 = s + 1;
     }
 
-    public void render(WorldRenderContext ctx) {
-        // Note: We purposely don't enable a depth test for the sake of visibility.
-        // However, due to which stage it's on, it does get obstructed by water and clouds.
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableDepthTest();
-
-        var tessellator = Tessellator.getInstance();
-        var immediate = tessellator.getBuffer();
-
-        RenderSystem.disableTexture();
-        RenderSystem.enableBlend();
-        RenderSystem.lineWidth(0.5F);
-
-        immediate.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
-        var camera = ctx.camera().getPos();
+    public void render(MatrixStack stack, VertexConsumer consumer) {
         for (int i = 0; i < points.length; i++) {
+            stack.push();
             long pos = points[i];
-            double x = BlockPos.unpackLongX(pos) - camera.x;
-            double y = BlockPos.unpackLongY(pos) - camera.y;
-            double z = BlockPos.unpackLongZ(pos) - camera.z;
-            WorldRenderer.drawBox(immediate, x - s, y - s, z - s, x + 1 + s, y + 1 + s, z + 1 + s, r, g, b, i + 1 == (index & mask) ? 0.75F : 0.25F * ((float) ((i - index) & mask) / points.length));
+            stack.translate(BlockPos.unpackLongX(pos), BlockPos.unpackLongY(pos), BlockPos.unpackLongZ(pos));
+            WorldRenderer.drawBox(stack, consumer, s, s, s, s1, s1, s1, r, g, b, i + 1 == (index & mask) ? 0.75F : 0.25F * ((float) ((i - index) & mask) / points.length));
+            stack.pop();
         }
-        tessellator.draw();
-
-        RenderSystem.lineWidth(1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.enableTexture();
-        RenderSystem.enableDepthTest();
     }
 
     public void push(long point) {
