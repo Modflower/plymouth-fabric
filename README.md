@@ -3,10 +3,18 @@
 
 # Plymouth
 
+<center>
+
 [![Java CI with Gradle](https://github.com/the-glitch-network/plymouth-fabric/actions/workflows/build.yml/badge.svg)](https://github.com/the-glitch-network/plymouth-fabric/actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/the-glitch-network/plymouth-fabric)](LICENSE)
+<br/>
 [![Stable](https://img.shields.io/github/v/release/the-glitch-network/plymouth-fabric?label=stable)](https://github.com/the-glitch-network/plymouth-fabric/releases)
 [![Beta](https://img.shields.io/github/v/release/the-glitch-network/plymouth-fabric?include_prereleases&label=beta)](https://github.com/the-glitch-network/plymouth-fabric/releases)
+<br/>
+[![Discord](https://img.shields.io/discord/380201541078089738?color=7289da&label=Development&logo=discord&logoColor=7289da)](https://discord.gg/EmPS9y9)
+[![Discord](https://img.shields.io/discord/368932049354227712?color=7289da&label=Community&logo=discord&logoColor=7289da)](https://discord.gg/ExCdXwP)
+
+</center>
 
 An anti-xray engine, claiming system and world tracker.
 
