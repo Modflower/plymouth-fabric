@@ -30,8 +30,7 @@ public class AntiXrayDebugger {
     public static final Set<ServerPlayNetworkHandler> players = new HashSet<>();
 
     public static boolean canSendDebugInformation(ServerCommandSource source) {
-        var entity = source.getEntity();
-        return entity instanceof ServerPlayerEntity && players.contains(((ServerPlayerEntity) entity).networkHandler);
+        return source.getEntity() instanceof ServerPlayerEntity player && players.contains(player.networkHandler);
     }
 
     public static void initialise() {

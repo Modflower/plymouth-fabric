@@ -40,25 +40,25 @@ public class MixinSlot {
 
     @Inject(method = "onQuickTransfer", at = @At("HEAD"))
     private void plymouth$onStackChanged(ItemStack a, ItemStack b, CallbackInfo cbi) {
-        if (inventory instanceof Target && !((Target) inventory).ply$world().isClient)
+        if (inventory instanceof Target target && !target.ply$world().isClient)
             Tracker.logger.info("{} had items changed out: {}, {}", this, a, b, new Throwable());
     }
 
     @Inject(method = "setStack", at = @At("HEAD"))
     private void plymouth$onSetStack(ItemStack a, CallbackInfo cbi) {
-        if (inventory instanceof Target && !((Target) inventory).ply$world().isClient)
+        if (inventory instanceof Target target && !target.ply$world().isClient)
             Tracker.logger.info("{} had items set to {}", this, a, new Throwable());
     }
 
     @Inject(method = "insertStack(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;", at = @At("HEAD"))
     private void plymouth$onSetStack(ItemStack a, CallbackInfoReturnable<ItemStack> cbi) {
-        if (inventory instanceof Target && !((Target) inventory).ply$world().isClient)
+        if (inventory instanceof Target target && !target.ply$world().isClient)
             Tracker.logger.info("{} had items set to {}", this, a, new Throwable());
     }
 
     @Inject(method = "insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;", at = @At("HEAD"))
     private void plymouth$onSetStack(ItemStack a, int i, CallbackInfoReturnable<ItemStack> cbi) {
-        if (inventory instanceof Target && !((Target) inventory).ply$world().isClient)
+        if (inventory instanceof Target target && !target.ply$world().isClient)
             Tracker.logger.info("{} had items set to {}", this, a, new Throwable());
     }
 

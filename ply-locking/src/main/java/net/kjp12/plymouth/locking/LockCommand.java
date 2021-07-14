@@ -217,8 +217,8 @@ public class LockCommand {
                 source.sendFeedback(new TranslatableText("plymouth.locking.removed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
-                if (msg instanceof Text) {
-                    source.sendError((Text) msg);
+                if (msg instanceof Text text) {
+                    source.sendError(text);
                 } else {
                     source.sendError(new LiteralText(msg.getString()));
                 }
@@ -243,8 +243,8 @@ public class LockCommand {
                 source.sendFeedback(new TranslatableText("plymouth.locking.allowed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
-                if (msg instanceof Text) {
-                    source.sendError((Text) msg);
+                if (msg instanceof Text text) {
+                    source.sendError(text);
                 } else {
                     source.sendError(new LiteralText(msg.getString()));
                 }
@@ -267,8 +267,8 @@ public class LockCommand {
                 source.sendFeedback(new TranslatableText("plymouth.locking.modified", "~", new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
-                if (msg instanceof Text) {
-                    source.sendError((Text) msg);
+                if (msg instanceof Text text) {
+                    source.sendError(text);
                 } else {
                     source.sendError(new LiteralText(msg.getString()));
                 }
@@ -290,8 +290,8 @@ public class LockCommand {
                 handler.dumpLock(source);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
-                if (msg instanceof Text) {
-                    source.sendError((Text) msg);
+                if (msg instanceof Text text) {
+                    source.sendError(text);
                 } else {
                     source.sendError(new LiteralText(msg.getString()));
                 }

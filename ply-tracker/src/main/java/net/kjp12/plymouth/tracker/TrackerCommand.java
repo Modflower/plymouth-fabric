@@ -223,7 +223,7 @@ public class TrackerCommand {
                 var source = context.getSource();
                 var entity = source.getEntity();
                 var cast = entity != null ? entity.raycast(5, 0, false) : null;
-                var pos = cast instanceof BlockHitResult ? ((BlockHitResult) cast).getBlockPos() :
+                var pos = cast instanceof BlockHitResult hitResult ? hitResult.getBlockPos() :
                         entity != null ? entity.getBlockPos() : new BlockPos(source.getEntityAnchor().positionAt(source));
                 psb = mkSb(builder.getRemaining());
                 switch (c % 3) {

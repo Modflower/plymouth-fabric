@@ -58,10 +58,10 @@ public abstract class ScreenHandlerMixin {
 
     @Unique
     private static void plymouth$bridge$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
-        var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
-        if (player instanceof ServerPlayerEntity && inv instanceof Target) {
+        var inv = slot.inventory instanceof AccessorDoubleInventory doubleInventory ? getInventory(doubleInventory, slot.id) : slot.inventory;
+        if (player instanceof ServerPlayerEntity && inv instanceof Target targetInv) {
             Tracker.logger.info("[TAKE] onTakeItem: Stack is {}, slot is {}", stack, slot);
-            DatabaseHelper.database.takeItems((Target) inv, stack, stack.getCount(), (Target) player);
+            DatabaseHelper.database.takeItems(targetInv, stack, stack.getCount(), (Target) player);
         }
         slot.onTakeItem(player, stack);
     }
@@ -72,10 +72,10 @@ public abstract class ScreenHandlerMixin {
         var ret = slot.insertStack(stack, c);
         var di = cu - ret.getCount();
         if (di != 0 && player instanceof ServerPlayerEntity) {
-            var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
-            if (inv instanceof Target) {
+            var inv = slot.inventory instanceof AccessorDoubleInventory doubleInventory ? getInventory(doubleInventory, slot.id) : slot.inventory;
+            if (inv instanceof Target targetInv) {
                 Tracker.logger.info("[PUT] onInsertStack: Add is {}, Return is {}, slot is {}", di, stack, slot);
-                DatabaseHelper.database.putItems((Target) inv, slot.getStack(), di, (Target) player);
+                DatabaseHelper.database.putItems(targetInv, slot.getStack(), di, (Target) player);
             }
         }
         return ret;
@@ -84,7 +84,7 @@ public abstract class ScreenHandlerMixin {
     @Redirect(method = "internalOnSlotClick", require = 7, at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;setStack(Lnet/minecraft/item/ItemStack;)V"))
     private void plymouth$30010$onSetStack(Slot slot, ItemStack stack, int i, int j, SlotActionType slotActionType, PlayerEntity player) {
         var inv = slot.inventory instanceof DoubleInventory ? getInventory((AccessorDoubleInventory) slot.inventory, slot.id) : slot.inventory;
-        if (player instanceof ServerPlayerEntity && inv instanceof Target) {
+        if (player instanceof ServerPlayerEntity && inv instanceof Target targetInv) {
             if (stack.isEmpty()) {
                 if (slot.hasStack()) {
                     Tracker.logger.info("[TAKE] onSetStack: Return is {}, slot is {}.", stack, slot);
@@ -93,7 +93,7 @@ public abstract class ScreenHandlerMixin {
                 //DatabaseHelper.database.takeItems((ServerWorld) be.getWorld(), be.getPos(), st, st.getCount(), player);
             } else {
                 Tracker.logger.info("[PUT] onSetStack: Return is {}, slot is {}", stack, slot);
-                DatabaseHelper.database.putItems((Target) inv, stack, stack.getCount(), (Target) player);
+                DatabaseHelper.database.putItems(targetInv, stack, stack.getCount(), (Target) player);
             }
         }
         slot.setStack(stack);
@@ -117,9 +117,9 @@ public abstract class ScreenHandlerMixin {
                 var c = oldCount - slot.getStack().getCount();
                 if (isTake) {
                     var in = isDouble ? getInventory((AccessorDoubleInventory) inv, index) : inv;
-                    if (in instanceof Target) {
+                    if (in instanceof Target targetIn) {
                         Tracker.logger.info("[TAKE] Return is {}, slot is now {}, delta of -{}", ret, slot, c);
-                        DatabaseHelper.database.takeItems((Target) in, ret, c, (Target) player);
+                        DatabaseHelper.database.takeItems(targetIn, ret, c, (Target) player);
                     }
                 } else if (isDouble) {
                     var adi = (AccessorDoubleInventory) inv;
@@ -138,17 +138,17 @@ public abstract class ScreenHandlerMixin {
                     }
                     if (da + db > c)
                         throw new AssertionError("Over counted?! Expected " + da + " + " + db + " to equal " + c + ". See " + stackToSlot + ", " + mutatedSlots + " and " + inv + ", composite of " + ia + " and " + ib + ", containing slots " + slots + ".");
-                    if (da != 0 && ia instanceof Target) {
+                    if (da != 0 && ia instanceof Target targetInv) {
                         Tracker.logger.info("[PUT-IA] Return is {}, slot is now {}, delta of {}", ret, slot, da);
-                        DatabaseHelper.database.putItems((Target) ia, ret, da, (Target) player);
+                        DatabaseHelper.database.putItems(targetInv, ret, da, (Target) player);
                     }
-                    if (db != 0 && ib instanceof Target) {
+                    if (db != 0 && ib instanceof Target targetInv) {
                         Tracker.logger.info("[PUT-IB] Return is {}, slot is now {}, delta of {}", ret, slot, db);
-                        DatabaseHelper.database.putItems((Target) ib, ret, db, (Target) player);
+                        DatabaseHelper.database.putItems(targetInv, ret, db, (Target) player);
                     }
-                } else if (inv instanceof Target) {
+                } else if (inv instanceof Target targetInv) {
                     Tracker.logger.info("[PUT] Return is {}, slot is now {}, delta of {}", ret, slot, c);
-                    DatabaseHelper.database.putItems((Target) inv, ret, c, (Target) player);
+                    DatabaseHelper.database.putItems(targetInv, ret, c, (Target) player);
                 }
             }
             return ret;

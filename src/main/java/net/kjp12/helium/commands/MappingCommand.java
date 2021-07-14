@@ -44,8 +44,7 @@ public class MappingCommand {
             ForkJoinPool.commonPool().execute(() -> {
                 try {
                     var connection = new URL(uri).openConnection();
-                    if (connection instanceof HttpURLConnection) {
-                        var httpConnection = (HttpURLConnection) connection;
+                    if (connection instanceof HttpURLConnection httpConnection) {
                         httpConnection.setRequestMethod("GET");
                         httpConnection.setInstanceFollowRedirects(true);
                         if (httpConnection.getResponseCode() / 100 != 2) {

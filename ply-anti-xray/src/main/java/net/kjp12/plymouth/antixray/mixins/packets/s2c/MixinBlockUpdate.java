@@ -14,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinBlockUpdate {
     @Redirect(method = "<init>(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/BlockView;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
     private static BlockState helium$init$proxyWorldChunk$getBlockState(BlockView self, BlockPos pos) {
-        return self instanceof World ? ((IShadowChunk) ((World) self).getChunk(pos.getX() >> 4, pos.getZ() >> 4)).plymouth$getShadowBlock(pos) : self.getBlockState(pos);
+        return self instanceof World world ? ((IShadowChunk) world.getChunk(pos.getX() >> 4, pos.getZ() >> 4)).plymouth$getShadowBlock(pos) : self.getBlockState(pos);
     }
 }

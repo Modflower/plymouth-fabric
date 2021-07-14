@@ -34,18 +34,15 @@ public class MixinConfig implements IMixinConfigPlugin {
         var index = mixinClassName.indexOf('.', substr);
         String env, cur = mixinClassName.substring(substr, index);
         switch (cur) {
-            case "anti_xray": {
+            case "anti_xray" -> {
                 if (!loader.isModLoaded("plymouth-anti-xray")) return false;
                 env = getEnvironment(mixinClassName, index);
-                break;
             }
-            case "tracker": {
+            case "tracker" -> {
                 if (!loader.isModLoaded("plymouth-tracker")) return false;
                 env = getEnvironment(mixinClassName, index);
-                break;
             }
-            default:
-                env = cur;
+            default -> env = cur;
         }
         return checkEnvironment(loader, env);
     }
@@ -56,14 +53,11 @@ public class MixinConfig implements IMixinConfigPlugin {
     }
 
     private boolean checkEnvironment(FabricLoader loader, String str) {
-        switch (str) {
-            case "client":
-                return loader.getEnvironmentType() == EnvType.CLIENT;
-            case "server":
-                return loader.getEnvironmentType() == EnvType.SERVER;
-            default:
-                return true;
-        }
+        return switch (str) {
+            case "client" -> loader.getEnvironmentType() == EnvType.CLIENT;
+            case "server" -> loader.getEnvironmentType() == EnvType.SERVER;
+            default -> true;
+        };
     }
 
     @Override
