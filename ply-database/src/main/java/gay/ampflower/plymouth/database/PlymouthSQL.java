@@ -131,28 +131,22 @@ public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
             PreparedStatement lastStatement = null;
             while ((r = queue.poll()) != null) try {
                 switch (r.getType()) {
-                    case BLOCK:
+                    case BLOCK -> {
                         lastStatement = insertBlocks;
                         handleBlockRecord((BlockRecord) r);
-                        break;
-                    case DEATH:
+                    }
+                    case DEATH -> {
                         lastStatement = insertDeaths;
                         handleDeathRecord((DeathRecord) r);
-                        break;
-                    case INVENTORY:
+                    }
+                    case INVENTORY -> {
                         lastStatement = insertItems;
                         handleInventoryRecord((InventoryRecord) r);
-                        break;
-                    case LOOKUP_BLOCK:
-                        blockLookupCache.handle((BlockLookupRecord) r);
-                        break;
-                    case LOOKUP_DEATH:
-                        deathLookupCache.handle((DeathLookupRecord) r);
-                        break;
-                    case LOOKUP_INVENTORY:
-                        inventoryLookupCache.handle((InventoryLookupRecord) r);
-                    default:
-                        log.warn("Unknown type {} for record {}.", r.getType(), r);
+                    }
+                    case LOOKUP_BLOCK -> blockLookupCache.handle((BlockLookupRecord) r);
+                    case LOOKUP_DEATH -> deathLookupCache.handle((DeathLookupRecord) r);
+                    case LOOKUP_INVENTORY -> inventoryLookupCache.handle((InventoryLookupRecord) r);
+                    default -> log.warn("Unknown type {} for record {}.", r.getType(), r);
                 }
             } catch (IllegalStateException | NullPointerException | PlymouthException | DatabaseException | SQLException exception) {
                 if (r instanceof CompletableRecord<?> completable) completable.fail(exception);

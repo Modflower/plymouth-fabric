@@ -46,9 +46,9 @@ public abstract class MixinExplosion {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;shouldDropItemsOnExplosion(Lnet/minecraft/world/explosion/Explosion;)Z"))
     private void plymouth$affectWorld$onSetBlock(boolean flag, CallbackInfo cbi, boolean $2, ObjectArrayList<?> $0, Iterator<?> $1, BlockPos pos, BlockState old) {
-        if (!(world instanceof ServerWorld)) return;
+        if (!(world instanceof ServerWorld serverWorld)) return;
         Entity e = getCausingEntity();
         if (e == null) e = entity;
-        DatabaseHelper.database.breakBlock((ServerWorld) world, pos, old, old.hasBlockEntity() ? world.getBlockEntity(pos).writeNbt(new NbtCompound()) : null, (Target) e);
+        DatabaseHelper.database.breakBlock(serverWorld, pos, old, old.hasBlockEntity() ? world.getBlockEntity(pos).writeNbt(new NbtCompound()) : null, (Target) e);
     }
 }

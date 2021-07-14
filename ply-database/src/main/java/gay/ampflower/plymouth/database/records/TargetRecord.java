@@ -53,8 +53,7 @@ public final class TargetRecord implements Target {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TargetRecord)) return false;
-        TargetRecord that = (TargetRecord) o;
+        if (!(o instanceof TargetRecord that)) return false;
         return Objects.equals(world, that.world) && Objects.equals(pos, that.pos) && Objects.equals(userId, that.userId) && Objects.equals(entityId, that.entityId);
     }
 

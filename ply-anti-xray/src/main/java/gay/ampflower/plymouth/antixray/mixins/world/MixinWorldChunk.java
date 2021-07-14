@@ -19,7 +19,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.source.BiomeArray;
-import net.minecraft.world.biome.source.BiomeCoords;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -80,19 +79,24 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
         if (world instanceof ServerWorld && shadowSections != null) {
             var index = Constants.toIndex(i, j, k);
             var mask = getShadowMask(yi);
-            if (state.isIn(HIDDEN_BLOCKS)) {
+            logic:
+            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
+                if (mask.get(index)) return;
+                // This will always be true regardless of what happens in this branch.
+                mask.set(index, true);
+                var regular = infestedBlock.toRegularState(state);
+                if (regular.isIn(HIDDEN_BLOCKS)) {
+                    var mutPos = pos.mutableCopy();
+                    if (plymouth$isBlockHidden(regular, mutPos)) {
+                        state = getSmearBlock(mutPos.set(pos));
+                        break logic;
+                    }
+                }
+                state = regular;
+            } else if (state.isIn(HIDDEN_BLOCKS)) {
                 if (mask.get(index)) return;
                 var mutPos = pos.mutableCopy();
-                if (state.getBlock() instanceof InfestedBlock) {
-                    var regular = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
-                    if (regular.isIn(HIDDEN_BLOCKS) && plymouth$isBlockHidden(regular, mutPos)) {
-                        if (old != regular && isHidingCandidate(old, pos)) return;
-                        state = getSmearBlock(mutPos.set(pos));
-                    } else {
-                        state = regular;
-                    }
-                    mask.set(index, true);
-                } else if (plymouth$isBlockHidden(state, mutPos)) {
+                if (plymouth$isBlockHidden(state, mutPos)) {
                     if (isHidingCandidate(old, pos)) return;
                     state = getSmearBlock(mutPos.set(pos));
                     mask.set(index, true);
@@ -133,24 +137,20 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
             if (ChunkSection.isEmpty(section) || !section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) return;
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
-            if (!state.isAir() && state.isIn(HIDDEN_BLOCKS)) {
-                var shadowMask = getShadowMask(cy);
-                var f = state.getBlock() instanceof InfestedBlock;
-                if (shadowMask.get(Constants.toIndex(ox, oy, oz))) {
-                    if (!f && !plymouth$isBlockHidden(state, bp.set(ox, y, oz))) {
+            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
+                plymouth$setShadowBlock(bp, infestedBlock.toRegularState(state));
+            } else if (state.isIn(HIDDEN_BLOCKS)) {
+                if (getShadowMask(cy).get(Constants.toIndex(ox, oy, oz))) {
+                    if (!plymouth$isBlockHidden(state, bp.set(ox, y, oz)))
                         plymouth$unsetShadowBlock(bp.set(x, y, z));
-                    }
-                } else {
-                    if (f || plymouth$isBlockHidden(state, bp.set(ox, y, oz))) {
-                        var smear = f ? ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState() : getSmearBlock(bp.set(ox, y, oz));
-                        plymouth$setShadowBlock(bp.set(x, y, z), smear);
-                    }
+                } else if (plymouth$isBlockHidden(state, bp.set(ox, y, oz))) {
+                    var smear = getSmearBlock(bp.set(ox, y, oz));
+                    plymouth$setShadowBlock(bp.set(x, y, z), smear);
                 }
             }
         } else {
-            var chunk = world.getChunk(cx, cz, ChunkStatus.FULL, false);
-            if (chunk instanceof WorldChunk) //noinspection ConstantConditions
-                ((MixinWorldChunk) chunk).setIfHidden(bp);
+            if (world.getChunk(cx, cz, ChunkStatus.FULL, false) instanceof MixinWorldChunk worldChunk)
+                worldChunk.setIfHidden(bp);
         }
     }
 
@@ -199,22 +199,20 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 var shadowSection = getShadowSection(sy);
                 for (int x = 0; x < 16; x++)
                     for (int z = 0; z < 16; z++) {
-                        var smear = biomeArray.getBiomeForNoiseGen((pos.x + x) >> 2, BiomeCoords.fromBlock(sectionIndexToCoord(sy << 4)), (pos.z + z) >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
+                        var smear = Blocks.VOID_AIR.getDefaultState();
                         for (int y = 0; y < 16; y++) {
                             var state = section.getBlockState(x, y, z);
                             if (state.isAir()) continue;
-                            if (state.isIn(HIDDEN_BLOCKS)) {
-                                if (state.getBlock() instanceof InfestedBlock) {
-                                    state = ((InfestedBlock) state.getBlock()).getRegularBlock().getDefaultState();
-                                    getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
-                                } else if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
-                                    state = smear;
+                            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
+                                state = infestedBlock.toRegularState(state);
+                                getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
+                            } else if (state.isIn(HIDDEN_BLOCKS)) {
+                                if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
+                                    state = smear.isAir() ? getSmearBlock(bp.set(x, (sy << 4) + getBottomY(), z)) : smear;
                                     getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
                                 }
-                            } else {
-                                if (isHidingCandidate(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
-                                    smear = state;
-                                }
+                            } else if (isHidingCandidate(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
+                                smear = state;
                             }
                             shadowSection.setBlockState(x, y, z, state);
                         }

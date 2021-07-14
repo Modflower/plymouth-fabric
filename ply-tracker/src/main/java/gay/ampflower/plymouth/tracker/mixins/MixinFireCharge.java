@@ -26,7 +26,7 @@ public class MixinFireCharge extends Item {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z", ordinal = 1),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void helium$useOnBlock$logUsage(ItemUsageContext iuc, CallbackInfoReturnable<ActionResult> cbir, World world, BlockPos pos) {
-        if (world instanceof ServerWorld)
-            DatabaseHelper.database.placeBlock((ServerWorld) world, pos, Blocks.FIRE, (Target) iuc.getPlayer());
+        if (world instanceof ServerWorld serverWorld)
+            DatabaseHelper.database.placeBlock(serverWorld, pos, Blocks.FIRE, (Target) iuc.getPlayer());
     }
 }

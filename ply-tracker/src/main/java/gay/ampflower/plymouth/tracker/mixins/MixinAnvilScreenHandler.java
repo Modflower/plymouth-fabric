@@ -37,8 +37,8 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private static void plymouth$onTakeOutput$postBreakAnvil(PlayerEntity player, ItemStack stack, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState) {
-        if (world instanceof ServerWorld)
-            DatabaseHelper.database.breakBlock((ServerWorld) world, pos, oldState, null, (Target) player);
+        if (world instanceof ServerWorld serverWorld)
+            DatabaseHelper.database.breakBlock(serverWorld, pos, oldState, null, (Target) player);
     }
 
     /**
@@ -53,7 +53,7 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", shift = At.Shift.AFTER),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private static void plymouth$onTakeOutput$postDamageAnvil(PlayerEntity player, ItemStack stack, World world, BlockPos pos, CallbackInfo cbir, BlockState oldState, BlockState newState) {
-        if (world instanceof ServerWorld)
-            DatabaseHelper.database.replaceBlock((ServerWorld) world, pos, oldState, newState, (Target) player);
+        if (world instanceof ServerWorld serverWorld)
+            DatabaseHelper.database.replaceBlock(serverWorld, pos, oldState, newState, (Target) player);
     }
 }
