@@ -57,7 +57,7 @@ tasks {
         from(sourceSets.main.get().allSource)
     }
     remapJar {
-        dependsOn(":utilities:jar")
+        dependsOn(":database:jar")
     }
     processResources {
         val map = mapOf(
