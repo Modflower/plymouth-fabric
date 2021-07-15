@@ -3,5 +3,6 @@
   "plymouth.map.fail.parse": "Failed to parse %s: %s",
   "plymouth.map.deploy": "Deployed %s to map %s.",
   "plymouth.map.download": "Downloading %s for map %s.",
+  "plymouth.hotspot.result": "%s @ %s, %s, %s",
   "plymouth.dym": "Did you mean %s?"
 }
