@@ -2,6 +2,7 @@ package net.kjp12.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.kjp12.helium.Helium;
+import net.kjp12.helium.commands.HotspotCommand;
 import net.kjp12.helium.commands.InventoryLookupCommand;
 import net.kjp12.helium.commands.MappingCommand;
 import net.minecraft.server.command.CommandManager;
@@ -24,6 +25,7 @@ public abstract class MixinCommandManager {
     @Inject(method = "<init>", at = @At("TAIL"))
     public void helium$registerCommands(CommandManager.RegistrationEnvironment env, CallbackInfo cbi) {
         InventoryLookupCommand.register(dispatcher);
+        HotspotCommand.register(dispatcher);
         MappingCommand.register(dispatcher);
     }
 

@@ -42,6 +42,7 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
+    modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }
 
 tasks {
