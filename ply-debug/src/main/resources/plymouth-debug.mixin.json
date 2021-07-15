@@ -2,7 +2,7 @@
   "required": true,
   "package": "gay.ampflower.plymouth.debug.mixins",
   "plugin": "gay.ampflower.plymouth.debug.MixinConfig",
-  "compatibilityLevel": "JAVA_11",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
     "anti_xray.MetaMixinShadowChunk",
     "anti_xray.client.MixinClientPlayNetworkHandler",

@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "gay.ampflower.plymouth.tracker.mixins",
-  "compatibilityLevel": "JAVA_11",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
     "AccessorDoubleInventory",
     "MixinAnvilScreenHandler",
