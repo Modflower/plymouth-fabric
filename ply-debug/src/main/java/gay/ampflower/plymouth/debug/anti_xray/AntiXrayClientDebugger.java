@@ -17,6 +17,7 @@ import net.minecraft.network.PacketByteBuf;
 import java.util.BitSet;
 
 import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.literal;
+import static gay.ampflower.plymouth.debug.Fusebox.*;
 
 /**
  * @author Ampflower
@@ -28,8 +29,11 @@ public class AntiXrayClientDebugger {
             antiXraySet = new DebugProfiler(2048, 0, 1, 0, 0.095F),
             antiXrayUpdate = new DebugProfiler(64, 1, 0, 0, 0.1F),
             antiXrayTest = new DebugProfiler(2048, 0, 0, 1, 0.050F),
-            onBlockDelta = new DebugProfiler(128, 1, 1, 0, 0.075F);
-
+            onBlockDelta = new DebugProfiler(128, 1, 1, 0, 0.075F),
+            onBlockEvent = new DebugProfiler(128, 0, 1, 0, 0.090F),
+            onBlockEntityUpdate = new DebugProfiler(128, 1, 0.5F, 0, 0.110F),
+            onChunkLoad = new DebugProfiler(128, 0, .75F, 0.15F, 0.050F, 16),
+            onChunkBlockEntity = new DebugProfiler(128, 1, 0, 0.5F, 0.115F);
     public static int mx, mz;
     public static BitSet[] masks;
 
@@ -39,10 +43,18 @@ public class AntiXrayClientDebugger {
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXrayTest, AntiXrayClientDebugger::handleAntiXrayTest);
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXrayMask, AntiXrayClientDebugger::handleAntiXrayMask);
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(AntiXrayClientDebugger::render);
-        ClientCommandManager.DISPATCHER.register(literal("plymouth").then(literal("debug").then(literal("anti-xray").then(literal("clear").executes(ctx -> {
+        ClientCommandManager.DISPATCHER.register(literal("pdb").then(literal("ax").then(literal("clear").executes(ctx -> {
             masks = null;
+            antiXraySet.clear();
+            antiXrayUpdate.clear();
+            antiXrayTest.clear();
+            onBlockDelta.clear();
+            onBlockEvent.clear();
+            onBlockEntityUpdate.clear();
+            onChunkLoad.clear();
+            onChunkBlockEntity.clear();
             return 1;
-        })))));
+        }))));
     }
 
     private static void render(WorldRenderContext ctx) {
@@ -65,10 +77,14 @@ public class AntiXrayClientDebugger {
 
         immediate.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
 
-        antiXraySet.render(matrices, immediate);
-        antiXrayUpdate.render(matrices, immediate);
-        antiXrayTest.render(matrices, immediate);
-        onBlockDelta.render(matrices, immediate);
+        if (VIEW_AX_SET) antiXraySet.render(matrices, immediate);
+        if (VIEW_AX_UPDATE) antiXrayUpdate.render(matrices, immediate);
+        if (VIEW_AX_TEST) antiXrayTest.render(matrices, immediate);
+        if (VIEW_BLOCK_DELTA) onBlockDelta.render(matrices, immediate);
+        if (VIEW_BLOCK_EVENT) onBlockEvent.render(matrices, immediate);
+        if (VIEW_BLOCK_ENTITY_UPDATE) onBlockEntityUpdate.render(matrices, immediate);
+        if (VIEW_CHUNK_LOAD) onChunkLoad.render(matrices, immediate);
+        if (VIEW_CHUNK_BLOCK_ENTITY) onChunkBlockEntity.render(matrices, immediate);
         renderMask(matrices, immediate, ctx.world().getBottomY());
 
         tessellator.draw();
