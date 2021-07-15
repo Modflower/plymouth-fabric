@@ -2,7 +2,7 @@
   "required": true,
   "package": "net.kjp12.plymouth.debug.mixins",
   "plugin": "net.kjp12.plymouth.debug.MixinConfig",
-  "compatibilityLevel": "JAVA_11",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
     "anti_xray.MetaMixinShadowChunk",
     "anti_xray.client.MixinClientPlayNetworkHandler",
