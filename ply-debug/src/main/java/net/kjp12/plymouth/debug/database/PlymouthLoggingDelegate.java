@@ -7,8 +7,6 @@ import net.kjp12.plymouth.database.records.PlymouthRecord;
 import net.kjp12.plymouth.debug.Debug;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -122,14 +120,14 @@ public class PlymouthLoggingDelegate implements Plymouth {
     }
 
     @Override
-    public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
+    public void killEntity(Target target, Target source) {
         if (target == null || source == null) {
-            Debug.logger.warn("Null detected on hurtEntity on driver {}; target={}, amount={}, source={}", delegate, target, amount, source);
+            Debug.logger.warn("Null detected on killEntity on driver {}; target={}, source={}", delegate, target, source);
             Debug.printRichStack();
         } else try {
-            delegate.hurtEntity(target, amount, source);
+            delegate.killEntity(target, source);
         } catch (Throwable exception) {
-            Debug.logger.error("Driver {} threw exception processing hurtEntity. target={}, amount={}, source={}", delegate, target, amount, source, exception);
+            Debug.logger.error("Driver {} threw exception processing killEntity. target={}, amount={}, source={}", delegate, target, source, exception);
             Debug.printRichStack();
         }
     }

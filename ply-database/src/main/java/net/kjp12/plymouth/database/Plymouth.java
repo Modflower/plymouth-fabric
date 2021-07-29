@@ -1,5 +1,6 @@
 package net.kjp12.plymouth.database;
 
+import net.kjp12.plymouth.database.records.DeathRecord;
 import net.kjp12.plymouth.database.records.PlymouthRecord;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -111,7 +112,13 @@ public interface Plymouth {
      */
     void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, @Nullable Target replacer);
 
-    void hurtEntity(LivingEntity target, float amount, DamageSource source);
+    void killEntity(Target target, Target source);
+
+    default void hurtEntity(LivingEntity target, float amount, DamageSource source) {
+        assert target != null;
+        if (target.isAlive()) return;
+        queue(DeathRecord.fromDamageSource(source, target));
+    }
 
     void createEntity(Entity target, Entity creator);
 

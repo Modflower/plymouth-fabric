@@ -50,6 +50,9 @@ public class PlymouthNoOP implements Plymouth {
     public void replaceBlock(ServerWorld world, BlockPos pos, BlockState o, BlockState n, @Nullable Target replacer) {
     }
 
+    public void killEntity(Target target, Target source) {
+    }
+
     public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
     }
 
