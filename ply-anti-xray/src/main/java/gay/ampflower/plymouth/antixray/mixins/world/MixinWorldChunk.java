@@ -236,7 +236,6 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                 isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x - 1, y, z)), bp))
             return state;
         bp.set(x, y, z);
-        Constants.LOGGER.error("Block is hidden yet smear failed to get a surrounding block?! {} -> {} @ {}", world, getBlockState(bp), bp, new Throwable());
         return getDefaultSmearBlock(bp);
     }
 
