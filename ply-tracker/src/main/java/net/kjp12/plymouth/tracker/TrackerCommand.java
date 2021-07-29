@@ -202,7 +202,7 @@ public class TrackerCommand {
             case 1 -> {
                 parser.anchor(32);
                 boolean sf = false;
-                var server = context.getSource().getMinecraftServer();
+                var server = context.getSource().getServer();
                 for (var player : server.getPlayerManager().getPlayerList()) {
                     var name = player.getGameProfile().getName();
                     if (parser.tryTestAnchor(name)) {
@@ -288,7 +288,7 @@ public class TrackerCommand {
                         if (parser.isUUID()) {
                             causeUuid = parser.currentUUID();
                         } else {
-                            var p = ctx.getSource().getMinecraftServer().getPlayerManager().getPlayer(parser.current());
+                            var p = ctx.getSource().getServer().getPlayerManager().getPlayer(parser.current());
                             if (p != null) {
                                 causeUuid = p.getUuid();
                             } else {

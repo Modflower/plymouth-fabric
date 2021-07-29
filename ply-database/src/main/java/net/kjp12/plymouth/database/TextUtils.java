@@ -112,7 +112,7 @@ public final class TextUtils {
                 var player = server.getPlayerManager().getPlayer(uuid);
                 if (player != null) return player.getName().copy();
                 var profile = server.getUserCache().getByUuid(uuid);
-                if (profile != null) return playerToText(profile.getName(), uuid);
+                if (profile.isPresent()) return playerToText(profile.get().getName(), uuid);
             }
             var name = DatabaseHelper.database.getPlayerName(uuid); // This ideally shouldn't occur normally.
             return playerToText(Objects.requireNonNullElse(name, "Unknown Player"), uuid);

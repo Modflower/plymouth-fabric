@@ -44,7 +44,7 @@ public class HotspotCommand {
         var primary = new HashMap<EntityType<?>, Long2ObjectOpenHashMap<EntityRecord>>();
         var burner = new ArrayList<EntityRecord>();
         var source = context.getSource();
-        var server = source.getMinecraftServer();
+        var server = source.getServer();
         for (var world : server.getWorlds()) {
             primary.clear();
             for (var entity : world.iterateEntities()) {
