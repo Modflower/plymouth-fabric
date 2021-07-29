@@ -76,9 +76,9 @@ public class MappingCommand {
                     // This *must* be submitted to the server and joined,
                     // else we risk both closing the pipe too early,
                     // and possibly corrupting the persistent storage.
-                    source.getMinecraftServer().submitAndJoin(() -> {
+                    source.getServer().submitAndJoin(() -> {
                         try {
-                            var server = source.getMinecraftServer();
+                            var server = source.getServer();
                             var overworld = server.getOverworld();
                             var mapCompound = Helium.readTag(body, server.getDataFixer(),
                                     SharedConstants.getGameVersion().getWorldVersion()).getCompound("data");

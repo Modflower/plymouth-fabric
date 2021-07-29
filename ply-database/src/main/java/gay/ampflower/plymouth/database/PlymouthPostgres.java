@@ -485,7 +485,7 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
         var item = Registry.ITEM.get(Identifier.tryParse(i));
         var is = new ItemStack(item, 1);
         var nbt = nbt(in);
-        is.setTag(nbt);
+        is.setNbt(nbt);
         return new InventoryRecord(
                 null, new BlockPos(cx, cy, cz), cn, cu, ce,
                 null, new BlockPos(tx, ty, tz), tn, tu, te,

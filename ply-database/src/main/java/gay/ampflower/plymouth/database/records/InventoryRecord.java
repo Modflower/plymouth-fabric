@@ -82,7 +82,7 @@ public final class InventoryRecord implements PlymouthRecord {
     public InventoryRecord(TargetRecord cause, TargetRecord target, ItemStack stack, int delta) {
         this(cause.world, cause.pos, cause.name, cause.userId, cause.entityId,
                 target.world, target.pos, target.name, target.userId, target.entityId,
-                Instant.now(), false, stack.getItem(), stack.getTag(), delta, stack,
+                Instant.now(), false, stack.getItem(), stack.getNbt(), delta, stack,
                 // TODO: Flags??
                 (cause.pos != null ? 2 : 0) | (target.pos != null ? 1 : 0));
     }

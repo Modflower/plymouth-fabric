@@ -46,11 +46,15 @@ public abstract class ScreenHandlerMixin {
      * @reason To create an event bus for taking items.
      * @author Ampflower
      */
+    // [RAW ASM - MUST CHECK]
+    @SuppressWarnings("UnresolvedMixinReference")
     @Redirect(method = {"internalOnSlotClick", "method_34249"}, require = 4, at = @At(value = "INVOKE", target = TAKE_SLOT_DEFINITION))
     private void plymouth$30010$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
         plymouth$bridge$onTakeItem(slot, player, stack);
     }
 
+    // [RAW ASM - MUST CHECK]
+    @SuppressWarnings("UnresolvedMixinReference")
     @Redirect(method = "method_34251", require = 1, at = @At(value = "INVOKE", target = TAKE_SLOT_DEFINITION))
     private static void plymouth$34251$onTakeItem(Slot slot, PlayerEntity player, ItemStack stack) {
         plymouth$bridge$onTakeItem(slot, player, stack);

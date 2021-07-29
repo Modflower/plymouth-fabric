@@ -21,7 +21,7 @@ public final class ItemStackHasher implements Hash.Strategy<ItemStack> {
      */
     @Override
     public int hashCode(ItemStack o) {
-        return o == null ? 0 : 31 * o.getItem().hashCode() + Objects.hashCode(o.getTag());
+        return o == null ? 0 : 31 * o.getItem().hashCode() + Objects.hashCode(o.getNbt());
     }
 
     /**
@@ -50,6 +50,6 @@ public final class ItemStackHasher implements Hash.Strategy<ItemStack> {
      * @return true only if <code>b</code> is not null <em>and</em> if the underlying item in <code>b</code> equals <code>a</code> and <code>b</code> does not have any NBT.
      */
     public static boolean equals(Item a, ItemStack b) {
-        return b != null && a == b.getItem() && !b.hasTag();
+        return b != null && a == b.getItem() && !b.hasNbt();
     }
 }
