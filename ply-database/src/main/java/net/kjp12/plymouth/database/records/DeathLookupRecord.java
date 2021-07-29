@@ -57,6 +57,6 @@ public final class DeathLookupRecord extends LookupRecord<DeathRecord> {
 
     @Override
     public RecordType getType() {
-        return RecordType.DEATH;
+        return RecordType.LOOKUP_DEATH;
     }
 }
