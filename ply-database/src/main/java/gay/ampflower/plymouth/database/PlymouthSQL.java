@@ -9,8 +9,6 @@ import gay.ampflower.hachimitsu.database.api.StatementCache;
 import gay.ampflower.plymouth.database.records.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -233,10 +231,10 @@ public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
     }
 
     @Override
-    public void hurtEntity(LivingEntity target, float amount, DamageSource source) {
+    public void killEntity(Target target, Target source) {
         assert target != null;
-        if (target.isAlive()) return;
-        queue(DeathRecord.fromDamageSource(source, target));
+        assert source != null;
+        queue(new DeathRecord(source, target));
     }
 
     @Override

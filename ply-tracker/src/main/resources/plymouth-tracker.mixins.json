@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "AccessorDoubleInventory",
+    "MixinAbstractDecorationEntity",
     "MixinAnvilScreenHandler",
+    "MixinArmorStandEntity",
     "MixinBlockItem",
     "MixinExplosion",
     "MixinFireCharge",
@@ -17,6 +19,7 @@
     "explosions.MixinFireballEntity",
     "explosions.MixinRespawnAnchorBlock",
     "targets.MixinBlockEntity",
+    "targets.MixinDamageSource",
     "targets.MixinEnderInventory",
     "targets.MixinEntity",
     "targets.MixinPlayerEntity",
