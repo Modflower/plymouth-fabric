@@ -59,4 +59,28 @@ public final class DeathLookupRecord extends LookupRecord<DeathRecord> {
     public RecordType getType() {
         return RecordType.LOOKUP_DEATH;
     }
+
+    public double minTX() {
+        return minTPos.getX();
+    }
+
+    public double minTY() {
+        return minTPos.getY();
+    }
+
+    public double minTZ() {
+        return minTPos.getZ();
+    }
+
+    public double maxTX() {
+        return maxTPos.getX();
+    }
+
+    public double maxTY() {
+        return maxTPos.getY();
+    }
+
+    public double maxTZ() {
+        return maxTPos.getZ();
+    }
 }

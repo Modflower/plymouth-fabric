@@ -63,4 +63,28 @@ public final class BlockLookupRecord extends LookupRecord<BlockRecord> {
     public Class<BlockRecord> getOutput() {
         return BlockRecord.class;
     }
+
+    public int minTX() {
+        return minTPos.getX();
+    }
+
+    public int minTY() {
+        return minTPos.getY();
+    }
+
+    public int minTZ() {
+        return minTPos.getZ();
+    }
+
+    public int maxTX() {
+        return maxTPos.getX();
+    }
+
+    public int maxTY() {
+        return maxTPos.getY();
+    }
+
+    public int maxTZ() {
+        return maxTPos.getZ();
+    }
 }

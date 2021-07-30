@@ -42,10 +42,10 @@ import static gay.ampflower.plymouth.database.records.LookupRecord.*;
 @Query(query = "time>?", values = "minTime", mask = FLAG_MIN_TIME)
 @Query(query = "time<?", values = "maxTime", mask = FLAG_MAX_TIME)
 @Query(query = "cause_pos=(?,?,?,?)::ipos",
-        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.getWorldIndex(causeWorld)>0"},
+        values = {"minCX()", "minCY()", "minCZ()", "<0?^.getWorldIndex(causeWorld)>0"},
         mask = FLAG_C_AT | FLAG_C_AREA, maskRq = FLAG_C_AT)
 @Query(query = "cause_pos>=(?,?,?,?)::ipos and cause_pos<=(?,?,?,?)::ipos",
-        values = {"minPos.getX()", "minPos.getY()", "minPos.getZ()", "<0?^.getWorldIndex(causeWorld)>0", "maxPos.getX()", "maxPos.getY()", "maxPos.getZ()", "<0"},
+        values = {"minCX()", "minCY()", "minCZ()", "<0?^.getWorldIndex(causeWorld)>0", "maxCX()", "maxCY()", "maxCZ()", "<0"},
         mask = FLAG_C_AT | FLAG_C_AREA, maskRq = FLAG_C_AREA)
 public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     private static final Logger log = LogManager.getLogger(PlymouthPostgres.class);
@@ -415,10 +415,10 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Table(table = 1, value = "users_table", match = @Match(primary = "cause_id", secondary = "index"))
     @Table(table = 2, value = "blocks_table", match = @Match(primary = "block", secondary = "index"))
     @Query(query = "target_pos=(?,?,?,?)::ipos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
     @Query(query = "target_pos>=(?,?,?,?)::ipos and target_pos<=(?,?,?,?)::ipos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTX()", "maxTY()", "maxTZ()", "<1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
     // C0 is not capable of evaluation at this time. As such, it will be delegated to a method within
     @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")
@@ -450,10 +450,10 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Query(query = "target_id=?", values = "targetUserId", mask = FLAG_T_UID)
     @Query(query = "target_raw=?", values = "targetEntityId", mask = FLAG_T_EID)
     @Query(query = "target_pos=(?,?,?,?)::dpos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
     @Query(query = "target_pos>=(?,?,?,?)::dpos and target_pos<=(?,?,?,?)::dpos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTX()", "maxTY()", "maxTZ()", "<1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
     @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")
     public static DeathRecord deathRecordFromLookup(
@@ -470,10 +470,10 @@ public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
     @Query(query = "target_id=?", values = "targetUserId", mask = FLAG_T_UID)
     @Query(query = "target_raw=?", values = "targetEntityId", mask = FLAG_T_EID)
     @Query(query = "target_pos=(?,?,?,?)::ipos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AT)
     @Query(query = "target_pos>=(?,?,?,?)::ipos and target_pos<=(?,?,?,?)::ipos",
-            values = {"minTPos.getX()", "minTPos.getY()", "minTPos.getZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTPos.getX()", "maxTPos.getY()", "maxTPos.getZ()", "<1"},
+            values = {"minTX()", "minTY()", "minTZ()", "<1?^.getWorldIndex(targetWorld)>1", "maxTX()", "maxTY()", "maxTZ()", "<1"},
             mask = FLAG_T_AT | FLAG_T_AREA, maskRq = FLAG_T_AREA)
     @Query(query = "item=?", values = "item()", mask = FLAG_ITEM)
     @Pagination(sort = @Value("time"), limit = "limit()", offset = "offset()")

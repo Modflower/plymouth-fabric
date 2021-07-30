@@ -46,4 +46,28 @@ public final class InventoryLookupRecord extends LookupRecord<InventoryRecord> {
     public Class<InventoryRecord> getOutput() {
         return InventoryRecord.class;
     }
+
+    public int minTX() {
+        return minTPos.getX();
+    }
+
+    public int minTY() {
+        return minTPos.getY();
+    }
+
+    public int minTZ() {
+        return minTPos.getZ();
+    }
+
+    public int maxTX() {
+        return maxTPos.getX();
+    }
+
+    public int maxTY() {
+        return maxTPos.getY();
+    }
+
+    public int maxTZ() {
+        return maxTPos.getZ();
+    }
 }
