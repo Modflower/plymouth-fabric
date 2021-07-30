@@ -156,4 +156,28 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Database
     }
 
     public abstract Class<T> getOutput();
+
+    public int minCX() {
+        return minPos.getX();
+    }
+
+    public int minCY() {
+        return minPos.getY();
+    }
+
+    public int minCZ() {
+        return minPos.getZ();
+    }
+
+    public int maxCX() {
+        return maxPos.getX();
+    }
+
+    public int maxCY() {
+        return maxPos.getY();
+    }
+
+    public int maxCZ() {
+        return maxPos.getZ();
+    }
 }
