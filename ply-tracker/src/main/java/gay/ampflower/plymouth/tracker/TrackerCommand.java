@@ -361,7 +361,9 @@ public class TrackerCommand {
             case BLOCK -> new BlockLookupRecord(null, null, null, causeUuid, minTime, maxTime,
                     world, minPosition, maxPosition, null, null, page, flags);
             case DEATH -> new DeathLookupRecord(null, null, null, causeUuid, minTime, maxTime,
-                    world, Vec3d.ofCenter(minPosition), Vec3d.ofCenter(maxPosition), null, null, page, flags);
+                    world,
+                    minPosition == null ? null : Vec3d.ofCenter(minPosition),
+                    maxPosition == null ? null : Vec3d.ofCenter(maxPosition), null, null, page, flags);
             case INVENTORY -> new InventoryLookupRecord(null, null, null, causeUuid, minTime, maxTime,
                     world, minPosition, maxPosition, null, null, null, page, flags);
             default -> throw new IllegalArgumentException(type.toString());
