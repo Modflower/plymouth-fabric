@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.kjp12.plymouth.debug.anti_xray.AntiXrayDebugger;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
@@ -26,6 +27,7 @@ public class Debug implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        SharedConstants.isDevelopment = true;
         var loader = FabricLoader.getInstance();
         if (loader.isModLoaded("plymouth-anti-xray")) try {
             AntiXrayDebugger.initialise();
