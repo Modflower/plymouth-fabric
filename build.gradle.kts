@@ -5,7 +5,7 @@ plugins {
     `java-library`
     id("fabric-loom")
     `maven-publish`
-    id("io.github.juuxel.loom-quiltflower")
+    id("io.github.juuxel.loom-quiltflower-mini")
 }
 
 val minecraft_version: String by project
