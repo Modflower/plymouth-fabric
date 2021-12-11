@@ -30,6 +30,7 @@ version = when {
 repositories {
     maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
     maven { url = URI.create("https://maven.dblsaiko.net") }
+    maven { url = URI.create("https://jitpack.io") }
 }
 
 dependencies {
@@ -38,7 +39,7 @@ dependencies {
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
-    modImplementation("net.gudenau.minecraft", "gudasm", "0.2.10")
+    modImplementation("com.github.Modflower", "bytecode-junkie", "v0.3.0")
 }
 
 java {
