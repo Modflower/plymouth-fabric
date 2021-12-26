@@ -1,17 +1,14 @@
 {
   "required": true,
   "package": "net.kjp12.plymouth.antixray.mixins",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AccessorBlockTag",
-    "packets.s2c.MixinBlockUpdate",
-    "packets.s2c.MixinChunkData",
-    "packets.s2c.MixinChunkHolder",
     "player.MixinPlayerEntity",
+    "world.MixinBlockView",
     "world.MixinChunkSection",
-    "world.MixinPackedIntegerArray",
-    "world.MixinPalettedContainer",
     "world.MixinServerWorld",
+    "world.MixinWorld",
     "world.MixinWorldChunk"
   ],
   "injectors": {

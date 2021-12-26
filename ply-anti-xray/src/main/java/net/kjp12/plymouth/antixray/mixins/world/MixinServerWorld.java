@@ -1,9 +1,7 @@
 package net.kjp12.plymouth.antixray.mixins.world;
 
 import net.kjp12.plymouth.antixray.IShadowChunk;
-import net.kjp12.plymouth.antixray.transformers.GudAsmTransformer;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -41,20 +39,5 @@ public abstract class MixinServerWorld extends World {
         if (before == after && after.hasBlockEntity() && !((IShadowChunk) self.getWorldChunk(pos.getX() >> 4, pos.getZ() >> 4, false)).plymouth$isMasked(pos)) {
             self.markForUpdate(pos);
         }
-    }
-
-    /**
-     * Redirecter stub for {@link GudAsmTransformer}.
-     *
-     * @param pos The position to lookup in the shadow chunk.
-     * @return The shadow block.
-     */
-    // This doesn't need any interface stub as it'll be called directly from asm.
-    @SuppressWarnings("unused")
-    public BlockState plymouth$getShadowBlock(BlockPos pos) {
-        if (isOutOfHeightLimit(pos)) {
-            return Blocks.VOID_AIR.getDefaultState();
-        }
-        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
     }
 }

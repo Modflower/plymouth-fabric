@@ -5,7 +5,6 @@ import net.kjp12.plymouth.database.Target;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -31,6 +30,6 @@ public class MixinPlayerInteractionManager {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;onBroken(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void plymouth$tryBreakBlock$onBlockBroken(BlockPos pos, CallbackInfoReturnable<Boolean> cbir, BlockState state, BlockEntity entity, Block block) {
-        DatabaseHelper.database.breakBlock(world, pos, state, entity == null ? null : entity.writeNbt(new NbtCompound()), (Target) player);
+        DatabaseHelper.database.breakBlock(world, pos, state, entity == null ? null : entity.createNbt(), (Target) player);
     }
 }

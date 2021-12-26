@@ -28,12 +28,15 @@ version = when {
 
 repositories {
     maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
+    maven { url = URI.create("https://jitpack.io") }
 }
 
 dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
+    implementation(project(":utilities"))
+    implementation(project(":database"))
     implementation(project(":"))
     implementation(project(":ply-anti-xray"))
     implementation(project(":ply-common"))
@@ -45,8 +48,8 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks {

@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BlockEntity.class)
 public abstract class MixinBlockEntity implements ILockable {
@@ -56,8 +55,8 @@ public abstract class MixinBlockEntity implements ILockable {
         }
     }
 
-    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;", at = @At("RETURN"))
-    private void helium$toTag(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cbi) {
+    @Inject(method = "writeNbt", at = @At("RETURN"))
+    private void helium$toTag(NbtCompound nbt, CallbackInfo cbi) {
         if (permissionHandler != null) {
             var helium = new NbtCompound();
             permissionHandler.toTag(helium);

@@ -38,13 +38,14 @@ dependencies {
     modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
     implementation(project(":ply-database"))
     implementation(project(":utilities")) { include(this) }
+    implementation(project(":database"))
     // implementation(project(":commander")) { include(this) }
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks {

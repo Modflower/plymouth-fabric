@@ -22,7 +22,7 @@ public class DebugProfiler {
     private int index;
 
     public DebugProfiler(int length, float r, float g, float b, float m, float s) {
-        int len = 1 << MathHelper.log2DeBruijn(length);
+        int len = 1 << MathHelper.ceilLog2(length);
         this.points = new long[len];
         mask = len - 1;
         this.r = r;

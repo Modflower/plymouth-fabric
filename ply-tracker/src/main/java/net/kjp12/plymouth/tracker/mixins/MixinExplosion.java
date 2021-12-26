@@ -6,7 +6,6 @@ import net.kjp12.plymouth.database.Target;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -49,6 +48,6 @@ public abstract class MixinExplosion {
         if (!(world instanceof ServerWorld serverWorld)) return;
         Entity e = getCausingEntity();
         if (e == null) e = entity;
-        DatabaseHelper.database.breakBlock(serverWorld, pos, old, old.hasBlockEntity() ? world.getBlockEntity(pos).writeNbt(new NbtCompound()) : null, (Target) e);
+        DatabaseHelper.database.breakBlock(serverWorld, pos, old, old.hasBlockEntity() ? world.getBlockEntity(pos).createNbt() : null, (Target) e);
     }
 }

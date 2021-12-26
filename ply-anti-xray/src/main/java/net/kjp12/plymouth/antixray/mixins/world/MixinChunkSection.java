@@ -2,6 +2,7 @@ package net.kjp12.plymouth.antixray.mixins.world;// Created 2021-03-30T18:30:23
 
 import net.kjp12.plymouth.antixray.CloneAccessible;
 import net.minecraft.block.BlockState;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.*;
@@ -17,15 +18,20 @@ public class MixinChunkSection implements Cloneable, CloneAccessible {
     @Shadow
     @Final
     @Mutable
-    private PalettedContainer<BlockState> container;
+    private PalettedContainer<BlockState> blockStateContainer;
 
-    @SuppressWarnings("unchecked")
+    @Shadow
+    @Final
+    @Mutable
+    private PalettedContainer<Biome> biomeContainer;
+
     @Override
     @Intrinsic
     public ChunkSection clone() {
         try {
             var self = (MixinChunkSection) super.clone();
-            self.container = (PalettedContainer<BlockState>) ((CloneAccessible) self.container).clone();
+            self.blockStateContainer = self.blockStateContainer.copy();
+            self.biomeContainer = self.biomeContainer.copy();
             //noinspection ConstantConditions
             return (ChunkSection) (Object) self;
         } catch (CloneNotSupportedException cnse) {

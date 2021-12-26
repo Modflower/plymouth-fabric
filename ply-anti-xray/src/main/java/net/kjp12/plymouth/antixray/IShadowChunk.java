@@ -1,12 +1,14 @@
 package net.kjp12.plymouth.antixray;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.chunk.ChunkSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.BitSet;
+import java.util.Map;
 
 /**
  * Shadow Chunk interface for chunks. Used for the Anti-Xray feature.
@@ -14,16 +16,7 @@ import java.util.BitSet;
  * @author kjp12
  * @since 0.0.0
  */
-public interface IShadowChunk {
-    /**
-     * Gets the block from the shadow chunk, if the shadow is present.
-     *
-     * @param pos The position of the block.
-     * @return The block at that position, {@link net.minecraft.block.Blocks#VOID_AIR} otherwise.
-     */
-    @NotNull
-    BlockState plymouth$getShadowBlock(BlockPos pos);
-
+public interface IShadowChunk extends ShadowBlockView {
     /**
      * Changes the block in the shadow block back to the real block, forcing a server/client sync.
      *
@@ -55,6 +48,14 @@ public interface IShadowChunk {
      * @return The shadow mask. Maybe null.
      */
     BitSet[] plymouth$getShadowMasks();
+
+    /**
+     * Gets all visible entities in a chunk.
+     *
+     * @return The visible entities, always nonnull
+     */
+    @NotNull
+    Map<BlockPos, BlockEntity> plymouth$getShadowBlockEntities();
 
     /**
      * Checks if the block is shadowed.

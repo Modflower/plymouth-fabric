@@ -81,7 +81,7 @@ public class MappingCommand {
                             var server = source.getServer();
                             var overworld = server.getOverworld();
                             var mapCompound = Helium.readTag(body, server.getDataFixer(),
-                                    SharedConstants.getGameVersion().getWorldVersion()).getCompound("data");
+                                    SharedConstants.getGameVersion().getSaveVersion().getId()).getCompound("data");
                             var mapName = FilledMapItem.getMapName(mapId);
                             var oldMapState = (MapState & AccessorMapState) overworld.getMapState(mapName);
                             assert oldMapState != null;
