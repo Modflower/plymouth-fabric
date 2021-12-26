@@ -10,6 +10,10 @@ pluginManagement {
             name = "Cotton"
             url = java.net.URI("https://server.bbkr.space/artifactory/libs-release")
         }
+        maven {
+            name = "The Glitch"
+            url = java.net.URI("https://the-glitch.network/maven/")
+        }
         gradlePluginPortal()
     }
     plugins {

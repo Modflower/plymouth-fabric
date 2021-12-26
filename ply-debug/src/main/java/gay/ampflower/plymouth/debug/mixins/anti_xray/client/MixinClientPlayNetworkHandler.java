@@ -34,13 +34,9 @@ public class MixinClientPlayNetworkHandler {
 
     @Inject(method = "onChunkData", at = @At("RETURN"))
     private void plymouth$onChunkData(ChunkDataS2CPacket packet, CallbackInfo cbi) {
-        int yoff = world.getBottomSectionCoord();
-        var bits = packet.getVerticalStripBitmask();
-        for (int i = 0, l = bits.length(); i < l; i++)
-            if (bits.get(i))
-                AntiXrayClientDebugger.onChunkLoad.push(BlockPos.asLong(packet.getX(), i + yoff, packet.getZ()));
-        for (var entity : packet.getBlockEntityTagList())
-            AntiXrayClientDebugger.onChunkBlockEntity.push(BlockPos.asLong(entity.getInt("x"), entity.getInt("y"), entity.getInt("z")));
+        AntiXrayClientDebugger.onChunkLoad.push(BlockPos.asLong(packet.getX(), 0, packet.getZ()));
+        packet.getChunkData().getBlockEntities(packet.getX() << 4, packet.getZ() << 4).accept((pos, $1, $2) ->
+                AntiXrayClientDebugger.onChunkBlockEntity.push(pos.asLong()));
     }
 
     @Inject(method = "onBlockEntityUpdate", at = @At("RETURN"))

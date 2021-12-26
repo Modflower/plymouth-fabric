@@ -21,7 +21,7 @@
       "gay.ampflower.plymouth.antixray.Constants::init"
     ],
     "gud_asm": [
-      "gay.ampflower.plymouth.antixray.transformers.GudAsmTransformer"
+      "gay.ampflower.plymouth.antixray.transformers.Transformers"
     ]
   },
   "mixins": [

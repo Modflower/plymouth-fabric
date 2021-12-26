@@ -31,6 +31,7 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             }
             player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
+            Tracker.logger.error("Exception on breakBlock", t);
             player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
@@ -48,6 +49,7 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             }
             player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
+            Tracker.logger.error("Exception on interactBlock", t);
             player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });

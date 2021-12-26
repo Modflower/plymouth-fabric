@@ -1,12 +1,12 @@
 package gay.ampflower.plymouth.antixray.mixins.world;
 
-import gay.ampflower.plymouth.antixray.CloneAccessible;
 import gay.ampflower.plymouth.antixray.Constants;
 import gay.ampflower.plymouth.antixray.IShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.InfestedBlock;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.FluidTags;
 import net.minecraft.util.crash.CrashException;
@@ -16,15 +16,17 @@ import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.source.BiomeArray;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.*;
+import net.minecraft.world.gen.chunk.BlendingData;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,38 +37,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static gay.ampflower.plymouth.antixray.Constants.HIDDEN_BLOCKS;
 
 @Mixin(WorldChunk.class)
-public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
-    @Shadow
-    @Final
-    private ChunkSection[] sections;
-    @Shadow
-    private BiomeArray biomeArray;
+public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
     @Shadow
     @Final
     World world;
-    @Shadow
-    @Final
-    private ChunkPos pos;
+    /**
+     * Sections that represent the anti-xray view of the world.
+     */
     @Unique
     private ChunkSection[] shadowSections;
+    /**
+     * Sections sent to the client. This will be made up of shadow if non-null, else original.
+     */
+    @Unique
+    private ChunkSection[] proxiedSections;
     // Used for block-entity fetching for the client.
     // May also be used to invalidate entities?
     // 16 separate sets instead of one massive set meant for saving memory when the corresponding section isn't present.
     @Unique
     private BitSet[] shadowMasks;
 
-    @Shadow
-    public abstract BlockState getBlockState(BlockPos pos);
-
-    @Shadow
-    public abstract ChunkSection[] getSectionArray();
-
-    @Shadow
-    public abstract int getBottomY();
+    public MixinWorldChunk(ChunkPos pos, UpgradeData upgradeData, HeightLimitView heightLimitView, Registry<Biome> biome, long inhabitedTime, @Nullable ChunkSection[] sectionArrayInitializer, @Nullable BlendingData blendingData) {
+        super(pos, upgradeData, heightLimitView, biome, inhabitedTime, sectionArrayInitializer, blendingData);
+    }
 
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;",
             at = @At(value = "INVOKE",
@@ -75,9 +75,10 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                     ordinal = 0
             ),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
-    private void plymouth$setBlockState(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> bs, int y, int yi, ChunkSection chunkSection, boolean bl, int i, int j, int k, BlockState old) {
+    private void plymouth$setBlockState(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> bs, int y, ChunkSection chunkSection, boolean emptySection, int i, int j, int k, BlockState old) {
         if (world instanceof ServerWorld && shadowSections != null) {
             var index = Constants.toIndex(i, j, k);
+            int yi = getSectionIndex(y);
             var mask = getShadowMask(yi);
             logic:
             if (state.getBlock() instanceof InfestedBlock infestedBlock) {
@@ -133,8 +134,8 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
                 cx = x >> 4, cy = getSectionIndex(y), cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {
-            var section = sections[cy];
-            if (ChunkSection.isEmpty(section) || !section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) return;
+            var section = sectionArray[cy];
+            if (isSectionEmpty(section) || !section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) return;
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
             if (state.getBlock() instanceof InfestedBlock infestedBlock) {
@@ -181,20 +182,21 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Unique
     private void generateShadow() {
         if (shadowSections == null) {
-            shadowSections = new ChunkSection[sections.length];
-        } else for (int i = 0; i < sections.length; i++) {
+            shadowSections = new ChunkSection[sectionArray.length];
+            proxiedSections = sectionArray.clone();
+        } else for (int i = 0; i < sectionArray.length; i++) {
             shadowSections[i] = null;
         }
         if (shadowMasks == null) {
-            shadowMasks = new BitSet[sections.length];
-        } else for (int i = 0; i < sections.length; i++) {
+            shadowMasks = new BitSet[sectionArray.length];
+        } else for (int i = 0; i < sectionArray.length; i++) {
             shadowMasks[i] = null;
         }
 
         var bp = new BlockPos.Mutable();
-        for (int sy = 0, syl = sections.length; sy < syl; sy++) {
-            var section = sections[sy];
-            if (ChunkSection.isEmpty(section)) continue;
+        for (int sy = 0, syl = sectionArray.length; sy < syl; sy++) {
+            var section = sectionArray[sy];
+            if (isSectionEmpty(section)) continue;
             if (section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) {
                 var shadowSection = getShadowSection(sy);
                 for (int x = 0; x < 16; x++)
@@ -217,10 +219,12 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
                             shadowSection.setBlockState(x, y, z, state);
                         }
                     }
-            } else {
-                // We'll just clone the palette as is.
-                shadowSections[sy] = (ChunkSection) ((CloneAccessible) section).clone();
             }
+            // // No longer necessary due to proxy setup.
+            // else {
+            //     // We'll just clone the palette as is.
+            //     proxiedSections[sy] = shadowSections[sy] = (ChunkSection) ((CloneAccessible) section).clone();
+            // }
         }
     }
 
@@ -241,7 +245,16 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
 
     @Unique
     private BlockState getDefaultSmearBlock(BlockPos pos) {
-        return world.getRegistryKey().equals(World.OVERWORLD) ? Blocks.STONE.getDefaultState() : biomeArray.getBiomeForNoiseGen(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2).getGenerationSettings().getSurfaceConfig().getUnderMaterial();
+        RegistryKey<World> registryKey = world.getRegistryKey();
+        if (World.NETHER.equals(registryKey)) {
+            return Blocks.NETHERRACK.getDefaultState();
+        } else if (World.END.equals(registryKey)) {
+            return Blocks.END_STONE.getDefaultState();
+        } else if (pos.getY() >= 0) {
+            return Blocks.STONE.getDefaultState();
+        } else {
+            return Blocks.DEEPSLATE.getDefaultState();
+        }
     }
 
     @NotNull
@@ -251,7 +264,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
         try {
             if (l >= 0 && l < shadowSections.length) {
                 var section = shadowSections[l];
-                return ChunkSection.isEmpty(section) ? Blocks.AIR.getDefaultState() : section.getBlockState(i & 15, j & 15, k & 15);
+                return isSectionEmpty(section) ? Blocks.AIR.getDefaultState() : section.getBlockState(i & 15, j & 15, k & 15);
             }
             return Blocks.VOID_AIR.getDefaultState();
         } catch (Throwable t) {
@@ -264,12 +277,18 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     }
 
     @Override
+    public @Nullable BlockEntity plymouth$getShadowBlockEntity(BlockPos pos) {
+        if (shadowSections == null || plymouth$isMasked(pos)) return null;
+        return blockEntities.get(pos);
+    }
+
+    @Override
     public void plymouth$unsetShadowBlock(BlockPos pos) {
         if (shadowMasks == null) return; // There is nothing to unset.
         final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y), i = Constants.toIndex(pos);
         final var m = getShadowMask(cy);
         if (m.get(i)) {
-            getShadowSection(cy).setBlockState(x & 15, y & 15, z & 15, sections[cy].getBlockState(x & 15, y & 15, z & 15));
+            getShadowSection(cy).setBlockState(x & 15, y & 15, z & 15, sectionArray[cy].getBlockState(x & 15, y & 15, z & 15));
             m.set(i, false);
             plymouth$trackUpdate(pos);
         }
@@ -289,14 +308,23 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     @Override
     @NotNull
     public ChunkSection[] plymouth$getShadowSections() {
-        if (!ArrayUtils.isEmpty(sections) && ArrayUtils.isEmpty(shadowSections))
+        if (!ArrayUtils.isEmpty(sectionArray) && ArrayUtils.isEmpty(shadowSections))
             generateShadow();
-        return shadowSections;
+        return Objects.requireNonNullElse(proxiedSections, sectionArray);
     }
 
     @Override
     public BitSet[] plymouth$getShadowMasks() {
         return shadowMasks;
+    }
+
+    @Override
+    public @NotNull Map<BlockPos, BlockEntity> plymouth$getShadowBlockEntities() {
+        var map = new HashMap<BlockPos, BlockEntity>();
+        blockEntities.forEach((pos, tile) -> {
+            if (!plymouth$isMasked(pos)) map.put(pos, tile);
+        });
+        return map;
     }
 
     @Override
@@ -314,7 +342,7 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
 
     @Unique
     private ChunkSection getShadowSection(int y) {
-        return shadowSections[y] == null ? shadowSections[y] = new ChunkSection((y << 4) + getBottomY()) : shadowSections[y];
+        return shadowSections[y] == null ? proxiedSections[y] = shadowSections[y] = new ChunkSection((y << 4) + getBottomY(), world.getRegistryManager().get(Registry.BIOME_KEY)) : shadowSections[y];
     }
 
     @Unique
@@ -326,5 +354,10 @@ public abstract class MixinWorldChunk implements Chunk, IShadowChunk {
     private boolean isHidingCandidate(BlockState state, BlockPos pos) {
         return !state.isAir() && state.getFluidState().isEmpty() && !state.hasBlockEntity() && !state.isIn(HIDDEN_BLOCKS) &&
                 !VoxelShapes.matchesAnywhere(state.getCollisionShape(this, pos), VoxelShapes.fullCube(), BooleanBiFunction.NOT_SAME);
+    }
+
+    @Unique
+    private static boolean isSectionEmpty(ChunkSection section) {
+        return section == null || section.isEmpty();
     }
 }
