@@ -11,6 +11,7 @@ import java.util.Properties;
  * @since ${version}
  **/
 public class Fusebox {
+    private static final String defaultValue = Boolean.toString(FabricLoader.getInstance().isDevelopmentEnvironment());
     private static final Properties properties = new Properties();
 
     static {
@@ -22,13 +23,17 @@ public class Fusebox {
         }
     }
 
+    public static boolean isEnabled(String option) {
+        return Boolean.parseBoolean(properties.getProperty(option, defaultValue));
+    }
+
     public static final boolean
-            VIEW_AX_SET = Boolean.parseBoolean(properties.getProperty("viewAntiXraySet", "true")),
-            VIEW_AX_UPDATE = Boolean.parseBoolean(properties.getProperty("viewAntiXrayUpdate", "true")),
-            VIEW_AX_TEST = Boolean.parseBoolean(properties.getProperty("viewAntiXrayTest", "true")),
-            VIEW_BLOCK_DELTA = Boolean.parseBoolean(properties.getProperty("viewBlockDelta", "true")),
-            VIEW_BLOCK_EVENT = Boolean.parseBoolean(properties.getProperty("viewBlockEvent", "true")),
-            VIEW_BLOCK_ENTITY_UPDATE = Boolean.parseBoolean(properties.getProperty("viewBlockEntityUpdate", "true")),
-            VIEW_CHUNK_LOAD = Boolean.parseBoolean(properties.getProperty("viewChunkLoad", "true")),
-            VIEW_CHUNK_BLOCK_ENTITY = Boolean.parseBoolean(properties.getProperty("viewChunkBlockEntity", "true"));
+            VIEW_AX_SET = isEnabled("viewAntiXraySet"),
+            VIEW_AX_UPDATE = isEnabled("viewAntiXrayUpdate"),
+            VIEW_AX_TEST = isEnabled("viewAntiXrayTest"),
+            VIEW_BLOCK_DELTA = isEnabled("viewBlockDelta"),
+            VIEW_BLOCK_EVENT = isEnabled("viewBlockEvent"),
+            VIEW_BLOCK_ENTITY_UPDATE = isEnabled("viewBlockEntityUpdate"),
+            VIEW_CHUNK_LOAD = isEnabled("viewChunkLoad"),
+            VIEW_CHUNK_BLOCK_ENTITY = isEnabled("viewChunkBlockEntity");
 }

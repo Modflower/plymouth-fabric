@@ -31,14 +31,17 @@ public interface IShadowChunk extends ShadowBlockView {
      * @param pos   The position of the block to set.
      * @param state The state to set the block to.
      */
-    default void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
-    }
+    void plymouth$setShadowBlock(BlockPos pos, BlockState state);
 
     /**
      * Gets the shadow chunk, generating them if they're not present.
      *
      * @return The shadow chunk, always nonnull
+     * @see gay.ampflower.plymouth.antixray.transformers.GudAsmTransformer
+     * @see gay.ampflower.plymouth.antixray.transformers.PacketTransformer
      */
+    // The return are for the two mass ASM transformers, listed in the See block(s).
+    @SuppressWarnings("UnusedReturnValue")
     @NotNull
     ChunkSection[] plymouth$getShadowSections();
 
@@ -73,19 +76,4 @@ public interface IShadowChunk extends ShadowBlockView {
      * @return true if the block would cull the adjacent block from the given direction, false otherwise.
      */
     boolean plymouth$isCulling(BlockState state, Direction from, BlockPos pos);
-
-    // Dangling method for debug mixin to hook into.
-
-    /**
-     * Forces a block update.
-     *
-     * @param pos The position to force an update.
-     * @implNote Classes implementing this <em>should</em> call super to allow for debugging hooks.
-     */
-    default void plymouth$trackUpdate(BlockPos pos) {
-    }
-
-    default boolean plymouth$isBlockHidden(BlockState state, BlockPos.Mutable pos) {
-        return false;
-    }
 }

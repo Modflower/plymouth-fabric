@@ -29,10 +29,16 @@ public class Debug implements ModInitializer {
     public void onInitialize() {
         SharedConstants.isDevelopment = true;
         var loader = FabricLoader.getInstance();
-        if (loader.isModLoaded("plymouth-anti-xray")) try {
-            AntiXrayDebugger.initialise();
-        } catch (NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError error) {
-            logger.error("AntiXray found but cannot be loaded.", error);
+        if (loader.isModLoaded("plymouth-anti-xray")) {
+            if (Fusebox.isEnabled("antiXrayDebug")) {
+                try {
+                    AntiXrayDebugger.initialise();
+                } catch (NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError error) {
+                    logger.error("AntiXray found but cannot be loaded.", error);
+                }
+            } else {
+                logger.info("Anti-Xray debugging is disabled. Add to the config, `antiXrayDebug=true`, if you wish to debug the anti-xray engine.");
+            }
         }
     }
 

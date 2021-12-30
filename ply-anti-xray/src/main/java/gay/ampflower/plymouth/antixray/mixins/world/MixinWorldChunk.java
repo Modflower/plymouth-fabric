@@ -36,10 +36,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static gay.ampflower.plymouth.antixray.Constants.HIDDEN_BLOCKS;
 
@@ -161,7 +158,6 @@ public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
         // TODO: Account for light levels if Overworld.
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
                 i = (pos.x << 4) | x, k = (pos.z << 4) | z;
-        IShadowChunk.super.plymouth$isBlockHidden(state, bp.set(i, y, k));
         return plymouth$isCulling(getBlockState(bp.set(x, y - 1, z)), Direction.UP, bp)
                 && plymouth$isCulling(getBlockState(bp.set(x, y + 1, z)), Direction.DOWN, bp)
                 && plymouth$isCulling(getBlock(bp.set(i - 1, y, k)), Direction.EAST, bp)
@@ -183,7 +179,7 @@ public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
     private void generateShadow() {
         if (shadowSections == null) {
             shadowSections = new ChunkSection[sectionArray.length];
-            proxiedSections = sectionArray.clone();
+            proxiedSections = Arrays.copyOf(sectionArray, sectionArray.length);
         } else for (int i = 0; i < sectionArray.length; i++) {
             shadowSections[i] = null;
         }
@@ -296,7 +292,6 @@ public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
 
     @Override
     public void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
-        IShadowChunk.super.plymouth$setShadowBlock(pos, state);
         final int y = pos.getY(), cy = getSectionIndex(y);
         // Do note, we're calling plymouth$getShadowSections() to force generation of the shadow chunk.
         plymouth$getShadowSections();
@@ -334,9 +329,7 @@ public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
         return mask != null && mask.get(Constants.toIndex(pos));
     }
 
-    @Override
     public void plymouth$trackUpdate(BlockPos pos) {
-        IShadowChunk.super.plymouth$trackUpdate(pos);
         ((ServerWorld) world).getChunkManager().markForUpdate(pos);
     }
 
