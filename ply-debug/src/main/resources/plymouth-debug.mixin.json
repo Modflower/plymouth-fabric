@@ -4,9 +4,9 @@
   "plugin": "net.kjp12.plymouth.debug.MixinConfig",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "anti_xray.MetaMixinShadowChunk",
     "anti_xray.client.MixinClientPlayNetworkHandler",
     "database.MixinDatabaseHelper",
+    "poison.MixinPlayerInventory",
     "tracker.MixinExplosion",
     "tracker.MixinSlot"
   ],
