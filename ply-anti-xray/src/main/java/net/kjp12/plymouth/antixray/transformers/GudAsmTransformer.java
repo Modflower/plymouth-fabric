@@ -187,6 +187,8 @@ public class GudAsmTransformer implements Transformer {
                         } else {
                             logger.info("Cannot redirect {}.{}{} in {}.{}{} for variable {}", supplier.owner, supplier.name, supplier.desc, classNode.name, method.name, method.desc, var);
                         }
+                    } else {
+                        logger.info("Cannot redirect instruction {} for var {} in {}.{}{}", $supplier, var, classNode.name, method.name, method.desc);
                     }
                 }
             }
