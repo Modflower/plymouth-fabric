@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.kjp12.plymouth.antixray.Constants;
 import net.kjp12.plymouth.debug.DebugProfiler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -106,7 +105,7 @@ public class AntiXrayClientDebugger {
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
-                        if (mask.get(Constants.toIndex(x, y, z)))
+                        if (mask.get(toIndex(x, y, z)))
                             WorldRenderer.drawBox(stack, consumer, x, y, z, x + 1, y + 1, z + 1, .5F, .5F, .5F, .5F);
                     }
                 }
@@ -144,5 +143,9 @@ public class AntiXrayClientDebugger {
             mz = cz;
             masks = ms;
         });
+    }
+
+    public static int toIndex(int x, int y, int z) {
+        return (y & 15) << 8 | (z & 15) << 4 | (x & 15);
     }
 }
