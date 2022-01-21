@@ -1,6 +1,7 @@
 package net.kjp12.plymouth.antixray.mixins.world;
 
 import net.kjp12.plymouth.antixray.Constants;
+import net.kjp12.plymouth.antixray.LazyChunkManager;
 import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -120,7 +121,7 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     private BlockState getBlock(BlockPos bp) {
         int cx = bp.getX() >> 4, cz = bp.getZ() >> 4;
         if (cx == pos.x && cz == pos.z) return getBlockState(bp);
-        var c = world.getChunk(cx, cz, ChunkStatus.LIGHT, false);
+        var c = ((LazyChunkManager) world.getChunkManager()).plymouth$getChunkLazy(cx, cz);
         return c == null ? Blocks.STONE.getDefaultState() : c.getBlockState(bp);
     }
 
