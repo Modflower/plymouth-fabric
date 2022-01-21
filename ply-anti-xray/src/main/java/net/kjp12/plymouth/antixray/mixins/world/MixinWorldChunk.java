@@ -1,7 +1,7 @@
 package net.kjp12.plymouth.antixray.mixins.world;
 
 import net.kjp12.plymouth.antixray.Constants;
-import net.kjp12.plymouth.antixray.IShadowChunk;
+import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -41,7 +41,7 @@ import java.util.*;
 import static net.kjp12.plymouth.antixray.Constants.HIDDEN_BLOCKS;
 
 @Mixin(WorldChunk.class)
-public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
+public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     @Shadow
     @Final
     World world;
@@ -216,11 +216,6 @@ public abstract class MixinWorldChunk extends Chunk implements IShadowChunk {
                         }
                     }
             }
-            // // No longer necessary due to proxy setup.
-            // else {
-            //     // We'll just clone the palette as is.
-            //     proxiedSections[sy] = shadowSections[sy] = (ChunkSection) ((CloneAccessible) section).clone();
-            // }
         }
     }
 

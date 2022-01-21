@@ -1,7 +1,7 @@
 package net.kjp12.plymouth.antixray.mixins.world;// Created 2021-19-12T18:16:43
 
-import net.kjp12.plymouth.antixray.IShadowChunk;
 import net.kjp12.plymouth.antixray.ShadowBlockView;
+import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.kjp12.plymouth.antixray.transformers.GudAsmTransformer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -30,7 +30,7 @@ public abstract class MixinWorld implements WorldAccess, ShadowBlockView {
         if (isOutOfHeightLimit(pos)) {
             return Blocks.VOID_AIR.getDefaultState();
         }
-        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
+        return ((ShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
     }
 
     /**
@@ -44,6 +44,6 @@ public abstract class MixinWorld implements WorldAccess, ShadowBlockView {
         if (isOutOfHeightLimit(pos)) {
             return null;
         }
-        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlockEntity(pos);
+        return ((ShadowChunk) getChunk(pos)).plymouth$getShadowBlockEntity(pos);
     }
 }

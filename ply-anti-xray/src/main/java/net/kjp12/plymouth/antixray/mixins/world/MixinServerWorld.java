@@ -1,6 +1,6 @@
 package net.kjp12.plymouth.antixray.mixins.world;
 
-import net.kjp12.plymouth.antixray.IShadowChunk;
+import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
@@ -36,7 +36,7 @@ public abstract class MixinServerWorld extends World {
     private void helium$updateListeners$nullRoute$markForUpdate(ServerChunkManager self, BlockPos pos, BlockPos $1, BlockState before, BlockState after, int flags) {
         // The engine on its own cannot sense block entity updates and will naturally just suppress them.
         // This forces an update if it's same-state set, there's a block entity attached, and it's not considered hidden.
-        if (before == after && after.hasBlockEntity() && !((IShadowChunk) self.getWorldChunk(pos.getX() >> 4, pos.getZ() >> 4, false)).plymouth$isMasked(pos)) {
+        if (before == after && after.hasBlockEntity() && !((ShadowChunk) self.getWorldChunk(pos.getX() >> 4, pos.getZ() >> 4, false)).plymouth$isMasked(pos)) {
             self.markForUpdate(pos);
         }
     }

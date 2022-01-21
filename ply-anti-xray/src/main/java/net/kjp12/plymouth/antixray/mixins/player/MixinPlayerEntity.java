@@ -1,6 +1,6 @@
 package net.kjp12.plymouth.antixray.mixins.player;// Created Feb. 03, 2021 @ 21:11
 
-import net.kjp12.plymouth.antixray.IShadowChunk;
+import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -28,7 +28,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     private void helium$onUpdateSize(CallbackInfo ci) {
         // We need access to shadow immediately to force shadow replacement with spruce planks.
         var self = getBlockPos();
-        var chunk = (IShadowChunk) world.getChunk(self);
+        var chunk = (ShadowChunk) world.getChunk(self);
         if (chunk.plymouth$isMasked(self)) return;
         var possibleComposter = chunk.plymouth$getShadowBlock(self);
         if (possibleComposter.isOf(Blocks.COMPOSTER)) {
