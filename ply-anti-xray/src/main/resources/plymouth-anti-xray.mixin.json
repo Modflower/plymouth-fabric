@@ -6,7 +6,7 @@
     "AccessorBlockTag",
     "player.MixinPlayerEntity",
     "world.MixinBlockView",
-    "world.MixinChunkSection",
+    "world.MixinServerChunkManager",
     "world.MixinServerWorld",
     "world.MixinWorld",
     "world.MixinWorldChunk"
