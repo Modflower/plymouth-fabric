@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,6 +21,10 @@ import java.util.Set;
  */
 public class MixinConfig implements IMixinConfigPlugin {
     private static final Logger logger = LogManager.getLogger("Plymouth: Debug: Mixin");
+    private static final Map<String, String> packageToMod = Map.of(
+            "anti_xray", "plymouth-anti-xray",
+            "database", "plymouth-database",
+            "tracker", "plymouth-tracker");
     private int substr;
 
     @Override
@@ -36,36 +41,29 @@ public class MixinConfig implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         var loader = FabricLoader.getInstance();
         var index = mixinClassName.indexOf('.', substr);
-        String env, cur = mixinClassName.substring(substr, index);
+        String env, cur = mixinClassName.substring(substr, index), mixin = mixinClassName.substring(substr);
         if (!Fusebox.isEnabled(cur)) {
-            logger.info("Package `{}` disabled. If you want to enable this mixin, put `{1}=true` in pdb.fb.properties", cur);
+            logger.error("Mixin `{}` disabled as package `{}` was disabled. If you want to enable this mixin, insert both `{}=true` and `{}=true` into pdb.fb.properties", mixin, cur, cur, mixin);
             return false;
         }
-        logger.info("Testing package `{}`...", cur);
-        switch (cur) {
-            case "anti_xray" -> {
-                if (!loader.isModLoaded("plymouth-anti-xray")) return false;
-                env = getEnvironment(mixinClassName, index);
-            }
-            case "database" -> {
-                if (!loader.isModLoaded("plymouth-database")) return false;
-                env = getEnvironment(mixinClassName, index);
-            }
-            case "tracker" -> {
-                if (!loader.isModLoaded("plymouth-tracker")) return false;
-                env = getEnvironment(mixinClassName, index);
-            }
-            default -> env = cur;
+        if (!Fusebox.isEnabled(mixin)) {
+            logger.error("Mixin `{}` disabled. If you want to enable this mixin, insert `{}=true` into pdb.fb.properties", mixin, mixin);
+            return false;
         }
-        {
-            var mixin = mixinClassName.substring(substr);
-            if (!Fusebox.isEnabled(mixin)) {
-                logger.info("Mixin `{}` disabled. If you want to enable this mixin, put `{:1}=true` in pdb.fb.properties", mixin);
+        String mod = packageToMod.get(cur);
+        if (mod != null && !mod.isBlank()) {
+            if (!loader.isModLoaded(mod)) {
+                logger.warn("Mixin `{}` disabled as mod `{}` is not present. If you want to enable this mixin, install `{}`.", mixin, mod, mod);
                 return false;
             }
-            logger.info("Testing mixin `{}`...", mixin);
+            env = getEnvironment(mixinClassName, index);
+        } else env = cur;
+        if (!checkEnvironment(loader, env)) {
+            logger.warn("Mixin `{}` disabled as it is on the wrong environment. Deploy to the {} to enable this mixin.", mixin, env);
+            return false;
         }
-        return checkEnvironment(loader, env);
+        logger.info("Mixin `{}` has been enabled. If you want to disable this mixin, insert `{}=false` into pdb.fb.properties. If you want to disable the package, insert `{}=false`.", mixin, mixin, cur);
+        return true;
     }
 
     private String getEnvironment(String in, int s) {
@@ -77,6 +75,8 @@ public class MixinConfig implements IMixinConfigPlugin {
         return switch (str) {
             case "client" -> loader.getEnvironmentType() == EnvType.CLIENT;
             case "server" -> loader.getEnvironmentType() == EnvType.SERVER;
+            case "dev", "development" -> loader.isDevelopmentEnvironment();
+            case "prod", "production" -> !loader.isDevelopmentEnvironment();
             default -> true;
         };
     }

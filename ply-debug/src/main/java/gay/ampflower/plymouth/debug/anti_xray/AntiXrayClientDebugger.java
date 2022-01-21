@@ -1,15 +1,15 @@
 package gay.ampflower.plymouth.debug.anti_xray;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import gay.ampflower.plymouth.debug.DebugProfiler;
+import gay.ampflower.plymouth.debug.Fusebox;
+import gay.ampflower.plymouth.debug.RenderBatch;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 
@@ -25,14 +25,14 @@ import static gay.ampflower.plymouth.debug.Fusebox.*;
 public class AntiXrayClientDebugger {
     // Positions to render. By default, all will render at 0, 0, 0.
     public static final DebugProfiler
-            antiXraySet = new DebugProfiler(2048, 0, 1, 0, 0.095F),
-            antiXrayUpdate = new DebugProfiler(64, 1, 0, 0, 0.1F),
-            antiXrayTest = new DebugProfiler(2048, 0, 0, 1, 0.050F),
-            onBlockDelta = new DebugProfiler(128, 1, 1, 0, 0.075F),
-            onBlockEvent = new DebugProfiler(128, 0, 1, 0, 0.090F),
-            onBlockEntityUpdate = new DebugProfiler(128, 1, 0.5F, 0, 0.110F),
-            onChunkLoad = new DebugProfiler(128, 0, .75F, 0.15F, 0.050F, 16),
-            onChunkBlockEntity = new DebugProfiler(128, 1, 0, 0.5F, 0.115F);
+            antiXraySet = new DebugProfiler(Fusebox.viewAntiXraySetLimit, 0, 255, 0, 0.095F),
+            antiXrayUpdate = new DebugProfiler(Fusebox.viewAntiXrayUpdateLimit, 255, 0, 0, 0.1F),
+            antiXrayTest = new DebugProfiler(Fusebox.viewAntiXrayTestLimit, 0, 0, 255, 0.050F),
+            onBlockDelta = new DebugProfiler(Fusebox.viewBlockDeltaLimit, 255, 255, 0, 0.075F),
+            onBlockEvent = new DebugProfiler(Fusebox.viewBlockEventLimit, 0, 255, 0, 0.090F),
+            onBlockEntityUpdate = new DebugProfiler(Fusebox.viewBlockEntityUpdateLimit, 255, 128, 0, 0.110F),
+            onChunkLoad = new DebugProfiler(Fusebox.viewChunkLoadLimit, 0, 192, 38, 0.050F, 16),
+            onChunkBlockEntity = new DebugProfiler(Fusebox.viewChunkBlockEntityLimit, 255, 0, 128, 0.115F);
     public static int mx, mz;
     public static BitSet[] masks;
 
@@ -59,42 +59,27 @@ public class AntiXrayClientDebugger {
     private static void render(WorldRenderContext ctx) {
         // Note: We purposely don't enable a depth test for the sake of visibility.
         // However, due to which stage it's on, it does get obstructed by water and clouds.
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableDepthTest();
-
-        var tessellator = Tessellator.getInstance();
-        var immediate = tessellator.getBuffer();
+        RenderBatch.beginBatch();
 
         // TODO: figure out ctx.matrixStack()
         var matrices = new MatrixStack();
         var camera = ctx.camera().getPos();
         matrices.translate(-camera.x, -camera.y, -camera.z);
 
-        RenderSystem.disableTexture();
-        RenderSystem.disableBlend();
-        RenderSystem.lineWidth(0.5F);
+        if (viewAntiXraySet) antiXraySet.render(matrices);
+        if (viewAntiXrayUpdate) antiXrayUpdate.render(matrices);
+        if (viewAntiXrayTest) antiXrayTest.render(matrices);
+        if (viewBlockDelta) onBlockDelta.render(matrices);
+        if (viewBlockEvent) onBlockEvent.render(matrices);
+        if (viewBlockEntityUpdate) onBlockEntityUpdate.render(matrices);
+        if (viewChunkLoad) onChunkLoad.render(matrices);
+        if (viewChunkBlockEntity) onChunkBlockEntity.render(matrices);
+        renderMask(matrices, ctx.world().getBottomY());
 
-        immediate.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
-
-        if (VIEW_AX_SET) antiXraySet.render(matrices, immediate);
-        if (VIEW_AX_UPDATE) antiXrayUpdate.render(matrices, immediate);
-        if (VIEW_AX_TEST) antiXrayTest.render(matrices, immediate);
-        if (VIEW_BLOCK_DELTA) onBlockDelta.render(matrices, immediate);
-        if (VIEW_BLOCK_EVENT) onBlockEvent.render(matrices, immediate);
-        if (VIEW_BLOCK_ENTITY_UPDATE) onBlockEntityUpdate.render(matrices, immediate);
-        if (VIEW_CHUNK_LOAD) onChunkLoad.render(matrices, immediate);
-        if (VIEW_CHUNK_BLOCK_ENTITY) onChunkBlockEntity.render(matrices, immediate);
-        renderMask(matrices, immediate, ctx.world().getBottomY());
-
-        tessellator.draw();
-
-        RenderSystem.lineWidth(1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.enableTexture();
-        RenderSystem.enableDepthTest();
+        RenderBatch.endBatch();
     }
 
-    private static void renderMask(MatrixStack stack, VertexConsumer consumer, int yoff) {
+    private static void renderMask(MatrixStack stack, int yoff) {
         if (masks == null) return;
 
         for (int w = 0; w < masks.length; w++) {
@@ -106,7 +91,7 @@ public class AntiXrayClientDebugger {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         if (mask.get(toIndex(x, y, z)))
-                            WorldRenderer.drawBox(stack, consumer, x, y, z, x + 1, y + 1, z + 1, .5F, .5F, .5F, .5F);
+                            RenderBatch.drawSolidBox(stack.peek(), x, y, z, x + 1, y + 1, z + 1, 127, 127, 127, 127, false, false, false, false);
                     }
                 }
             }
