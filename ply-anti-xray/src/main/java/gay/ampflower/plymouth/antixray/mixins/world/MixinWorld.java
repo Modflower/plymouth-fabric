@@ -1,7 +1,7 @@
 package gay.ampflower.plymouth.antixray.mixins.world;
 
-import gay.ampflower.plymouth.antixray.IShadowChunk;
 import gay.ampflower.plymouth.antixray.ShadowBlockView;
+import gay.ampflower.plymouth.antixray.ShadowChunk;
 import gay.ampflower.plymouth.antixray.transformers.GudAsmTransformer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -30,7 +30,7 @@ public abstract class MixinWorld implements WorldAccess, ShadowBlockView {
         if (isOutOfHeightLimit(pos)) {
             return Blocks.VOID_AIR.getDefaultState();
         }
-        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
+        return ((ShadowChunk) getChunk(pos)).plymouth$getShadowBlock(pos);
     }
 
     /**
@@ -44,6 +44,6 @@ public abstract class MixinWorld implements WorldAccess, ShadowBlockView {
         if (isOutOfHeightLimit(pos)) {
             return null;
         }
-        return ((IShadowChunk) getChunk(pos)).plymouth$getShadowBlockEntity(pos);
+        return ((ShadowChunk) getChunk(pos)).plymouth$getShadowBlockEntity(pos);
     }
 }

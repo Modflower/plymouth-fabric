@@ -16,7 +16,7 @@ import java.util.Map;
  * @author Ampflower
  * @since 0.0.0
  */
-public interface IShadowChunk extends ShadowBlockView {
+public interface ShadowChunk extends ShadowBlockView {
     /**
      * Changes the block in the shadow block back to the real block, forcing a server/client sync.
      *

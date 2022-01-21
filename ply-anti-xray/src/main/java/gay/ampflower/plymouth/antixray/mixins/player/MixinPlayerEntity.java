@@ -1,6 +1,6 @@
 package gay.ampflower.plymouth.antixray.mixins.player;
 
-import gay.ampflower.plymouth.antixray.IShadowChunk;
+import gay.ampflower.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -28,7 +28,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     private void helium$onUpdateSize(CallbackInfo ci) {
         // We need access to shadow immediately to force shadow replacement with spruce planks.
         var self = getBlockPos();
-        var chunk = (IShadowChunk) world.getChunk(self);
+        var chunk = (ShadowChunk) world.getChunk(self);
         if (chunk.plymouth$isMasked(self)) return;
         var possibleComposter = chunk.plymouth$getShadowBlock(self);
         if (possibleComposter.isOf(Blocks.COMPOSTER)) {
