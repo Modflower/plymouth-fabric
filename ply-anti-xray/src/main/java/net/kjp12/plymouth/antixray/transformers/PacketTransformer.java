@@ -15,6 +15,9 @@ import static net.kjp12.plymouth.antixray.transformers.Transformers.logger;
 import static net.kjp12.plymouth.antixray.transformers.Transformers.mkType;
 
 /**
+ * Takes every packet defined in {@code asm/PacketTransformer.sys} and transforms
+ * by the rules of {@link GudAsmTransformer} using {@link Stub} and {@code asm/PacketTargets.sys}.
+ *
  * @author KJP12
  * @since ${version}
  **/

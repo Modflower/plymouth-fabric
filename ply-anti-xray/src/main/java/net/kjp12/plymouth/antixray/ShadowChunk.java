@@ -11,7 +11,8 @@ import java.util.BitSet;
 import java.util.Map;
 
 /**
- * Shadow Chunk interface for chunks. Used for the Anti-Xray feature.
+ * Shadow Chunk interface for chunks. Used for fetching and setting shadow
+ * blocks to be sent to the client.
  *
  * @author kjp12
  * @since 0.0.0
