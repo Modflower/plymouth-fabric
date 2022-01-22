@@ -24,6 +24,8 @@ import java.util.jar.Manifest;
 import static org.objectweb.asm.Opcodes.*;
 
 /**
+ * Utility & early riser transformer bootstrap for {@link GudAsmTransformer} and {@link PacketTransformer}.
+ *
  * @author Ampflower
  * @since ${version}
  **/
@@ -33,6 +35,13 @@ public class Transformers implements AsmInitializer {
     static final Logger logger = LogManager.getLogger("Plymouth: Anti-Xray ASM Transformer");
     static final Type type = Type.getType("Lgay/ampflower/plymouth/antixray/transformers/Stub$MethodNameTo;");
 
+    /**
+     * Walks the stack until the ultimate consumer is found in accordance of the instruction's weight.
+     *
+     * @deprecated Use {@link #walkForward(AbstractInsnNode, int[])} as this implementation
+     * does not account for total pop followed by push, leading to missed consumers.
+     */
+    @Deprecated(forRemoval = true)
     static AbstractInsnNode walkForward(AbstractInsnNode from, int pop) {
         while (pop > 0) {
             pop -= stack(from = from.getNext());
@@ -40,6 +49,14 @@ public class Transformers implements AsmInitializer {
         return from;
     }
 
+    /**
+     * Walks the stack until the consumer is found in accordance to the instruction's weight.
+     *
+     * @param from The instruction to start walking from.
+     * @param pop  The amount to pop from stack. This will be set to the argument
+     *             location on the consumer on return.
+     * @return The instruction that consumed the entire stack.
+     */
     static AbstractInsnNode walkForward(AbstractInsnNode from, int[] pop) {
         while (pop[0] > 0) {
             var mut = stack2(from = from.getNext());
@@ -58,6 +75,9 @@ public class Transformers implements AsmInitializer {
         return from;
     }
 
+    /**
+     * Returns the stack mutation of the instruction in terms of pop & push.
+     */
     static StackMut stack2(AbstractInsnNode node) {
         if (node == null) {
             throw new NullPointerException("node");
@@ -92,6 +112,12 @@ public class Transformers implements AsmInitializer {
         };
     }
 
+    /**
+     * Returns the total weight of the instruction in terms of pop & push.
+     *
+     * @deprecated Use {@link #stack2(AbstractInsnNode)} as this method doesn't allow finding the consumer.
+     */
+    @Deprecated(forRemoval = true)
     static int stack(AbstractInsnNode node) {
         if (node == null) {
             throw new NullPointerException("node");
@@ -135,23 +161,50 @@ public class Transformers implements AsmInitializer {
         };
     }
 
+    /**
+     * Returns a stack weight dependent on if the method's instanced, and the
+     * method's descriptor.
+     *
+     * @deprecated Use {@link #processInvoke2(MethodInsnNode)} as this method doesn't allow finding the consumer.
+     */
+    @Deprecated(forRemoval = true)
     static int processInvoke(MethodInsnNode node) {
         return (Type.getReturnType(node.desc) != Type.VOID_TYPE ? -1 : 0) -
                 Type.getArgumentTypes(node.desc).length -
                 (node.getOpcode() != Opcodes.INVOKESTATIC ? 1 : 0); // pop 1 + args, push v?0:1
     }
 
+    /**
+     * Returns a stack weight dependent on the method's descriptor.
+     *
+     * @deprecated Use {@link #processIndy2(InvokeDynamicInsnNode)} as this method doesn't allow findind the consumer.
+     */
+    @Deprecated(forRemoval = true)
     static int processIndy(InvokeDynamicInsnNode node) {
         return (Type.getReturnType(node.desc) != Type.VOID_TYPE ? -1 : 0) -
                 Type.getArgumentTypes(node.desc).length; // pop args, push v?0:1
     }
 
+    /**
+     * Returns a stack push & pop dependent on if the method is instanced and the
+     * method's descriptor.
+     * <p>
+     * Pop is calculated by the descriptor length, adding 1 if instanced.
+     * <p>
+     * Push is 0 if the return is void, 1 otherwise.
+     *
+     * @param node The method node to convert to StackMut
+     * @return The StackMut of the given method node.
+     */
     static StackMut processInvoke2(MethodInsnNode node) {
         return new StackMut(
                 (node.getOpcode() != Opcodes.INVOKESTATIC ? 1 : 0) + Type.getArgumentTypes(node.desc).length,
                 Type.getReturnType(node.desc) != Type.VOID_TYPE ? 1 : 0);
     }
 
+    /**
+     * Returns pop of descriptor length, push of 0 if void, 1 otherwise.
+     */
     static StackMut processIndy2(InvokeDynamicInsnNode node) {
         return new StackMut(
                 Type.getArgumentTypes(node.desc).length,
@@ -159,12 +212,18 @@ public class Transformers implements AsmInitializer {
         );
     }
 
+    /**
+     * Returns true if the method node is equivalent to the given method type.
+     */
     static boolean matches(MethodInsnNode node, MethodType methodType) {
         if (node == null || methodType == null || !node.name.equals(methodType.getName()))
             return false;
         return Type.getMethodType(node.desc).equals(methodType.getDescriptor());
     }
 
+    /**
+     * Converts a given method node to a method type.
+     */
     static MethodType mkType(MethodInsnNode methodInsn) {
         return new MethodType(Type.getType('L' + methodInsn.owner + ';'), methodInsn.name, Type.getMethodType(methodInsn.desc));
     }
@@ -216,6 +275,20 @@ public class Transformers implements AsmInitializer {
         return path.replace('.', '/');
     }
 
+    /**
+     * Creates a transformer class set based off the given assembly name file.
+     * The output will be either internal names or descriptors, using the mutation
+     * described by the preprocessor if one is present.
+     * <p>
+     * Trivia: The reason {@code ;} was picked is that it's the only universally reserved character
+     * in the JVM that literally means end of string. {@code NUL} is technically valid.
+     *
+     * @param path         The path of the internal name or descriptor list.
+     * @param preprocessor The string preprocessor required for the set output.
+     * @return The internal name or descriptor list as found in the file, or transformed by preprocessor.
+     * @implSpec The list found within the file is separated by {@code ;}. If the list starts with {@code ;},
+     * the entire list is treated as a list of descriptors. Else, it is treated as a list of internal names.
+     */
     private static Set<String> getTransformerClassSet(String path, Function<String, String> preprocessor) {
         var set = new HashSet<String>();
         try (var classSet = Files.newInputStream(self.getPath(path))) {
@@ -254,6 +327,20 @@ public class Transformers implements AsmInitializer {
         return set;
     }
 
+    /**
+     * Creates a map of entire method to replacement name. Expects the file to be
+     * in the similar manner of {@link Stub}, which is the following:
+     *
+     * <pre>
+     * &#64;MethodNameTo("plymouth$getShadowBlock")
+     * BlockState world(BlockView world, BlockPos pos) {
+     *   return world.getBlockState(pos);
+     * }
+     * </pre>
+     *
+     * @param resource The stub class to read.
+     * @return The map of method call to replacement name as annotated.
+     */
     private static Map<MethodType, String> mkMap(String resource) {
         Map<MethodType, String> map = new HashMap<>();
         try (var stubIn = Transformers.class.getResourceAsStream(resource)) {

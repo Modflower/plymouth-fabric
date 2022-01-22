@@ -38,29 +38,6 @@ public class GudAsmTransformer implements Transformer {
         logger.info("packetClasses = {}", packetClasses);
         logger.info("mutateClasses = {}", mutateClasses);
         logger.info("redirectMap = {}", redirectMap);
-        // // "gay.ampflower.plymouth.antixray.transformers.Stub
-        // try (var stubIn = GudAsmTransformer.class.getResourceAsStream("Stub.class")) {
-        //     var reader = new ClassReader(stubIn);
-        //     var visitor = new ClassNode();
-        //     reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-        //     var methods = visitor.methods.stream().collect(Collectors.toMap(node -> node.name, node -> node));
-        //     {
-        //         var constructor = methods.get("actionResponse");
-        //         var insn = constructor.instructions.getLast().getPrevious();
-        //         if (insn.getOpcode() != Opcodes.INVOKESPECIAL)
-        //             throw new AssertionError("Expected constructor invocation, got " + insn);
-        //         this.constructor = mkType((MethodInsnNode) insn);
-        //     }
-        //     {
-        //         var world = methods.get("world");
-        //         var insn = world.instructions.getLast().getPrevious();
-        //         if (insn.getOpcode() != Opcodes.INVOKEVIRTUAL)
-        //             throw new AssertionError("Excepted getBlockState, got " + insn);
-        //         this.world = mkType((MethodInsnNode) insn);
-        //     }
-        // } catch (IOException ioe) {
-        //     throw new Error("Failed to load Stub", ioe);
-        // }
     }
 
     @Override

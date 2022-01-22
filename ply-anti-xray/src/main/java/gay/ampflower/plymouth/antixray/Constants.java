@@ -14,12 +14,15 @@ import org.apache.logging.log4j.Logger;
 public final class Constants {
     public static final Logger LOGGER = LogManager.getLogger("Plymouth Anti-Xray");
 
+    /**
+     * @deprecated Will be replaced by a different configuration scheme later on.
+     */
+    @Deprecated
     public static final Tag.Identified<Block>
             HIDDEN_BLOCKS,
             NO_SMEAR_BLOCKS;
 
     static {
-        //TODO: Replace with Fabric API when it becomes a thing.
         var accessor = AccessorBlockTag.getRequiredTags();
         HIDDEN_BLOCKS = accessor.add("plymouth-anti-xray:hidden");
         NO_SMEAR_BLOCKS = accessor.add("plymouth-anti-xray:no_smear");
