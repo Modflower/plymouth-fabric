@@ -8,7 +8,7 @@ import java.util.Properties as JavaProp
 plugins {
     java
     `java-library`
-    id("fabric-loom")
+    id("plymouth-loom")
     id("com.modrinth.minotaur")
     `maven-publish`
 }

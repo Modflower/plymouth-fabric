@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("fabric-loom")
+    id("plymouth-loom")
     `maven-publish`
 }
 

@@ -4,23 +4,29 @@ pluginManagement {
     repositories {
         maven {
             name = "Fabric"
-            url = java.net.URI("https://maven.fabricmc.net/")
+            url = uri("https://maven.fabricmc.net/")
         }
         maven {
-            name = "Cotton"
-            url = java.net.URI("https://server.bbkr.space/artifactory/libs-release")
+            name = "Quilt"
+            url = uri("https://maven.quiltmc.org/repository/release/")
+            content {
+                includeGroup("org.quiltmc")
+            }
         }
         maven {
             name = "The Glitch"
-            url = java.net.URI("https://the-glitch.network/maven/")
+            url = uri("https://maven.ampflower.gay/")
+            content {
+                includeModule("gay.ampflower", "plymouth-loom")
+                includeModule("plymouth-loom", "plymouth-loom.gradle.plugin")
+            }
         }
         gradlePluginPortal()
     }
     plugins {
-        id("fabric-loom") version System.getProperty("loom_version")!!
+        id("plymouth-loom") version System.getProperty("loom_version")!!
         id("com.diffplug.spotless") version System.getProperty("spotless_version")!!
         id("com.modrinth.minotaur") version System.getProperty("minotaur_version")!!
-        id("io.github.juuxel.loom-quiltflower-mini") version System.getProperty("quiltflower_version")!!
     }
 }
 
