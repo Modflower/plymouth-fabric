@@ -236,7 +236,7 @@ public class Transformers implements AsmInitializer {
             try (var rawManifest = Files.newInputStream(self.getPath("/META-INF/MANIFEST.MF"))) {
                 var self = new Manifest(rawManifest);
                 // Fabric-Mapping-Namespace: intermediary
-                var compiledNamespace = (String) self.getMainAttributes().get("Fabric-Mapping-Namespace");
+                var compiledNamespace = self.getMainAttributes().getValue("Fabric-Mapping-Namespace");
 
                 // If it is null, we are running in the native development environment, or as the dev jar.
                 // If it is not null, but the manifest namespace does *not* match the runtime namespace,
