@@ -4,10 +4,8 @@
   "plugin": "gay.ampflower.plymouth.debug.MixinConfig",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "database.MixinDatabaseHelper",
     "poison.MixinPlayerInventory",
-    "tracker.MixinExplosion",
-    "tracker.MixinSlot"
+    "tracker.MixinExplosion"
   ],
   "client": [
     "client.MixinClientPlayNetworkHandler"
