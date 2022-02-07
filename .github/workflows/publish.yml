@@ -16,9 +16,10 @@ jobs:
         with:
           java-version: 17
       - name: Build and publish with Gradle
-        run: ./gradlew poolBuilds
+        run: ./gradlew build publish poolBuilds
         env:
           BUILD_RELEASE: ${{github.event.prelease == false}}
+          MODRINTH_TOKEN: ${{secrets.MODRINTH}}
       - name: Upload build artifacts
         uses: AButler/upload-release-assets@v2.0
         with:

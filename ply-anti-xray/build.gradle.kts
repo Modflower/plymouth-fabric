@@ -158,13 +158,19 @@ tasks {
     withType<Jar> {
         from("LICENSE")
     }
-    register<TaskModrinthUpload>("publishModrinth") {
+    val publishToModrinth = register<TaskModrinthUpload>("publishToModrinth") {
+        group = "publishing"
         token = System.getenv("MODRINTH_TOKEN")
         projectId = modrinth_id
         versionNumber = version.toString()
-        releaseType = System.getenv("RELEASE_OVERRIDE") ?: if (isRelease) "release" else "beta"
+        releaseType = System.getenv("RELEASE_OVERRIDE") ?: if ("alpha" in project_version) "alpha"
+        else if (!isRelease || '-' in project_version) "beta"
+        else "release"
         uploadFile = remapJar
         addGameVersion(minecraft_version)
         addLoader("fabric")
+    }
+    publish {
+        dependsOn(publishToModrinth)
     }
 }
