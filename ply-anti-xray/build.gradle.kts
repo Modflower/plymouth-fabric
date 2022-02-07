@@ -1,4 +1,5 @@
 import com.modrinth.minotaur.TaskModrinthUpload
+import com.modrinth.minotaur.request.VersionType
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import java.net.URI
@@ -160,13 +161,16 @@ tasks {
     }
     val publishToModrinth = register<TaskModrinthUpload>("publishToModrinth") {
         group = "publishing"
+        dependsOn(remapJar)
         token = System.getenv("MODRINTH_TOKEN")
         projectId = modrinth_id
         versionNumber = version.toString()
-        releaseType = System.getenv("RELEASE_OVERRIDE") ?: if ("alpha" in project_version) "alpha"
-        else if (!isRelease || '-' in project_version) "beta"
-        else "release"
-        uploadFile = remapJar
+        versionType = System.getenv("RELEASE_OVERRIDE")?.let(VersionType::valueOf) ?: when {
+            "alpha" in project_version -> VersionType.ALPHA
+            !isRelease || '-' in project_version -> VersionType.BETA
+            else -> VersionType.RELEASE
+        }
+        uploadFile = remapJar.get()
         addGameVersion(minecraft_version)
         addLoader("fabric")
     }
