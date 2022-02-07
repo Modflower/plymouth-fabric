@@ -3,9 +3,8 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("fabric-loom")
+    id("plymouth-loom")
     `maven-publish`
-    id("io.github.juuxel.loom-quiltflower-mini")
 }
 
 val minecraft_version: String by project
@@ -30,6 +29,7 @@ version = when {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
 }
 
 repositories {
@@ -50,11 +50,6 @@ tasks {
         options.encoding = "UTF-8"
         options.isDeprecation = true
         options.isWarnings = true
-    }
-    val sourcesJar = register<Jar>("sourcesJar") {
-        dependsOn("classes")
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
     }
     processResources {
         val map = mapOf(
@@ -85,7 +80,7 @@ tasks {
                 if (p.name == "ply-debug" || !p.name.startsWith("ply-")) continue
                 from(p.tasks.jar, p.tasks.remapJar, p.tasks.getByName("sourcesJar"), p.tasks.remapSourcesJar)
             }
-            from(jar, remapJar, sourcesJar, remapSourcesJar)
+            from(jar, remapJar, remapSourcesJar)
         }
         into(project.buildDir.resolve("pool"))
     }
