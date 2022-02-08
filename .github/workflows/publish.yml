@@ -20,6 +20,7 @@ jobs:
         env:
           BUILD_RELEASE: ${{github.event.prelease == false}}
           MODRINTH_TOKEN: ${{secrets.MODRINTH}}
+          CHANGELOG: ${{ github.event.release.body }}
       - name: Upload build artifacts
         uses: AButler/upload-release-assets@v2.0
         with:
