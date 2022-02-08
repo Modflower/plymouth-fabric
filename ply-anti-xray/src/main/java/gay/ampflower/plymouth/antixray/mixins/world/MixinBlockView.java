@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.Shadow;
  * @author Ampflower
  * @since ${version}
  **/
-@Mixin(BlockView.class)
+@Mixin(value = BlockView.class, priority = Integer.MAX_VALUE)
 public interface MixinBlockView extends ShadowBlockView {
     @Shadow
     @Nullable BlockEntity getBlockEntity(BlockPos pos);
