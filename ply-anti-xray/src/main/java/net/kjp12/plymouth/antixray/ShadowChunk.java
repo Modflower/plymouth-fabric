@@ -35,6 +35,20 @@ public interface ShadowChunk extends ShadowBlockView {
     void plymouth$setShadowBlock(BlockPos pos, BlockState state);
 
     /**
+     * Gets the shadow chunk section, generating them if they're not present.
+     *
+     * @return The shadow chunk section, always nonnull
+     * @see net.kjp12.plymouth.antixray.transformers.GudAsmTransformer
+     * @see net.kjp12.plymouth.antixray.transformers.PacketTransformer
+     */
+    // The return are for the two mass ASM transformers, listed in the See block(s).
+    @SuppressWarnings("UnusedReturnValue")
+    @NotNull
+    default ChunkSection plymouth$getShadowSection(int y) {
+        return plymouth$getShadowSections()[y];
+    }
+
+    /**
      * Gets the shadow chunk, generating them if they're not present.
      *
      * @return The shadow chunk, always nonnull

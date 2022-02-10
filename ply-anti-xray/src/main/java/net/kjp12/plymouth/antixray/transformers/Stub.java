@@ -71,8 +71,13 @@ class Stub {
         return chunk.getBlockEntities();
     }
 
+    @MethodNameTo("plymouth$getShadowSection")
+    ChunkSection chunkCS(WorldChunk chunk, int y) {
+        return chunk.getSection(y);
+    }
+
     @MethodNameTo("plymouth$getShadowSections")
-    ChunkSection[] chunkCS(WorldChunk chunk) {
+    ChunkSection[] chunkCSA(WorldChunk chunk) {
         return chunk.getSectionArray();
     }
 
