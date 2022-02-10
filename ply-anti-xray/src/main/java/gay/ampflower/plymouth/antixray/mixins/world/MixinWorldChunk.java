@@ -75,36 +75,27 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void plymouth$setBlockState(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> bs, int y, ChunkSection chunkSection, boolean emptySection, int i, int j, int k, BlockState old) {
         if (world instanceof ServerWorld && shadowSections != null) {
-            var index = Constants.toIndex(i, j, k);
             int yi = getSectionIndex(y);
-            var mask = getShadowMask(yi);
             logic:
-            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
-                if (mask.get(index)) return;
-                // This will always be true regardless of what happens in this branch.
-                mask.set(index, true);
-                var regular = infestedBlock.toRegularState(state);
-                if (regular.isIn(HIDDEN_BLOCKS)) {
+            if (shadowSections[yi] != null || state.isIn(HIDDEN_BLOCKS)) {
+                var index = Constants.toIndex(i, j, k);
+                if (state.isIn(HIDDEN_BLOCKS)) {
+                    if (plymouth$isMasked(yi, index)) return;
                     var mutPos = pos.mutableCopy();
-                    if (plymouth$isBlockHidden(regular, mutPos)) {
-                        state = getSmearBlock(mutPos.set(pos));
+                    if (isBlockHidden(state, mutPos)) {
+                        setMasked(yi, index, true);
+                        if (isHidingCandidate(old, pos)) return;
+                        state = getSmearBlock(mutPos.set(pos), state, null);
+                    }
+                } else {
+                    setMasked(yi, index, false);
+                    if (shadowSections[yi] == null) {
                         break logic;
                     }
                 }
-                state = regular;
-            } else if (state.isIn(HIDDEN_BLOCKS)) {
-                if (mask.get(index)) return;
-                var mutPos = pos.mutableCopy();
-                if (plymouth$isBlockHidden(state, mutPos)) {
-                    if (isHidingCandidate(old, pos)) return;
-                    state = getSmearBlock(mutPos.set(pos));
-                    mask.set(index, true);
-                }
-            } else {
-                mask.set(index, false);
+                getShadowSection(yi, true).setBlockState(i, j, k, state);
             }
-            getShadowSection(yi).setBlockState(i, j, k, state);
-            plymouth$trackUpdate(pos);
+            trackUpdate(pos);
             if (VoxelShapes.matchesAnywhere(state.getCollisionShape(world, pos), old.getCollisionShape(world, pos), BooleanBiFunction.NOT_SAME)) {
                 var bp = new BlockPos.Mutable();
                 setIfHidden(bp.set(pos, Direction.NORTH));
@@ -136,14 +127,12 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             if (isSectionEmpty(section) || !section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) return;
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
-            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
-                plymouth$setShadowBlock(bp, infestedBlock.toRegularState(state));
-            } else if (state.isIn(HIDDEN_BLOCKS)) {
-                if (getShadowMask(cy).get(Constants.toIndex(ox, oy, oz))) {
-                    if (!plymouth$isBlockHidden(state, bp.set(ox, y, oz)))
+            if (state.isIn(HIDDEN_BLOCKS)) {
+                if (plymouth$isMasked(cy, Constants.toIndex(ox, oy, oz))) {
+                    if (!isBlockHidden(state, bp.set(ox, y, oz)))
                         plymouth$unsetShadowBlock(bp.set(x, y, z));
-                } else if (plymouth$isBlockHidden(state, bp.set(ox, y, oz))) {
-                    var smear = getSmearBlock(bp.set(ox, y, oz));
+                } else if (isBlockHidden(state, bp.set(ox, y, oz))) {
+                    var smear = getSmearBlock(bp.set(ox, y, oz), state, null);
                     plymouth$setShadowBlock(bp.set(x, y, z), smear);
                 }
             }
@@ -153,8 +142,9 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         }
     }
 
-    public boolean plymouth$isBlockHidden(final BlockState state,
-                                          final BlockPos.Mutable bp) {
+    @Unique
+    private boolean isBlockHidden(final BlockState state,
+                                  final BlockPos.Mutable bp) {
         if (state.isAir()) return false;
         // TODO: Account for light levels if Overworld.
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
@@ -195,22 +185,20 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             var section = sectionArray[sy];
             if (isSectionEmpty(section)) continue;
             if (section.hasAny(s -> s.isIn(HIDDEN_BLOCKS))) {
-                var shadowSection = getShadowSection(sy);
+                var shadowSection = getShadowSection(sy, false);
                 for (int x = 0; x < 16; x++)
                     for (int z = 0; z < 16; z++) {
                         var smear = Blocks.VOID_AIR.getDefaultState();
                         for (int y = 0; y < 16; y++) {
                             var state = section.getBlockState(x, y, z);
                             if (state.isAir()) continue;
-                            if (state.getBlock() instanceof InfestedBlock infestedBlock) {
-                                state = infestedBlock.toRegularState(state);
-                                getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
-                            } else if (state.isIn(HIDDEN_BLOCKS)) {
-                                if (plymouth$isBlockHidden(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
-                                    state = smear.isAir() ? getSmearBlock(bp.set(x, (sy << 4) + getBottomY(), z)) : smear;
-                                    getShadowMask(sy).set(Constants.toIndex(x, y, z), true);
+                            int oy = (sy << 4) + getBottomY() + y;
+                            if (state.isIn(HIDDEN_BLOCKS)) {
+                                if (isBlockHidden(state, bp.set(x, oy, z))) {
+                                    state = getSmearBlock(bp.set(x, oy, z), state, smear);
+                                    setMasked(sy, Constants.toIndex(x, y, z), true);
                                 }
-                            } else if (isHidingCandidate(state, bp.set(x, (sy << 4) + getBottomY() + y, z))) {
+                            } else if (isHidingCandidate(state, bp.set(x, oy, z))) {
                                 smear = state;
                             }
                             shadowSection.setBlockState(x, y, z, state);
@@ -220,10 +208,17 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         }
     }
 
-    @Unique
-    private BlockState getSmearBlock(BlockPos.Mutable bp) {
+    private BlockState getSmearBlock(BlockPos.Mutable bp, BlockState state, BlockState fallback) {
+        if (state.getBlock() instanceof InfestedBlock infestedBlock) {
+            state = infestedBlock.toRegularState(state);
+            if (!state.isIn(HIDDEN_BLOCKS)) {
+                return state;
+            }
+        }
+        if (fallback != null && !fallback.isAir()) {
+            return fallback;
+        }
         int x = bp.getX(), y = bp.getY(), z = bp.getZ();
-        BlockState state;
         if (isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y - 1, z)), bp) ||
                 isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y + 1, z)), bp) ||
                 isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x, y, z - 1)), bp) ||
@@ -232,17 +227,12 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
                 isHidingCandidate(state = plymouth$getShadowBlock(bp.set(x - 1, y, z)), bp))
             return state;
         bp.set(x, y, z);
-        return getDefaultSmearBlock(bp);
-    }
-
-    @Unique
-    private BlockState getDefaultSmearBlock(BlockPos pos) {
         RegistryKey<World> registryKey = world.getRegistryKey();
         if (World.NETHER.equals(registryKey)) {
             return Blocks.NETHERRACK.getDefaultState();
         } else if (World.END.equals(registryKey)) {
             return Blocks.END_STONE.getDefaultState();
-        } else if (pos.getY() >= 0) {
+        } else if (bp.getY() >= 0) {
             return Blocks.STONE.getDefaultState();
         } else {
             return Blocks.DEEPSLATE.getDefaultState();
@@ -251,11 +241,11 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
 
     @NotNull
     public BlockState plymouth$getShadowBlock(BlockPos pos) {
-        if (shadowSections == null) return Blocks.VOID_AIR.getDefaultState();
+        if (proxiedSections == null) return Blocks.VOID_AIR.getDefaultState();
         int i = pos.getX(), j = pos.getY(), k = pos.getZ(), l = getSectionIndex(j);
         try {
-            if (l >= 0 && l < shadowSections.length) {
-                var section = shadowSections[l];
+            if (l >= 0 && l < proxiedSections.length) {
+                var section = proxiedSections[l];
                 return isSectionEmpty(section) ? Blocks.AIR.getDefaultState() : section.getBlockState(i & 15, j & 15, k & 15);
             }
             return Blocks.VOID_AIR.getDefaultState();
@@ -263,7 +253,7 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             var report = CrashReport.create(t, "Plymouth: Anti-Xray: Getting shadow block state");
             report.addElement("Block being got")
                     .add("Location", () -> CrashReportSection.createPositionString(world, i, j, k))
-                    .add("Section", () -> "Section " + l + ": " + (shadowSections == null ? "shadowSections -> null?" : shadowSections[l]));
+                    .add("Section", () -> "Section " + l + ": " + (proxiedSections == null ? "proxiedSections -> null?" : proxiedSections[l]));
             throw new CrashException(report);
         }
     }
@@ -276,13 +266,11 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
 
     @Override
     public void plymouth$unsetShadowBlock(BlockPos pos) {
-        if (shadowMasks == null) return; // There is nothing to unset.
-        final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y), i = Constants.toIndex(pos);
-        final var m = getShadowMask(cy);
-        if (m.get(i)) {
-            getShadowSection(cy).setBlockState(x & 15, y & 15, z & 15, sectionArray[cy].getBlockState(x & 15, y & 15, z & 15));
-            m.set(i, false);
-            plymouth$trackUpdate(pos);
+        if (plymouth$isMasked(pos)) {
+            final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y), i = Constants.toIndex(pos);
+            getShadowSection(cy, true).setBlockState(x & 15, y & 15, z & 15, sectionArray[cy].getBlockState(x & 15, y & 15, z & 15));
+            getShadowMask(cy).set(i, false);
+            trackUpdate(pos);
         }
     }
 
@@ -291,9 +279,9 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         final int y = pos.getY(), cy = getSectionIndex(y);
         // Do note, we're calling plymouth$getShadowSections() to force generation of the shadow chunk.
         plymouth$getShadowSections();
-        getShadowSection(cy).setBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15, state);
-        getShadowMask(cy).set(Constants.toIndex(pos), true);
-        plymouth$trackUpdate(pos);
+        getShadowSection(cy, true).setBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15, state);
+        setMasked(cy, Constants.toIndex(pos), true);
+        trackUpdate(pos);
     }
 
     @Override
@@ -325,13 +313,40 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         return mask != null && mask.get(Constants.toIndex(pos));
     }
 
-    public void plymouth$trackUpdate(BlockPos pos) {
+    @Unique
+    private boolean plymouth$isMasked(int y, int i) {
+        if (shadowMasks == null) return false;
+        var mask = shadowMasks[y];
+        return mask != null && mask.get(i);
+    }
+
+    @Unique
+    private void setMasked(int y, int i, boolean b) {
+        if (shadowMasks == null || !b && shadowMasks[y] == null) return;
+        getShadowMask(y).set(i, b);
+    }
+
+    @Unique
+    private void trackUpdate(BlockPos pos) {
         ((ServerWorld) world).getChunkManager().markForUpdate(pos);
     }
 
     @Unique
-    private ChunkSection getShadowSection(int y) {
-        return shadowSections[y] == null ? proxiedSections[y] = shadowSections[y] = new ChunkSection((y << 4) + getBottomY(), world.getRegistryManager().get(Registry.BIOME_KEY)) : shadowSections[y];
+    private ChunkSection getShadowSection(int y, boolean copy) {
+        return shadowSections[y] == null ? proxiedSections[y] = shadowSections[y] = new ChunkSection(y + getBottomSectionCoord(),
+                copy ? clone(sectionArray[y].getBlockStateContainer()) : new PalettedContainer<>(Block.STATE_IDS, Blocks.AIR.getDefaultState(), PalettedContainer.PaletteProvider.BLOCK_STATE),
+                sectionArray[y].getBiomeContainer()) : shadowSections[y];
+    }
+
+    @Unique
+    private static <T> PalettedContainer<T> clone(PalettedContainer<T> i) {
+        @SuppressWarnings("unchecked")
+        var cchi = (AccessorPalettedContainer<T>) i;
+        var di = cchi.getData();
+        var pi = di.palette();
+        var po = new ArrayList<T>(pi.getSize());
+        for (int j = 0, k = pi.getSize(); j < k; j++) po.add(pi.get(j));
+        return new PalettedContainer<>(cchi.getIdList(), cchi.getPaletteProvider(), di.configuration(), di.storage().copy(), po);
     }
 
     @Unique

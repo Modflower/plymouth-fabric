@@ -53,6 +53,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+loom {
+    accessWidenerPath.set(projectDir.resolve("src/main/resources/plymouth-anti-xray.accesswidener"))
+}
+
 // https://discuss.gradle.org/t/get-a-path-to-dependencies-jar-file/5084
 val yarn = configurations.mappings.get().resolvedConfiguration.resolvedArtifacts.find { it.moduleVersion.id.name == "yarn" }!!
 val tinyTree: TinyTree by lazy { ZipFile(yarn.file).use { it.getInputStream(it.getEntry("mappings/mappings.tiny")).bufferedReader().use(TinyMappingFactory::load) } }
