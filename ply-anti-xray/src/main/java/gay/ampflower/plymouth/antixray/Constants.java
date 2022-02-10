@@ -18,14 +18,11 @@ public final class Constants {
      * @deprecated Will be replaced by a different configuration scheme later on.
      */
     @Deprecated
-    public static final Tag.Identified<Block>
-            HIDDEN_BLOCKS,
-            NO_SMEAR_BLOCKS;
+    public static final Tag.Identified<Block> HIDDEN_BLOCKS;
 
     static {
         var accessor = AccessorBlockTag.getRequiredTags();
         HIDDEN_BLOCKS = accessor.add("plymouth-anti-xray:hidden");
-        NO_SMEAR_BLOCKS = accessor.add("plymouth-anti-xray:no_smear");
     }
 
     private Constants() {
