@@ -99,6 +99,8 @@ public class GudAsmTransformer implements Transformer {
                             if (var.var == 0) {
                                 logger.warn("This reference for {}.{}{} in {}.{}{}, ignoring", invoke.owner, invoke.name, invoke.desc, classNode.name, method.name, method.desc);
                                 continue; // we cannot intercept on this.
+                            } else {
+                                logger.info("Checking for STORE & LOAD on var {} within {}.{}{} in {}.{}{}", var.var, invoke.owner, invoke.name, invoke.desc, classNode.name, method.name, method.desc);
                             }
                             mutLoad.put(var.var, 0);
                             // FIXME: Make this smarter, this may severely go wrong!
@@ -109,11 +111,14 @@ public class GudAsmTransformer implements Transformer {
                                     // TODO: Check if method is allowed to receive
                                     var consumerArgs = Type.getArgumentTypes(consumingMethod.desc);
                                     if (consumerArgs.length >= pop[0] && consumerArgs[consumerArgs.length - pop[0]].equals(args[i])) {
-                                        logger.info("Redirecting {}.{}{} with var {}", consumingMethod.owner, consumingMethod.name, consumingMethod.desc, var.var);
+                                        logger.info("Redirecting {}.{}{}", consumingMethod.owner, consumingMethod.name, consumingMethod.desc);
                                     } else {
-                                        logger.info("Unknown redirect {}.{}{} with var {}", consumingMethod.owner, consumingMethod.name, consumingMethod.desc, var.var);
+                                        logger.info("Unknown redirect {}.{}{}", consumingMethod.owner, consumingMethod.name, consumingMethod.desc);
                                     }
                                     // unsafe |= !consumerArgs[consumerArgs.length+pop[0]].equals(args[i]);
+                                } else {
+                                    // unsafe = true
+                                    logger.warn("Unknown consumer {}: {}, may invoke undefined behaviour.", consumer, consumer.getOpcode());
                                 }
                             }
                             // if(unsafe) {
@@ -148,9 +153,9 @@ public class GudAsmTransformer implements Transformer {
                 var var = itr.nextInt();
                 if (!storMap.containsKey(var)) {
                     if (var <= unsafeBefore) {
-                        logger.warn("Cannot redirect {} in {}.{}{} as it is purely a parameter.", var, classNode.name, method.name, method.desc);
+                        logger.warn("Cannot redirect var {} in {}.{}{} as it is purely a parameter.", var, classNode.name, method.name, method.desc);
                     } else {
-                        logger.warn("Cannot redirect {} in {}.{}{} as it doesn't exist?! Did someone generate this class?", var, classNode.name, method.name, method.desc);
+                        logger.warn("Cannot redirect var {} in {}.{}{} as it doesn't exist?! Did someone generate this class?", var, classNode.name, method.name, method.desc);
                     }
                 } else for (var stor : storMap.get(var)) {
                     var $supplier = walkBackwards(stor, 1);
@@ -160,9 +165,9 @@ public class GudAsmTransformer implements Transformer {
                             transformed = true;
                             var old = supplier.name;
                             supplier.name = redirect;
-                            logger.info("Redirected {}.{}{} in {}.{}{} to {} for variable {}", supplier.owner, old, supplier.desc, classNode.name, method.name, method.desc, supplier.name, var);
+                            logger.info("Redirected {}.{}{} in {}.{}{} to {} for var {}", supplier.owner, old, supplier.desc, classNode.name, method.name, method.desc, supplier.name, var);
                         } else {
-                            logger.info("Cannot redirect {}.{}{} in {}.{}{} for variable {}", supplier.owner, supplier.name, supplier.desc, classNode.name, method.name, method.desc, var);
+                            logger.info("Cannot redirect {}.{}{} in {}.{}{} for var {}", supplier.owner, supplier.name, supplier.desc, classNode.name, method.name, method.desc, var);
                         }
                     } else {
                         logger.info("Cannot redirect instruction {} for var {} in {}.{}{}", $supplier, var, classNode.name, method.name, method.desc);
