@@ -108,7 +108,9 @@ public class Transformers implements AsmInitializer {
             case MULTIANEWARRAY -> new StackMut(((MultiANewArrayInsnNode) node).dims, 1);
             case INVOKEVIRTUAL, INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC -> processInvoke2((MethodInsnNode) node); // pop s ?: 1 + params, push r ?: 0
             case INVOKEDYNAMIC -> processIndy2((InvokeDynamicInsnNode) node);
-            default -> throw new Error("ub");
+            case IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE,
+                    IF_ACMPEQ, IF_ACMPNE -> StackMut.Ti_0;
+            default -> throw new Error("Undefined Behaviour: " + node + ": " + node.getOpcode());
         };
     }
 

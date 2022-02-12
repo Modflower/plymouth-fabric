@@ -26,7 +26,8 @@ public record StackMut(int pop, int push) {
             T2_1 = new StackMut(2, 1),
             T2_2 = new StackMut(2, 2),
             T2_3 = new StackMut(2, 3),
-            T3_0 = new StackMut(3, 0);
+            T3_0 = new StackMut(3, 0),
+            Ti_0 = new StackMut(Integer.MAX_VALUE, 0);
 
     /**
      * Returns the weight calculated by push minus pop.
