@@ -344,9 +344,13 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         var cchi = (AccessorPalettedContainer<T>) i;
         var di = cchi.getData();
         var pi = di.palette();
-        var po = new ArrayList<T>(pi.getSize());
-        for (int j = 0, k = pi.getSize(); j < k; j++) po.add(pi.get(j));
-        return new PalettedContainer<>(cchi.getIdList(), cchi.getPaletteProvider(), di.configuration(), di.storage().copy(), po);
+        if (pi instanceof IdListPalette<T>) {
+            return i.copy();
+        } else {
+            var po = new ArrayList<T>(pi.getSize());
+            for (int j = 0, k = pi.getSize(); j < k; j++) po.add(pi.get(j));
+            return new PalettedContainer<>(cchi.getIdList(), cchi.getPaletteProvider(), di.configuration(), di.storage().copy(), po);
+        }
     }
 
     @Unique
