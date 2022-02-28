@@ -308,14 +308,14 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
 
     @Override
     public boolean plymouth$isMasked(BlockPos pos) {
-        if (shadowMasks == null) return false;
+        if (shadowMasks == null || isOutOfHeightLimit(pos)) return false;
         var mask = shadowMasks[getSectionIndex(pos.getY())];
         return mask != null && mask.get(Constants.toIndex(pos));
     }
 
     @Unique
     private boolean plymouth$isMasked(int y, int i) {
-        if (shadowMasks == null) return false;
+        if (shadowMasks == null || y < 0 || y >= shadowMasks.length) return false;
         var mask = shadowMasks[y];
         return mask != null && mask.get(i);
     }
