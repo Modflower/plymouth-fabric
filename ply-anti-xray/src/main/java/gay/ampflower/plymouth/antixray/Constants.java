@@ -2,7 +2,7 @@ package gay.ampflower.plymouth.antixray;
 
 import gay.ampflower.plymouth.antixray.mixins.AccessorBlockTag;
 import net.minecraft.block.Block;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,11 +18,10 @@ public final class Constants {
      * @deprecated Will be replaced by a different configuration scheme later on.
      */
     @Deprecated
-    public static final Tag.Identified<Block> HIDDEN_BLOCKS;
+    public static final TagKey<Block> HIDDEN_BLOCKS;
 
     static {
-        var accessor = AccessorBlockTag.getRequiredTags();
-        HIDDEN_BLOCKS = accessor.add("plymouth-anti-xray:hidden");
+        HIDDEN_BLOCKS = AccessorBlockTag.invokeRegister("plymouth-anti-xray:hidden");
     }
 
     private Constants() {
