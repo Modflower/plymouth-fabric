@@ -46,14 +46,14 @@ public class PacketTransformer implements Transformer {
         boolean transformed = false;
         for (var method : classNode.methods) {
             for (var call : AsmUtils.findMatchingNodes(method, n -> n instanceof MethodInsnNode m &&
-                    m.getOpcode() == Opcodes.INVOKEVIRTUAL && invokeVirtualMap.containsKey(mkType(m)))) {
+                    m.getOpcode() != Opcodes.INVOKESTATIC && invokeVirtualMap.containsKey(mkType(m)))) {
                 if (!(call instanceof MethodInsnNode m1)) {
                     new AssertionError("Unexpected node " + call).printStackTrace();
                     continue;
                 }
                 var old = m1.name;
                 m1.name = invokeVirtualMap.get(mkType(m1));
-                logger.info("Redirected {} in {} to {}", old, classNode.name, m1.name);
+                logger.info("PAK-AUX: Redirected {}.{}{} in {}.{}{} to {}", m1.owner, old, m1.desc, classNode.name, method.name, method.desc, m1.name);
                 transformed = true;
             }
         }
