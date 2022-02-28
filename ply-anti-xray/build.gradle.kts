@@ -175,7 +175,7 @@ tasks {
             else -> VersionType.RELEASE
         }
         val ref = System.getenv("GITHUB_REF")
-        changelog = System.getenv("CHANGELOG") ?: if (ref.startsWith("refs/tags/")) "You may view the changelog at https://github.com/the-glitch-network/plymouth-fabric/releases/tag/${com.google.common.net.UrlEscapers.urlFragmentEscaper().escape(ref.substring(10))}"
+        changelog = System.getenv("CHANGELOG") ?: if (ref != null && ref.startsWith("refs/tags/")) "You may view the changelog at https://github.com/the-glitch-network/plymouth-fabric/releases/tag/${com.google.common.net.UrlEscapers.urlFragmentEscaper().escape(ref.substring(10))}"
         else "No changelog is available. Perhaps poke at https://github.com/the-glitch-network/plymouth-fabric for a changelog?"
         uploadFile = remapJar.get()
         addGameVersion(minecraft_version)
