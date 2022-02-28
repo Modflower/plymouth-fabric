@@ -36,20 +36,6 @@ public class Transformers implements AsmInitializer {
     static final Type type = Type.getType("Lnet/kjp12/plymouth/antixray/transformers/Stub$MethodNameTo;");
 
     /**
-     * Walks the stack until the ultimate consumer is found in accordance of the instruction's weight.
-     *
-     * @deprecated Use {@link #walkForward(AbstractInsnNode, int[])} as this implementation
-     * does not account for total pop followed by push, leading to missed consumers.
-     */
-    @Deprecated(forRemoval = true)
-    static AbstractInsnNode walkForward(AbstractInsnNode from, int pop) {
-        while (pop > 0) {
-            pop -= stack(from = from.getNext());
-        }
-        return from;
-    }
-
-    /**
      * Walks the stack until the consumer is found in accordance to the instruction's weight.
      *
      * @param from The instruction to start walking from.
@@ -68,9 +54,16 @@ public class Transformers implements AsmInitializer {
         return from;
     }
 
+    /**
+     * Walks the stack until the producer is found in accordance to the instruction's weight.
+     *
+     * @param from The instruction to start walking from.
+     * @param pop  The amount that has been popped from stack.
+     * @return The instruction that produced the stack variable.
+     */
     static AbstractInsnNode walkBackwards(AbstractInsnNode from, int pop) {
         while (pop > 0) {
-            pop += stack(from = from.getPrevious());
+            pop -= stack2(from = from.getPrevious()).weight();
         }
         return from;
     }
@@ -112,79 +105,6 @@ public class Transformers implements AsmInitializer {
                     IF_ACMPEQ, IF_ACMPNE -> StackMut.Ti_0;
             default -> throw new Error("Undefined Behaviour: " + node + ": " + node.getOpcode());
         };
-    }
-
-    /**
-     * Returns the total weight of the instruction in terms of pop & push.
-     *
-     * @deprecated Use {@link #stack2(AbstractInsnNode)} as this method doesn't allow finding the consumer.
-     */
-    @Deprecated(forRemoval = true)
-    static int stack(AbstractInsnNode node) {
-        if (node == null) {
-            throw new NullPointerException("node");
-        }
-        // if(node instanceof LineNumberNode || node instanceof FrameNode) return 0; // op: -1, not required for operation.
-        return switch (node.getOpcode()) {
-            case NOP, -1, // pop 0, push 0
-                    SWAP, // pop 2, push 2
-                    INEG, LNEG, FNEG, DNEG, // pop 1, push 1
-                    IINC, // pop 0, push 0
-                    I2L, I2F, I2D, L2I, L2F, L2D, F2I, F2L, F2D, D2I, D2L, D2F, I2B, I2C, I2S, // pop 1, push 1
-                    RETURN, // pop 0, push ?
-                    GETFIELD, // pop 1, push 1
-                    NEWARRAY, ANEWARRAY, ARRAYLENGTH, CHECKCAST -> 0; // pop 1, push 1
-            case ACONST_NULL, ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5,
-                    LCONST_0, LCONST_1, FCONST_0, FCONST_1, FCONST_2, DCONST_0, DCONST_1,
-                    BIPUSH, SIPUSH, LDC, ILOAD, LLOAD, FLOAD, DLOAD, ALOAD, GETSTATIC,
-                    NEW, // pop 0, push 1
-                    DUP, // pop 1, push 2
-                    DUP_X1 -> -1; // pop 2, push 3
-            case IALOAD, LALOAD, FALOAD, DALOAD, AALOAD, BALOAD, CALOAD, SALOAD, // pop 2, push 1
-                    ISTORE, LSTORE, FSTORE, DSTORE, ASTORE, PUTSTATIC, // pop 1, push 0
-                    POP, // pop 1, push 0
-                    MONITORENTER, MONITOREXIT, // pop 1, push 0
-                    IADD, LADD, FADD, DADD, ISUB, LSUB, FSUB, DSUB,
-                    IMUL, LMUL, FMUL, DMUL, IDIV, LDIV, FDIV, DDIV, IREM, LREM, FREM, DREM,
-                    ISHL, LSHL, ISHR, LSHR, IUSHR, LUSHR, IAND, LAND, IOR, LOR, IXOR, LXOR,
-                    LCMP, FCMPL, FCMPG, DCMPL, DCMPG, // pop 2, push 1
-                    IRETURN, LRETURN, FRETURN, DRETURN, ARETURN -> 1; // pop 1, push ?
-            case IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE -> 3; // pop 3, push 0
-            case PUTFIELD -> 2; // pop 2, push 0
-            // case POP2 -> throw new Error("ub"); // pop 1 if long or double, pop 2 otherwise, push 0
-            // case DUP_X2 -> throw new Error("ub"); // pop 2, push 3 if long or double, pop 3, push 4 otherwise
-            // case DUP2 -> throw new Error("ub"); // pop 1, push 2 if long or double, pop 2, push 4 otherwise
-            // case DUP2_X1 -> throw new Error("ub"); // pop 2, push 3 if long or double, pop 3, push 5 otherwise
-            // case DUP2_X2 -> throw new Error("ub"); // See JVMS 6 # 6.5.dup2_x2
-            case MULTIANEWARRAY -> ((MultiANewArrayInsnNode) node).dims - 1; // pop ?, push 1
-            case INVOKEVIRTUAL, INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC -> processInvoke((MethodInsnNode) node); // pop s ?: 1 + params, push r ?: 0
-            case INVOKEDYNAMIC -> processIndy((InvokeDynamicInsnNode) node);
-            default -> throw new Error("ub");
-        };
-    }
-
-    /**
-     * Returns a stack weight dependent on if the method's instanced, and the
-     * method's descriptor.
-     *
-     * @deprecated Use {@link #processInvoke2(MethodInsnNode)} as this method doesn't allow finding the consumer.
-     */
-    @Deprecated(forRemoval = true)
-    static int processInvoke(MethodInsnNode node) {
-        return (Type.getReturnType(node.desc) != Type.VOID_TYPE ? -1 : 0) -
-                Type.getArgumentTypes(node.desc).length -
-                (node.getOpcode() != Opcodes.INVOKESTATIC ? 1 : 0); // pop 1 + args, push v?0:1
-    }
-
-    /**
-     * Returns a stack weight dependent on the method's descriptor.
-     *
-     * @deprecated Use {@link #processIndy2(InvokeDynamicInsnNode)} as this method doesn't allow findind the consumer.
-     */
-    @Deprecated(forRemoval = true)
-    static int processIndy(InvokeDynamicInsnNode node) {
-        return (Type.getReturnType(node.desc) != Type.VOID_TYPE ? -1 : 0) -
-                Type.getArgumentTypes(node.desc).length; // pop args, push v?0:1
     }
 
     /**
