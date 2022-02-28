@@ -63,7 +63,11 @@ public class Transformers implements AsmInitializer {
      */
     static AbstractInsnNode walkBackwards(AbstractInsnNode from, int pop) {
         while (pop > 0) {
-            pop -= stack2(from = from.getPrevious()).weight();
+            var mut = stack2(from = from.getPrevious());
+            if (mut.push(pop)) {
+                return from;
+            }
+            pop -= mut.weight();
         }
         return from;
     }
