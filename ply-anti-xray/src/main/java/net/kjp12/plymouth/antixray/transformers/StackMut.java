@@ -47,4 +47,14 @@ public record StackMut(int pop, int push) {
     public boolean pop(int stack) {
         return stack - pop <= 0;
     }
+
+    /**
+     * Tests if the instruction will produce the item on stack.
+     *
+     * @param stack The current stack size.
+     * @return If the item would be pushed.
+     */
+    public boolean push(int stack) {
+        return stack - push <= 0;
+    }
 }
