@@ -4,7 +4,6 @@
   "package": "net.kjp12.plymouth.antixray.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AccessorBlockTag",
     "player.MixinPlayerEntity",
     "world.AccessorPalettedContainer",
     "world.MixinBlockView",
