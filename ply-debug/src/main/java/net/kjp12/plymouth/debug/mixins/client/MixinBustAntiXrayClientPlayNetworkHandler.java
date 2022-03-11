@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Pseudo
 @Mixin(ClientPlayNetworkHandler.class)
-public class MixinClientPlayNetworkHandler {
+public class MixinBustAntiXrayClientPlayNetworkHandler {
     @Inject(method = "onBlockUpdate", at = @At("RETURN"))
     private void plymouth$onBlockUpdate(BlockUpdateS2CPacket packet, CallbackInfo cbi) {
         AntiXrayClientDebugger.onBlockDelta.push(packet.getPos().asLong());
