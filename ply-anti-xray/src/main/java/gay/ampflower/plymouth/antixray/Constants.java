@@ -3,7 +3,6 @@ package gay.ampflower.plymouth.antixray;
 import net.minecraft.block.Block;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,13 +24,5 @@ public final class Constants {
     }
 
     public static void init() {
-    }
-
-    public static int toIndex(BlockPos pos) {
-        return toIndex(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    public static int toIndex(int x, int y, int z) {
-        return (y & 15) << 8 | (z & 15) << 4 | (x & 15);
     }
 }
