@@ -30,7 +30,7 @@ public class MixinBustAntiXrayClientPlayNetworkHandler {
     @Inject(method = "onChunkData", at = @At("RETURN"))
     private void plymouth$onChunkData(ChunkDataS2CPacket packet, CallbackInfo cbi) {
         AntiXrayClientDebugger.onChunkLoad.push(BlockPos.asLong(packet.getX(), 0, packet.getZ()));
-        packet.getChunkData().getBlockEntities(packet.getX() << 4, packet.getZ() << 4).accept((pos, $1, $2) ->
+        packet.getChunkData().getBlockEntities(packet.getX(), packet.getZ()).accept((pos, $1, $2) ->
                 AntiXrayClientDebugger.onChunkBlockEntity.push(pos.asLong()));
     }
 
