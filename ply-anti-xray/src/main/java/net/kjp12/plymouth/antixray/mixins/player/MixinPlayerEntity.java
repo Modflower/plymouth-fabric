@@ -35,7 +35,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
             var abovePosition = self.up();
             var aboveBlock = chunk.plymouth$getShadowBlock(abovePosition);
             if (chunk.plymouth$isCulling(aboveBlock, Direction.DOWN, abovePosition)) {
-                chunk.plymouth$setShadowBlock(self, Blocks.SPRUCE_PLANKS.getDefaultState());
+                chunk.plymouth$maskBlock(self, Blocks.SPRUCE_PLANKS.getDefaultState());
             }
         }
     }

@@ -41,14 +41,8 @@ public class AntiXrayDebugger {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(literal("mdump").requires(AntiXrayDebugger::canSendDebugInformation).executes(ctx -> {
             var player = ctx.getSource().getPlayer();
             int cx = MathHelper.floor(player.getX()) >> 4, cz = MathHelper.floor(player.getZ()) >> 4;
-            var masks = ((ShadowChunk) player.world.getChunk(cx, cz)).plymouth$getShadowMasks();
-            var packet = new PacketByteBuf(Unpooled.buffer()).writeVarInt(cx).writeVarInt(cz).writeVarInt(masks.length);
-            for (var mask : masks) {
-                if (mask == null) packet.writeVarInt(0);
-                else {
-                    packet.writeLongArray(mask.toLongArray());
-                }
-            }
+            var mask = ((ShadowChunk) player.world.getChunk(cx, cz)).plymouth$getShadowMask();
+            var packet = new PacketByteBuf(Unpooled.buffer()).writeVarInt(cx).writeVarInt(cz).writeLongArray(mask.toLongArray());
             ServerPlayNetworking.send(player, AntiXrayDebugger.debugAntiXrayMask, packet);
             return 1;
         })));

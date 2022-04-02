@@ -34,7 +34,7 @@ public class AntiXrayClientDebugger {
             onChunkLoad = new DebugProfiler(Fusebox.viewChunkLoadLimit, 0, 192, 38, 0.050F, 16),
             onChunkBlockEntity = new DebugProfiler(Fusebox.viewChunkBlockEntityLimit, 255, 0, 128, 0.115F);
     public static int mx, mz;
-    public static BitSet[] masks;
+    public static BitSet mask;
 
     public static void initialise() {
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXraySet, AntiXrayClientDebugger::handleAntiXraySet);
@@ -43,7 +43,7 @@ public class AntiXrayClientDebugger {
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXrayMask, AntiXrayClientDebugger::handleAntiXrayMask);
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(AntiXrayClientDebugger::render);
         ClientCommandManager.DISPATCHER.register(literal("pdb").then(literal("ax").then(literal("clear").executes(ctx -> {
-            masks = null;
+            mask = null;
             antiXraySet.clear();
             antiXrayUpdate.clear();
             antiXrayTest.clear();
@@ -80,23 +80,23 @@ public class AntiXrayClientDebugger {
     }
 
     private static void renderMask(MatrixStack stack, int yoff) {
-        if (masks == null) return;
+        if (mask == null) return;
 
-        for (int w = 0; w < masks.length; w++) {
-            var mask = masks[w];
-            if (mask == null) continue;
-            stack.push();
-            stack.translate(mx * 16, w * 16 + yoff, mz * 16);
-            for (int x = 0; x < 16; x++) {
-                for (int y = 0; y < 16; y++) {
-                    for (int z = 0; z < 16; z++) {
-                        if (mask.get(toIndex(x, y, z)))
-                            RenderBatch.drawSolidBox(stack.peek(), x, y, z, x + 1, y + 1, z + 1, 127, 127, 127, 127, false, false, false, false);
-                    }
-                }
-            }
-            stack.pop();
+        stack.push();
+        stack.translate(mx * 16, yoff, mz * 16);
+        /*
+        var itr = mask.intIterator();
+        while(itr.hasNext()) {
+            int i = itr.nextInt();
+        /**/
+        int i = -1;
+        while ((i = mask.nextSetBit(++i)) >= 0) {
+            int x = i & 15;
+            int z = (i >> 4) & 15;
+            int y = (i >> 8);
+            RenderBatch.drawSolidBox(stack.peek(), x, y, z, x + 1, y + 1, z + 1, 127, 127, 127, 127, false, false, false, false);
         }
+        stack.pop();
     }
 
     private static void handleAntiXraySet(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
@@ -115,18 +115,13 @@ public class AntiXrayClientDebugger {
     }
 
     private static void handleAntiXrayMask(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        int cx = buf.readVarInt(), cz = buf.readVarInt(), ml = buf.readVarInt();
-        var ms = new BitSet[ml];
-        for (int i = 0; i < ml; i++) {
-            var arr = buf.readLongArray(null, 64);
-            if (arr.length != 0) {
-                ms[i] = BitSet.valueOf(arr);
-            }
-        }
+        int cx = buf.readVarInt(), cz = buf.readVarInt();
+        var nb = buf.readLongArray();
+        var ms = BitSet.valueOf(nb);
         client.execute(() -> {
             mx = cx;
             mz = cz;
-            masks = ms;
+            mask = ms;
         });
     }
 

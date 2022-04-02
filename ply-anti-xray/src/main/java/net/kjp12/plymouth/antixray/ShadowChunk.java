@@ -23,7 +23,7 @@ public interface ShadowChunk extends ShadowBlockView {
      *
      * @param pos The position of the block to unset.
      */
-    void plymouth$unsetShadowBlock(BlockPos pos);
+    void plymouth$unmaskBlock(BlockPos pos);
 
     /**
      * Sets the block in the shadow chunk, forcing a server/client desync.
@@ -32,7 +32,7 @@ public interface ShadowChunk extends ShadowBlockView {
      * @param pos   The position of the block to set.
      * @param state The state to set the block to.
      */
-    void plymouth$setShadowBlock(BlockPos pos, BlockState state);
+    void plymouth$maskBlock(BlockPos pos, BlockState state);
 
     /**
      * Gets the shadow chunk section, generating them if they're not present.
@@ -61,11 +61,11 @@ public interface ShadowChunk extends ShadowBlockView {
     ChunkSection[] plymouth$getShadowSections();
 
     /**
-     * Gets the shadow masks. This does not generate them if they're not present.
+     * Gets the shadow mask. This does not generate them if they're not present.
      *
      * @return The shadow mask. Maybe null.
      */
-    BitSet[] plymouth$getShadowMasks();
+    BitSet plymouth$getShadowMask();
 
     /**
      * Gets all visible entities in a chunk.

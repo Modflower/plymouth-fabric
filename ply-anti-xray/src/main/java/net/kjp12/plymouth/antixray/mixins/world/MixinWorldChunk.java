@@ -1,6 +1,5 @@
 package net.kjp12.plymouth.antixray.mixins.world;
 
-import net.kjp12.plymouth.antixray.Constants;
 import net.kjp12.plymouth.antixray.LazyChunkManager;
 import net.kjp12.plymouth.antixray.ShadowChunk;
 import net.minecraft.block.Block;
@@ -58,9 +57,9 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     private ChunkSection[] proxiedSections;
     // Used for block-entity fetching for the client.
     // May also be used to invalidate entities?
-    // 16 separate sets instead of one massive set meant for saving memory when the corresponding section isn't present.
+    // A bit set is used for saving memory in a compact manner, taking only up to 8 KiB per chunk in a standard world.
     @Unique
-    private BitSet[] shadowMasks;
+    private BitSet shadowMask;
 
     public MixinWorldChunk(ChunkPos pos, UpgradeData upgradeData, HeightLimitView heightLimitView, Registry<Biome> biome, long inhabitedTime, @Nullable ChunkSection[] sectionArrayInitializer, @Nullable BlendingData blendingData) {
         super(pos, upgradeData, heightLimitView, biome, inhabitedTime, sectionArrayInitializer, blendingData);
@@ -78,17 +77,17 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             int yi = getSectionIndex(y);
             logic:
             if (shadowSections[yi] != null || state.isIn(HIDDEN_BLOCKS)) {
-                var index = Constants.toIndex(i, j, k);
+                var index = toIndex(i, y, k);
                 if (state.isIn(HIDDEN_BLOCKS)) {
-                    if (plymouth$isMasked(yi, index)) return;
+                    if (isMasked(index)) return;
                     var mutPos = pos.mutableCopy();
                     if (isBlockHidden(state, mutPos)) {
-                        setMasked(yi, index, true);
+                        setMasked(index);
                         if (isHidingCandidate(old, pos)) return;
                         state = getSmearBlock(mutPos.set(pos), state, null);
                     }
                 } else {
-                    setMasked(yi, index, false);
+                    setUnmasked(index);
                     if (shadowSections[yi] == null) {
                         break logic;
                     }
@@ -119,7 +118,7 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     @Unique
     private void setIfHidden(final BlockPos.Mutable bp) {
         // This is called by other chunks, shadowMask check is required.
-        if (isOutOfHeightLimit(bp) || shadowMasks == null) return;
+        if (isOutOfHeightLimit(bp) || shadowMask == null) return;
         int x = bp.getX(), y = bp.getY(), z = bp.getZ(),
                 cx = x >> 4, cy = getSectionIndex(y), cz = z >> 4;
         if (pos.x == cx && pos.z == cz) {
@@ -128,12 +127,12 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             int ox = x & 15, oy = y & 15, oz = z & 15;
             var state = section.getBlockState(ox, oy, oz);
             if (state.isIn(HIDDEN_BLOCKS)) {
-                if (plymouth$isMasked(cy, Constants.toIndex(ox, oy, oz))) {
+                if (isMasked(toIndex(x, y, z))) {
                     if (!isBlockHidden(state, bp.set(ox, y, oz)))
-                        plymouth$unsetShadowBlock(bp.set(x, y, z));
+                        plymouth$unmaskBlock(bp.set(x, y, z));
                 } else if (isBlockHidden(state, bp.set(ox, y, oz))) {
                     var smear = getSmearBlock(bp.set(ox, y, oz), state, null);
-                    plymouth$setShadowBlock(bp.set(x, y, z), smear);
+                    plymouth$maskBlock(bp.set(x, y, z), smear);
                 }
             }
         } else {
@@ -174,10 +173,11 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
         } else for (int i = 0; i < sectionArray.length; i++) {
             shadowSections[i] = null;
         }
-        if (shadowMasks == null) {
-            shadowMasks = new BitSet[sectionArray.length];
-        } else for (int i = 0; i < sectionArray.length; i++) {
-            shadowMasks[i] = null;
+        if (shadowMask == null) {
+            // Default to 4K as most chunks will immediately saturate this area.
+            shadowMask = new BitSet(4096);
+        } else {
+            shadowMask.clear();
         }
 
         var bp = new BlockPos.Mutable();
@@ -196,7 +196,7 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
                             if (state.isIn(HIDDEN_BLOCKS)) {
                                 if (isBlockHidden(state, bp.set(x, oy, z))) {
                                     state = getSmearBlock(bp.set(x, oy, z), state, smear);
-                                    setMasked(sy, Constants.toIndex(x, y, z), true);
+                                    setMasked(toIndex(sy, x, y, z));
                                 }
                             } else if (isHidingCandidate(state, bp.set(x, oy, z))) {
                                 smear = state;
@@ -265,22 +265,22 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     }
 
     @Override
-    public void plymouth$unsetShadowBlock(BlockPos pos) {
+    public void plymouth$unmaskBlock(BlockPos pos) {
         if (plymouth$isMasked(pos)) {
-            final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y), i = Constants.toIndex(pos);
+            final int x = pos.getX(), y = pos.getY(), z = pos.getZ(), cy = getSectionIndex(y);
             getShadowSection(cy, true).setBlockState(x & 15, y & 15, z & 15, sectionArray[cy].getBlockState(x & 15, y & 15, z & 15));
-            getShadowMask(cy).set(i, false);
+            setUnmasked(toIndex(pos));
             trackUpdate(pos);
         }
     }
 
     @Override
-    public void plymouth$setShadowBlock(BlockPos pos, BlockState state) {
+    public void plymouth$maskBlock(BlockPos pos, BlockState state) {
         final int y = pos.getY(), cy = getSectionIndex(y);
         // Do note, we're calling plymouth$getShadowSections() to force generation of the shadow chunk.
         plymouth$getShadowSections();
         getShadowSection(cy, true).setBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15, state);
-        setMasked(cy, Constants.toIndex(pos), true);
+        setMasked(toIndex(pos));
         trackUpdate(pos);
     }
 
@@ -293,8 +293,8 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     }
 
     @Override
-    public BitSet[] plymouth$getShadowMasks() {
-        return shadowMasks;
+    public BitSet plymouth$getShadowMask() {
+        return shadowMask;
     }
 
     @Override
@@ -308,22 +308,41 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
 
     @Override
     public boolean plymouth$isMasked(BlockPos pos) {
-        if (shadowMasks == null || isOutOfHeightLimit(pos)) return false;
-        var mask = shadowMasks[getSectionIndex(pos.getY())];
-        return mask != null && mask.get(Constants.toIndex(pos));
+        if (shadowMask == null || isOutOfHeightLimit(pos)) return false;
+        return shadowMask.get(toIndex(pos));
     }
 
     @Unique
-    private boolean plymouth$isMasked(int y, int i) {
-        if (shadowMasks == null || y < 0 || y >= shadowMasks.length) return false;
-        var mask = shadowMasks[y];
-        return mask != null && mask.get(i);
+    private boolean isMasked(int i) {
+        return shadowMask != null && shadowMask.get(i);
     }
 
     @Unique
-    private void setMasked(int y, int i, boolean b) {
-        if (shadowMasks == null || !b && shadowMasks[y] == null) return;
-        getShadowMask(y).set(i, b);
+    private void setMasked(int i) {
+        if (shadowMask == null) return;
+        shadowMask.set(i);
+    }
+
+    @Unique
+    private void setUnmasked(int i) {
+        if (shadowMask == null) return;
+        shadowMask.clear(i);
+    }
+
+    @Unique
+    private int toIndex(BlockPos pos) {
+        return toIndex(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    @Unique
+    private int toIndex(int x, int y, int z) {
+        // getBottomY() will probably be omitted once safe to screw with internal APIs.
+        return (y - getBottomY()) << 8 | (z & 15) << 4 | (x & 15);
+    }
+
+    @Unique
+    private int toIndex(int si, int x, int y, int z) {
+        return si << 12 | y << 8 | (z & 15) << 4 | (x & 15);
     }
 
     @Unique
@@ -351,11 +370,6 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
             for (int j = 0, k = pi.getSize(); j < k; j++) po.add(pi.get(j));
             return new PalettedContainer<>(cchi.getIdList(), cchi.getPaletteProvider(), di.configuration(), di.storage().copy(), po);
         }
-    }
-
-    @Unique
-    private BitSet getShadowMask(int y) {
-        return shadowMasks[y] == null ? shadowMasks[y] = new BitSet(4096) : shadowMasks[y];
     }
 
     @Unique
