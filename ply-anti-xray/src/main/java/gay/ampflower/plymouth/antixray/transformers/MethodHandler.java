@@ -96,18 +96,18 @@ class MethodHandler {
                 case I2C -> cast((InsnNode) insn, Type.CHAR_TYPE);
                 case I2S -> cast((InsnNode) insn, Type.SHORT_TYPE);
                 case IADD, ISUB, IMUL, IDIV, IREM, ISHL, ISHR, IUSHR, IAND, IOR, IXOR -> push(new CalculatedStackVar(insn, pop(2), Type.INT_TYPE));
-                case LADD, LSUB, LMUL, LDIV, LREM, LSHL, LSHR, LUSHR, LAND, LOR, LXOR, LCMP -> push(new CalculatedStackVar(insn, pop(2), Type.LONG_TYPE));
+                case LADD, LSUB, LMUL, LDIV, LREM, LSHL, LSHR, LUSHR, LAND, LOR, LXOR -> push(new CalculatedStackVar(insn, pop(2), Type.LONG_TYPE));
                 case FADD, FSUB, FMUL, FDIV, FREM -> push(new CalculatedStackVar(insn, pop(2), Type.FLOAT_TYPE));
                 case DADD, DSUB, DMUL, DDIV, DREM -> push(new CalculatedStackVar(insn, pop(2), Type.DOUBLE_TYPE));
                 // TODO: Add type verification.
-                case FCMPL, FCMPG, DCMPL, DCMPG -> push(new CalculatedStackVar(insn, pop(2), Type.INT_TYPE));
+                case LCMP, FCMPL, FCMPG, DCMPL, DCMPG -> push(new CalculatedStackVar(insn, pop(2), Type.INT_TYPE));
                 case IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE -> pop();
                 case IFNULL, IFNONNULL -> pop();
                 case IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE -> pop(2);
                 case IF_ACMPEQ, IF_ACMPNE -> pop(2);
                 case GOTO -> {/* TODO: Sanity check & mark label as possible junction */}
-                case JSR -> { /* TODO: Figure this out */ }
-                case RET -> { /* TODO: Figure this out */ }
+                case JSR -> { /* Push address to stack & GOTO */ }
+                case RET -> { /* Take address from variable & JMP */ }
                 case TABLESWITCH -> pop();
                 case LOOKUPSWITCH -> pop();
                 case IRETURN, LRETURN, FRETURN, DRETURN, ARETURN -> {
