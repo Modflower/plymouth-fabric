@@ -204,6 +204,7 @@ public class Locking implements ModInitializer {
      * </ul>
      */
     public static int fromString(String str) {
+        if (str == null || str.isBlank()) return 0;
         int state = A, ret = 0;
         for (int i = 0, l = str.length(); i < l; i++) {
             char c = str.charAt(i);
