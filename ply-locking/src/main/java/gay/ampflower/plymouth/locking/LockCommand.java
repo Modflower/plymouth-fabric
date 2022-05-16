@@ -2,6 +2,8 @@ package gay.ampflower.plymouth.locking;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -9,6 +11,7 @@ import gay.ampflower.plymouth.common.InjectableInteractionManager;
 import gay.ampflower.plymouth.common.InteractionManagerInjection;
 import gay.ampflower.plymouth.locking.handler.AdvancedPermissionHandler;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.command.argument.PosArgument;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,7 +26,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.chunk.ChunkStatus;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Map;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
@@ -42,6 +47,14 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @since 0.0.0
  **/
 public class LockCommand {
+    /**
+     * The argument field in Brigadier's {@link CommandContext}. Required as Mixin doesn't work on that class.
+     */
+    private static final Field brigadierArguments;
+    /**
+     * The primitive to wrapper map. Required as we cannot mixin into {@link CommandContext}.
+     */
+    private static final Map<Class<?>, Class<?>> primitiveToWrapper;
     private static final SimpleCommandExceptionType
             BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
     private static final DynamicCommandExceptionType
@@ -49,28 +62,142 @@ public class LockCommand {
             BLOCK_ENTITY_NOT_OWNER = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owner", i)),
             BLOCK_ENTITY_OUT_OF_RANGE = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.out_range", i));
 
+    static {
+        // Fetches the arguments field instance for Brigadier's CommandContext.
+        try {
+            var arguments = CommandContext.class.getDeclaredField("arguments");
+            arguments.setAccessible(true);
+            brigadierArguments = arguments;
+        } catch (ReflectiveOperationException roe) {
+            // We cannot continue as it's critical; fail with a descriptive error.
+            throw new LinkageError("""
+                    Unable to fetch the arguments field from Brigadier.
+                    Please update Plymouth Locking to the latest version, if any updates are available.
+                    If the bug persists, file a bug report at https://github.com/Modflower/plymouth-fabric/issues
+                    """, roe);
+        }
+        // The primitive map. HotSpot's implementation as of 17.0.1
+        // does seem well optimised for this use.
+        primitiveToWrapper = Map.of(
+                void.class, Void.class,
+                byte.class, Byte.class,
+                char.class, Character.class,
+                short.class, Short.class,
+                int.class, Integer.class,
+                long.class, Long.class,
+                float.class, Float.class,
+                double.class, Double.class
+        );
+    }
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, @SuppressWarnings("unused") boolean dedicated) {
+        var trust = dispatcher.register(literal("trust").requires(LOCKING_LOCK_PERMISSION)
+                .then(argument("players", players())
+                        .executes(LockCommand::modifyPlayer)
+                        .then(argument("permissions", greedyString())
+                                .executes(LockCommand::modifyPlayer))
+                ));
+
+        var distrust = dispatcher.register(literal("distrust").requires(LOCKING_LOCK_PERMISSION)
+                .then(argument("players", players())
+                        .executes(LockCommand::removePlayer)
+                ));
+
         var at = literal("at").then(argument("position", blockPos())
                 .then(literal("player")
-                        .then(literal("modify").then(argument("players", players()).then(argument("permissions", greedyString())
-                                .executes(ctx -> addPlayers(ctx.getSource(), getBlockPos(ctx, "position"), getPlayers(ctx, "players"), fromString(getString(ctx, "permissions")))))))
-                        .then(literal("remove").then(argument("players", players())
-                                .executes(ctx -> removePlayers(ctx.getSource(), getBlockPos(ctx, "position"), getPlayers(ctx, "players"))))))
+                        .then(literal("add").redirect(trust))
+                        .then(literal("modify").redirect(trust))
+                        .then(literal("trust").redirect(trust))
+                        .then(literal("remove").redirect(distrust)))
                 .then(literal("modify").then(argument("permissions", greedyString())
                         .executes(ctx -> setPermissions(ctx.getSource(), getBlockPos(ctx, "position"), fromString(getString(ctx, "permissions"))))))
                 .then(literal("get").executes(ctx -> getLock(ctx.getSource(), getBlockPos(ctx, "position")))));
 
         var interact = literal("interact")
                 .then(literal("player")
-                        .then(literal("modify").then(argument("players", players()).then(argument("permissions", greedyString())
-                                .executes(ctx -> addPlayers(ctx.getSource(), getPlayers(ctx, "players"), fromString(getString(ctx, "permissions")))))))
-                        .then(literal("remove").then(argument("players", players())
-                                .executes(ctx -> removePlayers(ctx.getSource(), getPlayers(ctx, "players"))))))
+                        .then(literal("add").redirect(trust))
+                        .then(literal("modify").redirect(trust))
+                        .then(literal("trust").redirect(trust))
+                        .then(literal("remove").redirect(distrust)))
                 .then(literal("modify").then(argument("permissions", greedyString())
                         .executes(ctx -> setPermissions(ctx.getSource(), fromString(getString(ctx, "permissions"))))))
                 .then(literal("get").executes(ctx -> getLock(ctx.getSource())));
 
+
         dispatcher.register(literal("lock").requires(Locking.LOCKING_LOCK_PERMISSION).then(at).then(interact));
+    }
+
+    /**
+     * Modify/add player implementation expecting {@code players} argument,
+     * with optional {@code permissions} and {@code position} arguments to allow for reuse.
+     *
+     * @param ctx The command context for fetching arguments from.
+     * @return 1 if the command was successful, 0 otherwise
+     * @throws CommandSyntaxException If the command fails due to bad arguments.
+     */
+    private static int modifyPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        var src = ctx.getSource();
+        var players = getPlayers(ctx, "players");
+        var permissions = fromString(getArgumentOptional(ctx, "permissions", String.class, "rw"));
+        var pos = getArgumentOptional(ctx, "position", PosArgument.class, null);
+        if (pos != null) {
+            return addPlayers(src, pos.toAbsoluteBlockPos(src), players, permissions);
+        } else {
+            return addPlayers(src, players, permissions);
+        }
+    }
+
+    /**
+     * Remove player implementation expecting {@code players} argument,
+     * with optional {@code position} argument to allow for reuse.
+     *
+     * @param ctx The command context for fetching arguments from.
+     * @return 1 if the command was successful, 0 otherwise.
+     * @throws CommandSyntaxException If the command fails due to bad arguments.
+     */
+    private static int removePlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        var src = ctx.getSource();
+        var players = getPlayers(ctx, "players");
+        var pos = getArgumentOptional(ctx, "position", PosArgument.class, null);
+        if (pos != null) {
+            return removePlayers(src, pos.toAbsoluteBlockPos(src), players);
+        } else {
+            return removePlayers(src, players);
+        }
+    }
+
+    /**
+     * Gets a named argument from the command context, or null if undefined.
+     * <p>
+     * Reimplements {@link CommandContext#getArgument(String, Class)} with
+     * the ability to return a default or null.
+     *
+     * @param name  The name of the argument
+     * @param clazz The type of the argument
+     * @param def   The default return, maybe null.
+     * @return The argument as parsed by Brigadier if existing, default to {@code def} otherwise.
+     * @throws RuntimeException         If reflection fails. This should never occur normally.
+     * @throws IllegalArgumentException If the argument isn't of the expected class.
+     */
+    @SuppressWarnings("unchecked")
+    public static <V, S, P extends ParsedArgument<S, ?>, ARGS extends Map<String, P>> V getArgumentOptional(CommandContext<S> ctx, String name, Class<V> clazz, V def) {
+        P arg;
+        try {
+            arg = ((ARGS) brigadierArguments.get(ctx)).get(name);
+        } catch (IllegalAccessException iae) {
+            throw new RuntimeException("Unable to get arguments.", iae);
+        }
+
+        if (arg == null) {
+            return def;
+        }
+
+        final Object result = arg.getResult();
+        if (primitiveToWrapper.getOrDefault(clazz, clazz).isAssignableFrom(result.getClass())) {
+            return (V) result;
+        } else {
+            throw new IllegalArgumentException("Argument '" + name + "' is defined as " + result.getClass().getSimpleName() + ", not " + clazz);
+        }
     }
 
     // generics are the only thing that can compile this

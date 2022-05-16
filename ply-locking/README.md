@@ -29,18 +29,25 @@ automatically own the block as if you shift+right-clicked it.
 
 Permissions within the following commands mean the following:
 
-- `8`: Read from block
-- `4`: Write into block
-- `2`: Delete/destroy block
-- `1`: Permissions management
+- `r`: Read from block
+- `w`: Write into block
+- `d`: Destroy block
+- `p`: Permissions management
 
-You may join these together by adding to get the desired effect. They will be replaced with `rwdp` in a future release
-for better user friendliness.
+The expected syntax for permissions is similar to chmod, where it accepts either `rwdx`, or `+r-w` to allow setting all
+permissions, or to allow read and deny write respectively.
 
-- `/lock add <position?> <players> <permissions>`: Adds players to a block.
-- `/lock remove <position?> <players>`: Removes players from a block.
-- `/lock set <permissions>`: Sets permissions on a block.
-- `/lock get <position?>`: Gets the information of the block.
+The following commands is what to use for permission management:
+
+- `/lock (at <position>|interact) add <players> <permissions ?: rw>`: Adds players to a block.
+- `/lock (at <position>|interact) remove <players>`: Removes players from a block.
+- `/lock (at <position>|interact) modify <permissions>`: Sets permissions on a block.
+- `/lock (at <position>|interact) get`: Gets the information of the block.
+
+Convenience commands:
+
+- `/trust <players> <permissions ?: rw>`: Same as `/lock interact add`
+- `/distrust <players>`: Same as `/lock interact remove`
 
 ### Permissions
 
