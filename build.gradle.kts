@@ -65,9 +65,6 @@ tasks {
             expand(map)
         }
     }
-    jar {
-        archiveClassifier.set("dev")
-    }
     withType<Jar> {
         from("LICENSE")
     }

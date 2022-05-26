@@ -90,9 +90,6 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    jar {
-        archiveClassifier.set("dev")
-    }
     val scourPackages = register<Task>("scourPackages") {
         val asmFile = projectDir.resolve("asm.properties")
         val asmDir = buildDir.resolve("asm")
