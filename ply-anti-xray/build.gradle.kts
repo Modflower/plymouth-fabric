@@ -2,7 +2,6 @@ import com.modrinth.minotaur.TaskModrinthUpload
 import com.modrinth.minotaur.request.VersionType
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
-import java.net.URI
 import java.util.zip.ZipFile
 import java.util.Properties as JavaProp
 
@@ -15,43 +14,25 @@ plugins {
 }
 
 val minecraft_version: String by project
-val yarn_mappings: String by project
-val loader_version: String by project
 val fabric_api_version: String by project
 val modrinth_id: String by project
 val project_version: String by project
 
 val isRelease = System.getenv("BUILD_RELEASE").toBoolean()
-val isActions = System.getenv("GITHUB_ACTIONS").toBoolean()
-val baseVersion: String = "$project_version+mc.$minecraft_version"
 
 group = "net.kjp12"
-version = when {
-    isRelease -> baseVersion
-    isActions -> "$baseVersion-build.${System.getenv("GITHUB_RUN_NUMBER")}-commit.${System.getenv("GITHUB_SHA").substring(0, 7)}-branch.${System.getenv("GITHUB_REF")?.substring(11)?.replace('/', '.') ?: "unknown"}"
-    else -> "$baseVersion-build.local"
-}
 
 repositories {
-    maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
-    maven { url = URI.create("https://maven.dblsaiko.net") }
-    maven { url = URI.create("https://jitpack.io") }
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+    maven { url = uri("https://maven.dblsaiko.net") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
-    minecraft("com.mojang", "minecraft", minecraft_version)
-    mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
-    modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
     include(modImplementation("com.github.the-glitch-network", "minecraft-gudasm", "v0.3.0"))
     api(project(":utilities")) { include(this) }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-    withSourcesJar()
 }
 
 loom {
@@ -85,11 +66,6 @@ fun transformer(it: String): String {
 }
 
 tasks {
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.isDeprecation = true
-        options.isWarnings = true
-    }
     val scourPackages = register<Task>("scourPackages") {
         val asmFile = projectDir.resolve("asm.properties")
         val asmDir = buildDir.resolve("asm")
@@ -119,20 +95,9 @@ tasks {
     }
     processResources {
         dependsOn(scourPackages)
-        val map = mapOf(
-            "version" to project.version,
-            "project_version" to project_version,
-            "loader_version" to loader_version,
-            "minecraft_required" to project.property("minecraft_required")?.toString()
-        )
-        inputs.properties(map)
 
         from(scourPackages) {
             rename { "asm/$it" }
-        }
-
-        filesMatching("fabric.mod.json") {
-            expand(map)
         }
     }
     jar {
@@ -155,9 +120,6 @@ tasks {
         from(sourceSets.main.get().resources.srcDir("asm")) {
             filter(::transformer)
         }
-    }
-    withType<Jar> {
-        from("LICENSE")
     }
     val publishToModrinth = register<TaskModrinthUpload>("publishToModrinth") {
         group = "publishing"

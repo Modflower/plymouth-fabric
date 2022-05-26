@@ -24,8 +24,6 @@
     "plymouth-debug.mixin.json"
   ],
   "depends": {
-    "minecraft": ">=${minecraft_required}",
-    "fabricloader": ">=0.11.1",
-    "java": ">=11"
+    "minecraft": ">=${minecraft_required}"
   }
 }

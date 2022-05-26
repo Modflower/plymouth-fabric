@@ -31,7 +31,7 @@ pluginManagement {
     }
 }
 
-include("utilities", "ply-common", "ply-anti-xray", "ply-locking", "ply-debug")
+include("utilities", "ply-common", "ply-anti-xray", "ply-locking", "ply-debug", "ply-utilities")
 
 // If you want to build Tracker, uncomment the following line:
 // include("database", "ply-database", "ply-tracker")
