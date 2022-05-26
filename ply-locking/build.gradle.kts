@@ -1,5 +1,3 @@
-import java.net.URI
-
 plugins {
     java
     `java-library`
@@ -27,45 +25,12 @@ version = when {
 }
 
 repositories {
-    maven { url = URI.create("https://oss.sonatype.org/content/repositories/snapshots") }
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
 }
 
 dependencies {
-    minecraft("com.mojang", "minecraft", minecraft_version)
-    mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
-    modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    modImplementation(project(":ply-common"))
+    implementation(project(":ply-common", configuration = "namedElements"))
     modImplementation(fabricApi.module("fabric-command-api-v2", fabric_api_version))
     modImplementation(fabricApi.module("fabric-lifecycle-events-v1", fabric_api_version))
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-    withSourcesJar()
-}
-
-tasks {
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.isDeprecation = true
-        options.isWarnings = true
-    }
-    processResources {
-        val map = mapOf(
-            "version" to project.version,
-            "project_version" to project_version,
-            "loader_version" to loader_version,
-            "minecraft_required" to project.property("minecraft_required")?.toString()
-        )
-        inputs.properties(map)
-
-        filesMatching("fabric.mod.json") {
-            expand(map)
-        }
-    }
-    withType<Jar> {
-        from("LICENSE")
-    }
 }

@@ -22,7 +22,6 @@
   ],
   "depends": {
     "minecraft": ">=${minecraft_required}",
-    "fabricloader": ">=0.11.1",
     "fabric-permissions-api-v0": "*"
   },
   "recommends": {

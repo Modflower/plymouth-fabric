@@ -30,11 +30,7 @@
   "accessWidener": "plymouth-anti-xray.accesswidener",
   "depends": {
     "minecraft": ">=${minecraft_required}",
-    "fabricloader": ">=0.11.3",
-    "java": ">=16",
-    "fabric-resource-loader-v0": "*"
-  },
-  "recommends": {
+    "fabric-resource-loader-v0": "*",
     "gud_asm": ">=0.2.10"
   },
   "breaks": {
