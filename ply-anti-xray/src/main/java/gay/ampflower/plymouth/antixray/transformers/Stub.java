@@ -2,7 +2,6 @@ package gay.ampflower.plymouth.antixray.transformers;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
@@ -79,15 +78,6 @@ class Stub {
     @MethodNameTo("plymouth$getShadowSections")
     ChunkSection[] chunkCSA(WorldChunk chunk) {
         return chunk.getSectionArray();
-    }
-
-    /**
-     * @deprecated Transformers will now look for constructors that contain BlockState, BlockEntity and ChunkSection[]
-     * based on <code>asm/PacketTransformer.sys</code>
-     */
-    @Deprecated(forRemoval = true)
-    PlayerActionResponseS2CPacket actionResponse(BlockPos pos) {
-        return new PlayerActionResponseS2CPacket(pos, null, null, false, null);
     }
 
     static {

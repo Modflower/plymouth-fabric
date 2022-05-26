@@ -8,9 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -92,13 +90,13 @@ public final class DeathRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toText() {
-        var text = new TranslatableText("plymouth.tracker.record.death", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId),
-                new TranslatableText("chat.coordinates", (long) targetPos.x, (long) targetPos.y, (long) targetPos.z)
+        var text = TextHelper.translatable("plymouth.tracker.record.death", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId),
+                TextHelper.translatable("chat.coordinates", (long) targetPos.x, (long) targetPos.y, (long) targetPos.z)
                         .setStyle(atBlock.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                new LiteralText("X: ")
-                                        .append(new LiteralText(Double.toString(targetPos.x)).formatted(Formatting.RED)).append("\nY: ")
-                                        .append(new LiteralText(Double.toString(targetPos.y)).formatted(Formatting.GREEN)).append("\nZ: ")
-                                        .append(new LiteralText(Double.toString(targetPos.z)).formatted(Formatting.BLUE))
+                                TextHelper.literal("X: ")
+                                        .append(TextHelper.literal(Double.toString(targetPos.x)).formatted(Formatting.RED)).append("\nY: ")
+                                        .append(TextHelper.literal(Double.toString(targetPos.y)).formatted(Formatting.GREEN)).append("\nZ: ")
+                                        .append(TextHelper.literal(Double.toString(targetPos.z)).formatted(Formatting.BLUE))
                         ))));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
@@ -106,7 +104,7 @@ public final class DeathRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toTextNoPosition() {
-        var text = new TranslatableText("plymouth.tracker.record.death.nopos", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId));
+        var text = TextHelper.translatable("plymouth.tracker.record.death.nopos", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

@@ -159,23 +159,25 @@ public class Transformers implements AsmInitializer {
         UnaryOperator<String> preprocessor = null;
         // This ideally only needs to happen under the development environment.
         if (loader.isDevelopmentEnvironment()) {
-            try (var rawManifest = Files.newInputStream(self.getPath("/META-INF/MANIFEST.MF"))) {
-                var self = new Manifest(rawManifest);
-                // Fabric-Mapping-Namespace: intermediary
-                var compiledNamespace = self.getMainAttributes().getValue("Fabric-Mapping-Namespace");
+            var manifest = self.findPath("/META-INF/MANIFEST.MF");
+            if (manifest.isPresent())
+                try (var rawManifest = Files.newInputStream(manifest.get())) {
+                    var self = new Manifest(rawManifest);
+                    // Fabric-Mapping-Namespace: intermediary
+                    var compiledNamespace = self.getMainAttributes().getValue("Fabric-Mapping-Namespace");
 
-                // If it is null, we are running in the native development environment, or as the dev jar.
-                // If it is not null, but the manifest namespace does *not* match the runtime namespace,
-                // we will have to remap from the manifest namespace to runtime namespace.
-                if (compiledNamespace != null) {
-                    var mappingResolver = loader.getMappingResolver();
-                    var runtimeNamespace = mappingResolver.getCurrentRuntimeNamespace();
-                    if (!compiledNamespace.equals(runtimeNamespace)) {
-                        preprocessor = s -> mappingResolver.unmapClassName(compiledNamespace,
-                                s.replace('/', '.'));
+                    // If it is null, we are running in the native development environment, or as the dev jar.
+                    // If it is not null, but the manifest namespace does *not* match the runtime namespace,
+                    // we will have to remap from the manifest namespace to runtime namespace.
+                    if (compiledNamespace != null) {
+                        var mappingResolver = loader.getMappingResolver();
+                        var runtimeNamespace = mappingResolver.getCurrentRuntimeNamespace();
+                        if (!compiledNamespace.equals(runtimeNamespace)) {
+                            preprocessor = s -> mappingResolver.unmapClassName(compiledNamespace,
+                                    s.replace('/', '.'));
+                        }
                     }
-                }
-            } catch (IOException ioe) {
+                } catch (IOException ioe) {
                 logger.warn("Unable to determine environment. Assuming same environment.", ioe);
             }
         }
@@ -217,7 +219,7 @@ public class Transformers implements AsmInitializer {
      */
     private static Set<String> getTransformerClassSet(String path, Function<String, String> preprocessor) {
         var set = new HashSet<String>();
-        try (var classSet = Files.newInputStream(self.getPath(path))) {
+        try (var classSet = Files.newInputStream(self.findPath(path).orElseThrow())) {
             // 1024 should be *plenty*. If anyone exceeds this, they really must like long paths, or stories.
             // The maximum length by both ZIP and the JVM is 65535, with a real of 65529 as the `.class`
             // extension is required. However, Windows enforces about 260, which means the real count for classes is 254.

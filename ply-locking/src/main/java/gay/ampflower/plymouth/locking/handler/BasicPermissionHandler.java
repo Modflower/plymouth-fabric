@@ -1,9 +1,9 @@
 package gay.ampflower.plymouth.locking.handler;
 
+import gay.ampflower.plymouth.common.TextHelper;
 import gay.ampflower.plymouth.locking.Locking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -90,6 +90,6 @@ public class BasicPermissionHandler implements IPermissionHandler {
     @Override
     public void dumpLock(ServerCommandSource to) {
         // Lock owned by, group, and permissions
-        to.sendFeedback(new TranslatableText("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions), Locking.toString(effectivePermissions(to))), false);
+        to.sendFeedback(TextHelper.translatable("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions), Locking.toString(effectivePermissions(to))), false);
     }
 }

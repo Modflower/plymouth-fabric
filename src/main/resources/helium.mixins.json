@@ -5,8 +5,7 @@
   "mixins": [
     "AccessorMapState",
     "AccessorPlayerEntity",
-    "MixinCommandManager",
-    "MixinTagKey"
+    "MixinCommandManager"
   ],
   "injectors": {
     "defaultRequire": 1

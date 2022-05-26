@@ -14,7 +14,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -25,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
+import static gay.ampflower.plymouth.common.TextHelper.translatable;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
@@ -58,13 +58,13 @@ public class HotspotCommand {
                 burner.clear();
                 burner.addAll(secondary.values());
                 burner.sort(Collections.reverseOrder(Comparator.comparingInt(EntityRecord::count)));
-                source.sendFeedback(new TranslatableText(type.getTranslationKey()), false);
+                source.sendFeedback(translatable(type.getTranslationKey()), false);
                 for (var record : burner) {
                     int x = record.x();
                     int y = record.y();
                     int z = record.z();
 
-                    source.sendFeedback(new TranslatableText("plymouth.hotspot.result", record.count(), x, y, z)
+                    source.sendFeedback(translatable("plymouth.hotspot.result", record.count(), x, y, z)
                             .styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp " + x + ' ' + y + ' ' + z))), false);
                 }
             }

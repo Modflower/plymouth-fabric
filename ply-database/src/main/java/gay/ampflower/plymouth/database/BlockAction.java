@@ -1,7 +1,6 @@
 package gay.ampflower.plymouth.database;
 
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 /**
@@ -13,9 +12,9 @@ import net.minecraft.util.Formatting;
  **/
 @Deprecated
 public enum BlockAction {
-    BREAK(new TranslatableText("plymouth.tracker.action.broke").formatted(Formatting.RED)),
-    PLACE(new TranslatableText("plymouth.tracker.action.placed").formatted(Formatting.GREEN)),
-    USE(new TranslatableText("plymouth.tracker.action.used").formatted(Formatting.AQUA));
+    BREAK(TextHelper.translatable("plymouth.tracker.action.broke").formatted(Formatting.RED)),
+    PLACE(TextHelper.translatable("plymouth.tracker.action.placed").formatted(Formatting.GREEN)),
+    USE(TextHelper.translatable("plymouth.tracker.action.used").formatted(Formatting.AQUA));
 
     public final Text niceName;
 

@@ -1,6 +1,6 @@
 package gay.ampflower.plymouth.debug.anti_xray;
 
-import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -15,7 +15,7 @@ import net.minecraft.network.PacketByteBuf;
 
 import java.util.BitSet;
 
-import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 import static gay.ampflower.plymouth.debug.Fusebox.*;
 
 /**

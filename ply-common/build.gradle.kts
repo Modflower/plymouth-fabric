@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -36,6 +36,7 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    withSourcesJar()
 }
 
 tasks {
@@ -44,10 +45,8 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    register<Jar>("sourcesJar") {
-        dependsOn("classes")
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
+    jar {
+        archiveClassifier.set("dev")
     }
     processResources {
         val map = mapOf(

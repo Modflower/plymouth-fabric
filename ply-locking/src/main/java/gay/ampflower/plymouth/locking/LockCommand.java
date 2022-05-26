@@ -9,16 +9,17 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import gay.ampflower.plymouth.common.InjectableInteractionManager;
 import gay.ampflower.plymouth.common.InteractionManagerInjection;
+import gay.ampflower.plymouth.common.TextHelper;
 import gay.ampflower.plymouth.locking.handler.AdvancedPermissionHandler;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -56,11 +57,11 @@ public class LockCommand {
      */
     private static final Map<Class<?>, Class<?>> primitiveToWrapper;
     private static final SimpleCommandExceptionType
-            BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("commands.data.block.invalid"));
+            BLOCK_ENTITY_NOT_FOUND = new SimpleCommandExceptionType(TextHelper.translatable("commands.data.block.invalid"));
     private static final DynamicCommandExceptionType
-            BLOCK_ENTITY_NOT_OWNED = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owned", i)),
-            BLOCK_ENTITY_NOT_OWNER = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.not_owner", i)),
-            BLOCK_ENTITY_OUT_OF_RANGE = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.locking.block.out_range", i));
+            BLOCK_ENTITY_NOT_OWNED = new DynamicCommandExceptionType(i -> TextHelper.translatable("commands.plymouth.locking.block.not_owned", i)),
+            BLOCK_ENTITY_NOT_OWNER = new DynamicCommandExceptionType(i -> TextHelper.translatable("commands.plymouth.locking.block.not_owner", i)),
+            BLOCK_ENTITY_OUT_OF_RANGE = new DynamicCommandExceptionType(i -> TextHelper.translatable("commands.plymouth.locking.block.out_range", i));
 
     static {
         // Fetches the arguments field instance for Brigadier's CommandContext.
@@ -90,7 +91,7 @@ public class LockCommand {
         );
     }
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, @SuppressWarnings("unused") boolean dedicated) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, CommandManager.RegistrationEnvironment environment) {
         var trust = dispatcher.register(literal("trust").requires(LOCKING_LOCK_PERMISSION)
                 .then(argument("players", players())
                         .executes(LockCommand::modifyPlayer)
@@ -231,11 +232,11 @@ public class LockCommand {
                     handler.claim(runner.getUuid());
                 }
             } else {
-                throw BLOCK_ENTITY_OUT_OF_RANGE.create(new TranslatableText(handler.getBlock().getTranslationKey()));
+                throw BLOCK_ENTITY_OUT_OF_RANGE.create(TextHelper.translatable(handler.getBlock().getTranslationKey()));
             }
         } else {
             if ((handler.effective() & PERMISSIONS_PERMISSION) == 0) {
-                throw BLOCK_ENTITY_NOT_OWNER.create(new TranslatableText(handler.getBlock().getTranslationKey()));
+                throw BLOCK_ENTITY_NOT_OWNER.create(TextHelper.translatable(handler.getBlock().getTranslationKey()));
             }
             if (requiresAdvanced) {
                 handler.compute(iph -> iph instanceof AdvancedPermissionHandler aph ? aph : new AdvancedPermissionHandler(iph));
@@ -253,33 +254,33 @@ public class LockCommand {
     private static int addPlayers(ServerCommandSource source, Collection<ServerPlayerEntity> players, int permission) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
         iim.setManager(new AddPlayersInteractionManager(iim, source, players, (short) (permission & 0xFF | ((permission >>> 12) & 0xFF00))));
-        source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
+        source.sendFeedback(TextHelper.translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int addPlayers(ServerCommandSource source, BlockPos pos, Collection<ServerPlayerEntity> players, int permission) throws CommandSyntaxException {
         getPermissionHandlerIfAllowedModifyPermissions(source, pos, true).modifyPlayers(players, (short) (permission & 0xFF | ((permission >>> 12) & 0xFF00)));
-        source.sendFeedback(new TranslatableText("plymouth.locking.allowed", toText(players), new TranslatableText(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
+        source.sendFeedback(TextHelper.translatable("plymouth.locking.allowed", toText(players), TextHelper.translatable(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
         return players.size();
     }
 
     private static int removePlayers(ServerCommandSource source, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
         iim.setManager(new RemovePlayersInteractionManager(iim, source, players));
-        source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
+        source.sendFeedback(TextHelper.translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int removePlayers(ServerCommandSource source, BlockPos pos, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
         getPermissionHandlerIfAllowedModifyPermissions(source, pos, true).removePlayers(players);
-        source.sendFeedback(new TranslatableText("plymouth.locking.removed", toText(players), new TranslatableText(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
+        source.sendFeedback(TextHelper.translatable("plymouth.locking.removed", toText(players), TextHelper.translatable(source.getWorld().getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
         return players.size();
     }
 
     private static int setPermissions(ServerCommandSource source, int permissions) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
         iim.setManager(new ModifyPermissionsInteractionManager(iim, source, permissions));
-        source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
+        source.sendFeedback(TextHelper.translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -291,7 +292,7 @@ public class LockCommand {
     private static int getLock(ServerCommandSource source) throws CommandSyntaxException {
         var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
         iim.setManager(new GetLockInteractionManager(iim, source));
-        source.sendFeedback(new TranslatableText("commands.plymouth.locking.prompt"), false);
+        source.sendFeedback(TextHelper.translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -301,7 +302,7 @@ public class LockCommand {
             handler.dumpLock(source);
             return Command.SINGLE_SUCCESS;
         } else {
-            source.sendError(new LiteralText("The selected block is not owned by anyone."));
+            source.sendError(TextHelper.literal("The selected block is not owned by anyone."));
             return 0;
         }
     }
@@ -341,13 +342,13 @@ public class LockCommand {
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
                 getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true).removePlayers(players);
-                source.sendFeedback(new TranslatableText("plymouth.locking.removed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
+                source.sendFeedback(TextHelper.translatable("plymouth.locking.removed", toText(players), TextHelper.translatable(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
                 if (msg instanceof Text text) {
                     source.sendError(text);
                 } else {
-                    source.sendError(new LiteralText(msg.getString()));
+                    source.sendError(TextHelper.literal(msg.getString()));
                 }
             }
             manager.setManager(null);
@@ -367,13 +368,13 @@ public class LockCommand {
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
                 getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, true).modifyPlayers(players, permissions);
-                source.sendFeedback(new TranslatableText("plymouth.locking.allowed", toText(players), new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
+                source.sendFeedback(TextHelper.translatable("plymouth.locking.allowed", toText(players), TextHelper.translatable(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
                 if (msg instanceof Text text) {
                     source.sendError(text);
                 } else {
-                    source.sendError(new LiteralText(msg.getString()));
+                    source.sendError(TextHelper.literal(msg.getString()));
                 }
             }
             manager.setManager(null);
@@ -391,13 +392,13 @@ public class LockCommand {
         protected void tryInteraction(ServerWorld world, BlockPos pos) {
             try {
                 getPermissionHandlerIfAllowedModifyPermissions(source, world, pos, false).modifyPermissions(permissions);
-                source.sendFeedback(new TranslatableText("plymouth.locking.modified", "~", new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
+                source.sendFeedback(TextHelper.translatable("plymouth.locking.modified", "~", TextHelper.translatable(world.getBlockState(pos).getBlock().getTranslationKey()), toText(pos)), false);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
                 if (msg instanceof Text text) {
                     source.sendError(text);
                 } else {
-                    source.sendError(new LiteralText(msg.getString()));
+                    source.sendError(TextHelper.literal(msg.getString()));
                 }
             }
             manager.setManager(null);
@@ -413,14 +414,14 @@ public class LockCommand {
             try {
                 var handler = getBlockEntity(world, pos).plymouth$getPermissionHandler();
                 if (handler == null)
-                    throw BLOCK_ENTITY_NOT_OWNED.create(new TranslatableText(world.getBlockState(pos).getBlock().getTranslationKey()));
+                    throw BLOCK_ENTITY_NOT_OWNED.create(TextHelper.translatable(world.getBlockState(pos).getBlock().getTranslationKey()));
                 handler.dumpLock(source);
             } catch (CommandSyntaxException cse) {
                 var msg = cse.getRawMessage();
                 if (msg instanceof Text text) {
                     source.sendError(text);
                 } else {
-                    source.sendError(new LiteralText(msg.getString()));
+                    source.sendError(TextHelper.literal(msg.getString()));
                 }
             }
             manager.setManager(null);

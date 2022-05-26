@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -36,7 +36,7 @@ dependencies {
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version)) { include(this) }
-    implementation(project(":ply-database"))
+    modImplementation(project(":ply-database"))
     implementation(project(":utilities")) { include(this) }
     implementation(project(":database"))
     // implementation(project(":commander")) { include(this) }

@@ -1,10 +1,10 @@
 package gay.ampflower.plymouth.locking.mixins;
 
+import gay.ampflower.plymouth.common.TextHelper;
 import gay.ampflower.plymouth.locking.ILockable;
 import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,7 +33,7 @@ public abstract class MixinServerWorld implements WorldAccess {
             var be = (ILockable) getBlockEntity(pos);
             IPermissionHandler handler;
             if (be != null && be.plymouth$isOwned() && !(handler = be.plymouth$getPermissionHandler()).hasAnyPermissions(player.getCommandSource())) {
-                player.sendMessage(new TranslatableText("plymouth.locking.locked", toText(getBlockState(pos).getBlock()), handler.getOwner()).formatted(Formatting.RED), true);
+                player.sendMessage(TextHelper.translatable("plymouth.locking.locked", toText(getBlockState(pos).getBlock()), handler.getOwner()).formatted(Formatting.RED), true);
                 cir.setReturnValue(Boolean.FALSE);
             }
         }

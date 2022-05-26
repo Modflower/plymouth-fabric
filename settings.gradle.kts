@@ -24,7 +24,8 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("plymouth-loom") version System.getProperty("loom_version")!!
+        // id("plymouth-loom") version System.getProperty("loom_version")!!
+        id("fabric-loom") version System.getProperty("loom_version")!!
         id("com.diffplug.spotless") version System.getProperty("spotless_version")!!
         id("com.modrinth.minotaur") version System.getProperty("minotaur_version")!!
     }

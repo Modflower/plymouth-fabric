@@ -4,7 +4,6 @@ import gay.ampflower.hachimitsu.database.api.DatabaseRecord;
 import gay.ampflower.plymouth.database.DatabaseHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
@@ -114,19 +113,19 @@ public abstract class LookupRecord<T extends PlymouthRecord> implements Database
     @Override
     public @NotNull Text toText() {
         return switch (flags & 0b1111) {
-            case 0b0000 -> new TranslatableText("plymouth.tracker.record.lookup", page);
-            case 0b0001 -> new TranslatableText("plymouth.tracker.record.lookup.by", lookupPlayerToText(null, causeUserId), page);
-            case 0b0010 -> new TranslatableText("plymouth.tracker.record.lookup.time", minTime, maxTime, page);
-            case 0b0011 -> new TranslatableText("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
-            case 0b0100 -> new TranslatableText("plymouth.tracker.record.lookup.at", positionToText(minPos), page);
-            case 0b0101 -> new TranslatableText("plymouth.tracker.record.lookup.at.by", positionToText(minPos), lookupPlayerToText(null, causeUserId), page);
-            case 0b0110 -> new TranslatableText("plymouth.tracker.record.lookup.at.time", positionToText(minPos), minTime, maxTime, page);
-            case 0b0111 -> new TranslatableText("plymouth.tracker.record.lookup.at.time.by", positionToText(minPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
-            case 0b1000 -> new TranslatableText("plymouth.tracker.record.lookup.area", positionToText(minPos), positionToText(maxPos), page);
-            case 0b1001 -> new TranslatableText("plymouth.tracker.record.lookup.area.by", positionToText(minPos), positionToText(maxPos), lookupPlayerToText(null, causeUserId), page);
-            case 0b1010 -> new TranslatableText("plymouth.tracker.record.lookup.area.time", positionToText(minPos), positionToText(maxPos), minTime, maxTime, page);
-            case 0b1011 -> new TranslatableText("plymouth.tracker.record.lookup.area.time.by", positionToText(minPos), positionToText(maxPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
-            default -> new TranslatableText("plymouth.tracker.record.lookup.invalid");
+            case 0b0000 -> TextHelper.translatable("plymouth.tracker.record.lookup", page);
+            case 0b0001 -> TextHelper.translatable("plymouth.tracker.record.lookup.by", lookupPlayerToText(null, causeUserId), page);
+            case 0b0010 -> TextHelper.translatable("plymouth.tracker.record.lookup.time", minTime, maxTime, page);
+            case 0b0011 -> TextHelper.translatable("plymouth.tracker.record.lookup.time.by", minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            case 0b0100 -> TextHelper.translatable("plymouth.tracker.record.lookup.at", positionToText(minPos), page);
+            case 0b0101 -> TextHelper.translatable("plymouth.tracker.record.lookup.at.by", positionToText(minPos), lookupPlayerToText(null, causeUserId), page);
+            case 0b0110 -> TextHelper.translatable("plymouth.tracker.record.lookup.at.time", positionToText(minPos), minTime, maxTime, page);
+            case 0b0111 -> TextHelper.translatable("plymouth.tracker.record.lookup.at.time.by", positionToText(minPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            case 0b1000 -> TextHelper.translatable("plymouth.tracker.record.lookup.area", positionToText(minPos), positionToText(maxPos), page);
+            case 0b1001 -> TextHelper.translatable("plymouth.tracker.record.lookup.area.by", positionToText(minPos), positionToText(maxPos), lookupPlayerToText(null, causeUserId), page);
+            case 0b1010 -> TextHelper.translatable("plymouth.tracker.record.lookup.area.time", positionToText(minPos), positionToText(maxPos), minTime, maxTime, page);
+            case 0b1011 -> TextHelper.translatable("plymouth.tracker.record.lookup.area.time.by", positionToText(minPos), positionToText(maxPos), minTime, maxTime, lookupPlayerToText(null, causeUserId), page);
+            default -> TextHelper.translatable("plymouth.tracker.record.lookup.invalid");
         };
     }
 

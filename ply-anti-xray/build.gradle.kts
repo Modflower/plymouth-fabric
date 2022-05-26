@@ -9,7 +9,7 @@ import java.util.Properties as JavaProp
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     id("com.modrinth.minotaur")
     `maven-publish`
 }
@@ -42,7 +42,7 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
+    modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
     include(modImplementation("com.github.Modflower", "bytecode-junkie", "v0.3.0"))
     api(project(":utilities")) { include(this) }
@@ -51,6 +51,7 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
 }
 
 loom {
@@ -89,10 +90,8 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    register<Jar>("sourcesJar") {
-        dependsOn("classes")
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
+    jar {
+        archiveClassifier.set("dev")
     }
     val scourPackages = register<Task>("scourPackages") {
         val asmFile = projectDir.resolve("asm.properties")

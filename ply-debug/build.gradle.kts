@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -37,11 +37,11 @@ dependencies {
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     implementation(project(":utilities"))
     // implementation(project(":database"))
-    implementation(project(":"))
-    implementation(project(":ply-anti-xray"))
-    implementation(project(":ply-common"))
+    modImplementation(project(":"))
+    modImplementation(project(":ply-anti-xray"))
+    modImplementation(project(":ply-common"))
     // implementation(project(":ply-database"))
-    implementation(project(":ply-locking"))
+    modImplementation(project(":ply-locking"))
     // implementation(project(":ply-tracker"))
     modImplementation("net.fabricmc.fabric-api", "fabric-api", fabric_api_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
@@ -50,6 +50,7 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
 }
 
 tasks {
@@ -58,10 +59,8 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    register<Jar>("sourcesJar") {
-        dependsOn("classes")
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
+    jar {
+        archiveClassifier.set("dev")
     }
     processResources {
         val map = mapOf(

@@ -6,7 +6,8 @@ import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.text.*;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
+import static gay.ampflower.plymouth.common.TextHelper.*;
 import static net.minecraft.util.Formatting.*;
 
 /**
@@ -28,10 +30,10 @@ import static net.minecraft.util.Formatting.*;
 public class Helium {
     public static final Style LINK = Style.EMPTY.withFormatting(AQUA, UNDERLINE);
     public static final Text
-            SEE_LOGS = new LiteralText("See the server logs for more information.").formatted(ITALIC),
-            DID_YOU_MEAN = new TranslatableText("plymouth.dym", new KeybindText("key.inventory").formatted(AQUA))
+            SEE_LOGS = literal("See the server logs for more information.").formatted(ITALIC),
+            DID_YOU_MEAN = translatable("plymouth.dym", keybind("key.inventory").formatted(AQUA))
                     .formatted(ITALIC, RED),
-            ENDER_CHEST = new TranslatableText(Blocks.ENDER_CHEST.getTranslationKey()).formatted(DARK_PURPLE);
+            ENDER_CHEST = translatable(Blocks.ENDER_CHEST.getTranslationKey()).formatted(DARK_PURPLE);
     public static final Logger logger = LogManager.getLogger("Plymouth");
 
     /**

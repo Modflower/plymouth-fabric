@@ -4,7 +4,7 @@ import gay.ampflower.plymouth.common.InjectableInteractionManager;
 import gay.ampflower.plymouth.common.InteractionManagerInjection;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -29,11 +29,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * @since 0.0.0
  */
 @Mixin(ServerPlayerInteractionManager.class)
-public class MixinServerPlayerInteractionManager implements InjectableInteractionManager {
+public abstract class MixinServerPlayerInteractionManager implements InjectableInteractionManager {
     @Shadow
-    public ServerPlayerEntity player;
+    protected ServerPlayerEntity player;
     @Shadow
-    public ServerWorld world;
+    protected ServerWorld world;
+
+    @Shadow
+    protected abstract void method_41250(BlockPos pos, boolean success, int sequence, String reason);
+
     @Unique
     private InteractionManagerInjection temporaryInjection;
 
@@ -54,11 +58,12 @@ public class MixinServerPlayerInteractionManager implements InjectableInteractio
             cancellable = true,
             at = @At(value = "HEAD")
     )
-    private void plymouthCommon$tryBreakBlock(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, CallbackInfo ci) {
+    private void plymouthCommon$tryBreakBlock(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
         if (temporaryInjection != null && action == PlayerActionC2SPacket.Action.START_DESTROY_BLOCK) {
             var result = temporaryInjection.onBreakBlock(player, world, pos, direction);
             if (result != ActionResult.PASS) {
-                player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, this.world.getBlockState(pos), action, false, "intercepted by plymouth"));
+                player.networkHandler.sendPacket(new BlockUpdateS2CPacket(pos, this.world.getBlockState(pos)));
+                method_41250(pos, false, sequence, "intercepted by plymouth");
                 ci.cancel();
             }
         }

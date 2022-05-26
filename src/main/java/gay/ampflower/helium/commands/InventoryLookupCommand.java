@@ -10,7 +10,6 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Util;
 
 import java.util.function.Predicate;
 
@@ -37,7 +36,7 @@ public class InventoryLookupCommand {
                     var sp = s.getSource().getPlayer();
                     sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) ->
                             GenericContainerScreenHandler.createGeneric9x3(i, pi, p.getEnderChestInventory()),
-                            p.getDisplayName().shallowCopy().append(" - ").append(Helium.ENDER_CHEST)));
+                            p.getDisplayName().copyContentOnly().append(" - ").append(Helium.ENDER_CHEST)));
                     return Command.SINGLE_SUCCESS;
                 });
 
@@ -45,7 +44,7 @@ public class InventoryLookupCommand {
             var p = getPlayer(s, "target");
             var sp = s.getSource().getPlayer();
             if (sp.equals(p)) {
-                sp.sendSystemMessage(Helium.DID_YOU_MEAN, Util.NIL_UUID);
+                sp.sendMessage(Helium.DID_YOU_MEAN);
             } else {
                 // TODO: Replace with a better screen handler that accounts for hidden player inventory.
                 sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) ->

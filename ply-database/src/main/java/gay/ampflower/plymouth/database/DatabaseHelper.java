@@ -11,7 +11,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -51,7 +50,7 @@ public final class DatabaseHelper {
 
     public static Plymouth database;
 
-    public static final Text tookText = new TranslatableText("plymouth.tracker.action.took").formatted(Formatting.RED);
+    public static final Text tookText = TextHelper.translatable("plymouth.tracker.action.took").formatted(Formatting.RED);
 
     public static final Set<Property<?>> bannedProperties = Set.of(Properties.WATERLOGGED, Properties.POWERED);
 
