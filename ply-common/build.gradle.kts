@@ -45,9 +45,6 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    jar {
-        archiveClassifier.set("dev")
-    }
     processResources {
         val map = mapOf(
             "version" to project.version,
