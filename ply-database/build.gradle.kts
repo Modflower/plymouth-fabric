@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -37,7 +37,7 @@ dependencies {
     api(project(":ply-common"))
     api(project(":database")) { include(this) }
     include(implementation("org.postgresql", "postgresql", postgres_version))
-    modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
+    modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }
 
 java {

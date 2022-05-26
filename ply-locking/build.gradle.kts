@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -34,8 +34,8 @@ dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
-    implementation(project(":ply-common"))
-    modImplementation(fabricApi.module("fabric-command-api-v1", fabric_api_version))
+    modImplementation(project(":ply-common"))
+    modImplementation(fabricApi.module("fabric-command-api-v2", fabric_api_version))
     modImplementation(fabricApi.module("fabric-lifecycle-events-v1", fabric_api_version))
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
 }
@@ -43,6 +43,7 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
 }
 
 tasks {
@@ -51,10 +52,8 @@ tasks {
         options.isDeprecation = true
         options.isWarnings = true
     }
-    register<Jar>("sourcesJar") {
-        dependsOn("classes")
-        archiveClassifier.set("sources")
-        from(sourceSets.main.get().allSource)
+    jar {
+        archiveClassifier.set("dev")
     }
     processResources {
         val map = mapOf(

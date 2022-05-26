@@ -3,7 +3,7 @@ import java.net.URI
 plugins {
     java
     `java-library`
-    id("plymouth-loom")
+    id("fabric-loom")
     `maven-publish`
 }
 
@@ -40,9 +40,10 @@ repositories {
 dependencies {
     minecraft("com.mojang", "minecraft", minecraft_version)
     mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
+    modImplementation(project(":ply-common"))
     modImplementation("net.fabricmc", "fabric-loader", loader_version)
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
-    modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
+    modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }
 
 tasks {
@@ -63,6 +64,9 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(map)
         }
+    }
+    jar {
+        archiveClassifier.set("dev")
     }
     withType<Jar> {
         from("LICENSE")

@@ -8,7 +8,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
@@ -86,7 +85,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toText() {
-        var text = new TranslatableText("plymouth.tracker.record.block", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block), TextUtils.positionToText(targetPos).setStyle(TextUtils.atBlock));
+        var text = TextHelper.translatable("plymouth.tracker.record.block", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block), TextUtils.positionToText(targetPos).setStyle(TextUtils.atBlock));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }
@@ -94,7 +93,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toTextNoPosition() {
-        var text = new TranslatableText("plymouth.tracker.record.block.nopos", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block));
+        var text = TextHelper.translatable("plymouth.tracker.record.block.nopos", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

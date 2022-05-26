@@ -17,8 +17,6 @@ import net.kjp12.plymouth.database.PlymouthNoOP;
 import net.kjp12.plymouth.database.records.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -50,10 +48,10 @@ public class TrackerCommand {
             REQUIRE_ROLLBACK_PERMISSION = Permissions.require("plymouth.admin.tracker.rollback", 3);
 
     private static final SimpleCommandExceptionType
-            RECORD_NOT_DEFINED = new SimpleCommandExceptionType(new TranslatableText("commands.plymouth.tracker.invalid.record"));
+            RECORD_NOT_DEFINED = new SimpleCommandExceptionType(TextHelper.translatable("commands.plymouth.tracker.invalid.record"));
 
     private static final DynamicCommandExceptionType
-            PARSER_INVALID = new DynamicCommandExceptionType(i -> new TranslatableText("commands.plymouth.tracker.invalid", i));
+            PARSER_INVALID = new DynamicCommandExceptionType(i -> TextHelper.translatable("commands.plymouth.tracker.invalid", i));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
         // We cannot setup commands if the database is unavailable.
@@ -381,14 +379,14 @@ public class TrackerCommand {
                         player.sendFeedback(r.toText(), false);
                     }
                 }
-                player.sendFeedback(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
+                player.sendFeedback(TextHelper.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
             } catch (Throwable t) {
                 Tracker.logger.error("aaaa", t);
                 throw new Error(t);
             }
         }).exceptionally(t -> {
             Tracker.logger.error("eeee", t);
-            player.sendFeedback(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
+            player.sendFeedback(TextHelper.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
         return 0;

@@ -1,7 +1,7 @@
 package net.kjp12.plymouth.debug.anti_xray;// Created 2021-03-30T00:02:20
 
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kjp12.plymouth.antixray.ShadowChunk;
@@ -38,7 +38,7 @@ public class AntiXrayDebugger {
             if (ServerPlayNetworking.canSend(player, AntiXrayDebugger.debugAntiXrayUpdate))
                 AntiXrayDebugger.players.add(player);
         });
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> dispatcher.register(literal("mdump").requires(AntiXrayDebugger::canSendDebugInformation).executes(ctx -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("mdump").requires(AntiXrayDebugger::canSendDebugInformation).executes(ctx -> {
             var player = ctx.getSource().getPlayer();
             int cx = MathHelper.floor(player.getX()) >> 4, cz = MathHelper.floor(player.getZ()) >> 4;
             var mask = ((ShadowChunk) player.world.getChunk(cx, cz)).plymouth$getShadowMask();

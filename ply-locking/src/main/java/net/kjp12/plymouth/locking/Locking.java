@@ -2,8 +2,9 @@ package net.kjp12.plymouth.locking;// Created 2021-03-22T22:16:29
 
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.kjp12.plymouth.common.TextHelper;
 import net.kjp12.plymouth.common.UUIDHelper;
 import net.kjp12.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.*;
@@ -19,10 +20,8 @@ import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ToolItem;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.BlockPos;
@@ -302,15 +301,15 @@ public class Locking implements ModInitializer {
     }
 
     public static Text toText(Block block) {
-        return new TranslatableText(block.getTranslationKey()).formatted(Formatting.AQUA);
+        return TextHelper.translatable(block.getTranslationKey()).formatted(Formatting.AQUA);
     }
 
     public static Text toText(Collection<? extends Nameable> nameables) {
         if (nameables == null || nameables.isEmpty()) {
-            return new LiteralText("?");
+            return TextHelper.literal("?");
         }
         var itr = nameables.iterator();
-        var base = new LiteralText("");
+        var base = TextHelper.literal("");
         base.append(itr.next().getDisplayName());
         while (itr.hasNext()) {
             base.append(Texts.GRAY_DEFAULT_SEPARATOR_TEXT).append(itr.next().getDisplayName());
@@ -319,6 +318,6 @@ public class Locking implements ModInitializer {
     }
 
     public static Text toText(BlockPos pos) {
-        return new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA);
+        return TextHelper.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA);
     }
 }

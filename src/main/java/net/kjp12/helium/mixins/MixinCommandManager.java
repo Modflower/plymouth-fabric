@@ -5,6 +5,7 @@ import net.kjp12.helium.Helium;
 import net.kjp12.helium.commands.HotspotCommand;
 import net.kjp12.helium.commands.InventoryLookupCommand;
 import net.kjp12.helium.commands.MappingCommand;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Final;
@@ -23,7 +24,7 @@ public abstract class MixinCommandManager {
     private CommandDispatcher<ServerCommandSource> dispatcher;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void helium$registerCommands(CommandManager.RegistrationEnvironment env, CallbackInfo cbi) {
+    public void helium$registerCommands(CommandManager.RegistrationEnvironment environment, CommandRegistryAccess commandRegistryAccess, CallbackInfo ci) {
         InventoryLookupCommand.register(dispatcher);
         HotspotCommand.register(dispatcher);
         MappingCommand.register(dispatcher);

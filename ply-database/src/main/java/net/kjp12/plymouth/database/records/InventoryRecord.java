@@ -7,7 +7,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -111,7 +110,7 @@ public final class InventoryRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toText() {
-        var text = new TranslatableText("plymouth.tracker.record.inventory",
+        var text = TextHelper.translatable("plymouth.tracker.record.inventory",
                 TextUtils.timeToText(time),
                 TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
                 delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack),
@@ -122,7 +121,7 @@ public final class InventoryRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toTextNoPosition() {
-        var text = new TranslatableText("plymouth.tracker.record.inventory.nopos",
+        var text = TextHelper.translatable("plymouth.tracker.record.inventory.nopos",
                 TextUtils.timeToText(time),
                 TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
                 delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack));

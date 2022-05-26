@@ -23,9 +23,8 @@
   "depends": {
     "minecraft": ">=${minecraft_required}",
     "fabricloader": ">=0.11.1",
-    "java": ">=11",
     "plymouth-common": "^${project_version}",
-    "fabric-command-api-v1": "*",
+    "fabric-command-api-v2": "*",
     "fabric-lifecycle-events-v1": "*",
     "fabric-permissions-api-v0": "*"
   },

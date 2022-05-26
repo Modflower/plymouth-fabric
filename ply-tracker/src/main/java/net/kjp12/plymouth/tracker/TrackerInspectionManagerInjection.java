@@ -7,8 +7,6 @@ import net.kjp12.plymouth.database.records.InventoryLookupRecord;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -29,10 +27,10 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(TextHelper.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             Tracker.logger.error("Exception on breakBlock", t);
-            player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
+            player.sendMessage(TextHelper.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
         return ActionResult.CONSUME;
@@ -47,10 +45,10 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(new TranslatableText("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(TextHelper.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             Tracker.logger.error("Exception on interactBlock", t);
-            player.sendMessage(new LiteralText(t.getLocalizedMessage()).formatted(Formatting.RED), false);
+            player.sendMessage(TextHelper.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
         return ActionResult.CONSUME;
