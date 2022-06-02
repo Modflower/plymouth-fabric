@@ -1,6 +1,6 @@
 package net.kjp12.plymouth.debug.anti_xray;// Created 2021-04-04T10:59:04
 
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -42,7 +42,7 @@ public class AntiXrayClientDebugger {
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXrayTest, AntiXrayClientDebugger::handleAntiXrayTest);
         ClientPlayNetworking.registerGlobalReceiver(AntiXrayDebugger.debugAntiXrayMask, AntiXrayClientDebugger::handleAntiXrayMask);
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(AntiXrayClientDebugger::render);
-        ClientCommandManager.DISPATCHER.register(literal("pdb").then(literal("ax").then(literal("clear").executes(ctx -> {
+        ClientCommandRegistrationCallback.EVENT.register((DISPATCHER, registryAccess) -> DISPATCHER.register(literal("pdb").then(literal("ax").then(literal("clear").executes(ctx -> {
             mask = null;
             antiXraySet.clear();
             antiXrayUpdate.clear();
@@ -53,7 +53,7 @@ public class AntiXrayClientDebugger {
             onChunkLoad.clear();
             onChunkBlockEntity.clear();
             return 1;
-        }))));
+        })))));
     }
 
     private static void render(WorldRenderContext ctx) {
