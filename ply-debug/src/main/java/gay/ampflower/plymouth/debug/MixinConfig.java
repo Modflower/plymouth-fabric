@@ -41,7 +41,7 @@ public class MixinConfig implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         var loader = FabricLoader.getInstance();
         var index = mixinClassName.indexOf('.', substr);
-        String env, cur = mixinClassName.substring(substr, index), mixin = mixinClassName.substring(substr);
+        String env, cur = index < 0 ? "" : mixinClassName.substring(substr, index), mixin = mixinClassName.substring(substr);
         if (!Fusebox.isEnabled(cur)) {
             logger.error("Mixin `{}` disabled as package `{}` was disabled. If you want to enable this mixin, insert both `{}=true` and `{}=true` into pdb.fb.properties", mixin, cur, cur, mixin);
             return false;
