@@ -15,9 +15,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @since 0.0.0
  */
 public abstract class PlymouthSQL implements Plymouth, SqlConnectionProvider {
-    private static final Logger log = LogManager.getLogger(PlymouthSQL.class);
+    private static final Logger log = LoggerFactory.getLogger(PlymouthSQL.class);
 
     private int ticks = 0;
     private final ItemStack[] immutablesCache = new ItemStack[256];

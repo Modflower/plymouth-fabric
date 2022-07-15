@@ -17,9 +17,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.level.ServerWorldProperties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.postgresql.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import static gay.ampflower.plymouth.database.records.LookupRecord.*;
         values = {"minCX()", "minCY()", "minCZ()", "<0?^.getWorldIndex(causeWorld)>0", "maxCX()", "maxCY()", "maxCZ()", "<0"},
         mask = FLAG_C_AT | FLAG_C_AREA, maskRq = FLAG_C_AREA)
 public class PlymouthPostgres extends PlymouthSQL implements Plymouth {
-    private static final Logger log = LogManager.getLogger(PlymouthPostgres.class);
+    private static final Logger log = LoggerFactory.getLogger(PlymouthPostgres.class);
     // We don't need reverse lookup, this is perfectly acceptable.
     // In case we do need reverse lookup, we can batch as needed.
     private final Set<UUID>

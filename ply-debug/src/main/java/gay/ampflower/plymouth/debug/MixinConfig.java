@@ -2,10 +2,10 @@ package gay.ampflower.plymouth.debug;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -20,7 +20,7 @@ import java.util.Set;
  * @since 0.0.0
  */
 public class MixinConfig implements IMixinConfigPlugin {
-    private static final Logger logger = LogManager.getLogger("Plymouth: Debug: Mixin");
+    private static final Logger logger = LoggerFactory.getLogger("Plymouth: Debug: Mixin");
     private static final Map<String, String> packageToMod = Map.of(
             "anti_xray", "plymouth-anti-xray",
             "database", "plymouth-database",
@@ -119,11 +119,11 @@ public class MixinConfig implements IMixinConfigPlugin {
     }
 
     private void genInsnList(InsnList list, String method) {
-        list.add(new FieldInsnNode(Opcodes.GETSTATIC, "gay/ampflower/plymouth/debug/Debug", "logger", "Lorg/apache/logging/log4j/Logger;"));
+        list.add(new FieldInsnNode(Opcodes.GETSTATIC, "gay/ampflower/plymouth/debug/Debug", "logger", "Lorg/slf4j/Logger;"));
         list.add(new LdcInsnNode("Called " + method));
         list.add(new TypeInsnNode(Opcodes.NEW, "java/lang/Throwable"));
         list.add(new InsnNode(Opcodes.DUP));
         list.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/Throwable", "<init>", "()V", false));
-        list.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "org/apache/logging/log4j/Logger", "error", "(Ljava/lang/String;Ljava/lang/Throwable;)V"));
+        list.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "Lorg/slf4j/Logger", "error", "(Ljava/lang/String;Ljava/lang/Throwable;)V"));
     }
 }

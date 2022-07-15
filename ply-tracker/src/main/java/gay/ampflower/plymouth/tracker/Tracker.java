@@ -2,15 +2,15 @@ package gay.ampflower.plymouth.tracker;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.text.Text;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Ampflower
  * @since 0.0.0
  */
 public final class Tracker {
-    public static final Logger logger = LogManager.getLogger("Plymouth: Tracker");
+    public static final Logger logger = LoggerFactory.getLogger("Plymouth: Tracker");
 
     public static final Text
             INSPECT_START = TextHelper.translatable("commands.plymouth.tracker.inspect.start"),
