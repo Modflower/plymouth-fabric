@@ -6,6 +6,7 @@
   "mixins": [
     "player.MixinPlayerEntity",
     "world.AccessorPalettedContainer",
+    "world.MixinAlternateCurrentWorldHelper",
     "world.MixinBlockView",
     "world.MixinServerChunkManager",
     "world.MixinServerWorld",
