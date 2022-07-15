@@ -2,6 +2,7 @@ package net.kjp12.plymouth.antixray.mixins.world;
 
 import net.kjp12.plymouth.antixray.LazyChunkManager;
 import net.kjp12.plymouth.antixray.ShadowChunk;
+import net.minecraft.SharedConstants;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -39,6 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.*;
 
 import static net.kjp12.plymouth.antixray.Constants.HIDDEN_BLOCKS;
+import static net.kjp12.plymouth.antixray.Constants.LOGGER;
 
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
@@ -310,6 +312,48 @@ public abstract class MixinWorldChunk extends Chunk implements ShadowChunk {
     public boolean plymouth$isMasked(BlockPos pos) {
         if (shadowMask == null || isOutOfHeightLimit(pos)) return false;
         return shadowMask.get(toIndex(pos));
+    }
+
+    @Override
+    public boolean plymouth$isMaskedOrOutOfWorld(BlockPos pos) {
+        return shadowMask == null || isOutOfHeightLimit(pos) || shadowMask.get(toIndex(pos));
+    }
+
+    @Override
+    public boolean plymouth$unsafe$uncheckedUpdate(BlockPos pos) {
+        if (plymouth$isMaskedOrOutOfWorld(pos)) return false;
+        int j = pos.getY();
+        int i = getSectionIndex(j);
+
+        var shadow = shadowSections[i];
+
+        if (shadow != null) {
+            int x = pos.getX() & 15;
+            int z = pos.getZ() & 15;
+
+            int y = j & 15;
+
+            var state = sectionArray[i].getBlockState(x, y, z);
+
+            var old = shadow.setBlockState(x, y, z, state);
+
+            if (SharedConstants.isDevelopment) {
+                if (state == old) {
+                    LOGGER.warn("Unchecked caller unnecessarily updated block {} at {}. Note: This may have been caused by missing write.", state, pos, new Throwable());
+                } else {
+                    var mutPos = pos.mutableCopy();
+                    if (isBlockHidden(state, mutPos)) {
+                        LOGGER.warn("Unchecked caller failed hidden check for {} at {}", state, pos, new Throwable());
+                    }
+
+                    if (VoxelShapes.matchesAnywhere(state.getCollisionShape(world, pos), old.getCollisionShape(world, pos), BooleanBiFunction.NOT_SAME)) {
+                        LOGGER.warn("Unchecked caller failed collisions check for {} against {} at {}", state, old, pos, new Throwable());
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     @Unique

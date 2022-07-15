@@ -83,6 +83,14 @@ public interface ShadowChunk extends ShadowBlockView {
     boolean plymouth$isMasked(BlockPos pos);
 
     /**
+     * Checks if the block is shadowed or out of world.
+     *
+     * @return true if shadow is not present, the position is out of bounds, or the block at that
+     * position is masked, false otherwise.
+     */
+    boolean plymouth$isMaskedOrOutOfWorld(BlockPos pos);
+
+    /**
      * Checks if the block would cull the adjacent block from the given direction.
      *
      * @param state The block to check against.
@@ -91,4 +99,14 @@ public interface ShadowChunk extends ShadowBlockView {
      * @return true if the block would cull the adjacent block from the given direction, false otherwise.
      */
     boolean plymouth$isCulling(BlockState state, Direction from, BlockPos pos);
+
+    /**
+     * Forces an unchecked update when the block isn't masked.
+     *
+     * @param pos The position of the block to update.
+     * @return {@code false} if the block as masked at call time, {@code true} otherwise.
+     * @implNote This forces a read into the underlying section and
+     * sets the mask layer to the underlying block.
+     */
+    boolean plymouth$unsafe$uncheckedUpdate(BlockPos pos);
 }
