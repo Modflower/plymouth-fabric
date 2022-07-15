@@ -13,16 +13,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
+          fetch-depth: 1
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: gradle/wrapper-validation-action@v1
+      - uses: actions/cache@v3
         with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
           java-version: 17
       - name: Build with Gradle
-        run: ./gradlew build poolBuilds
+        run: ./gradlew build poolBuilds --no-daemon
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: |
