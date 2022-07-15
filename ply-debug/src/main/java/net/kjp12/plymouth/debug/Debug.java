@@ -8,8 +8,8 @@ import net.kjp12.plymouth.debug.anti_xray.AntiXrayDebugger;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * @since 0.0.0
  */
 public class Debug implements ModInitializer {
-    public static final Logger logger = LogManager.getLogger("Plymouth: Debug");
+    public static final Logger logger = LoggerFactory.getLogger("Plymouth: Debug");
     private static final StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
     private static final MethodHandles.Lookup self = MethodHandles.lookup();
 

@@ -8,8 +8,8 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class Helium {
             DID_YOU_MEAN = translatable("plymouth.dym", keybind("key.inventory").formatted(AQUA))
                     .formatted(ITALIC, RED),
             ENDER_CHEST = translatable(Blocks.ENDER_CHEST.getTranslationKey()).formatted(DARK_PURPLE);
-    public static final Logger logger = LogManager.getLogger("Plymouth");
+    public static final Logger logger = LoggerFactory.getLogger("Plymouth");
 
     /**
      * [vanilla-copy] {@link net.minecraft.world.PersistentStateManager#readNbt(String, int)}

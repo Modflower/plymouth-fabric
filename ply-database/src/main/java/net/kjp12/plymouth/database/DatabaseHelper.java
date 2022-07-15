@@ -17,8 +17,8 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.level.ServerWorldProperties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +41,7 @@ import java.util.function.Function;
  */
 public final class DatabaseHelper {
     public static final Path config = Path.of(".", "config");
-    public static final Logger LOGGER = LogManager.getLogger("Plymouth: Database");
+    public static final Logger LOGGER = LoggerFactory.getLogger("Plymouth: Database");
     public static final int PAGE_SIZE = 8;
 
     static final Calendar UTC = Calendar.getInstance(TimeZone.getTimeZone(ZoneOffset.UTC));

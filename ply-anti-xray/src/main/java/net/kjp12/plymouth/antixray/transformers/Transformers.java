@@ -7,12 +7,12 @@ import net.gudenau.minecraft.asm.api.v1.AsmRegistry;
 import net.gudenau.minecraft.asm.api.v1.AsmUtils;
 import net.gudenau.minecraft.asm.api.v1.type.MethodType;
 import net.kjp12.hachimitsu.utilities.StreamStringSpliterator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +32,7 @@ import static org.objectweb.asm.Opcodes.*;
 public class Transformers implements AsmInitializer {
     static final FabricLoader loader = FabricLoader.getInstance();
     static final ModContainer self = loader.getModContainer("plymouth-anti-xray").orElseThrow(AssertionError::new);
-    static final Logger logger = LogManager.getLogger("Plymouth: Anti-Xray ASM Transformer");
+    static final Logger logger = LoggerFactory.getLogger("Plymouth: Anti-Xray ASM Transformer");
     static final Type type = Type.getType("Lnet/kjp12/plymouth/antixray/transformers/Stub$MethodNameTo;");
 
     /**
