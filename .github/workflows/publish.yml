@@ -24,7 +24,7 @@ jobs:
             ${{ runner.os }}-gradle-
       - uses: actions/setup-java@v3
         with:
-          distribution: termurin
+          distribution: temurin
           java-version: 17
       - name: Build and publish with Gradle
         run: ./gradlew build publish poolBuilds --no-daemon
