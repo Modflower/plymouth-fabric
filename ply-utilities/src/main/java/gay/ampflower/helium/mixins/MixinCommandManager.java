@@ -1,6 +1,7 @@
 package gay.ampflower.helium.mixins;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
 import gay.ampflower.helium.Helium;
 import gay.ampflower.helium.commands.HotspotCommand;
 import gay.ampflower.helium.commands.InventoryLookupCommand;
@@ -30,8 +31,8 @@ public abstract class MixinCommandManager {
         MappingCommand.register(dispatcher);
     }
 
-    @Inject(method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)I", at = @At("HEAD"))
-    public void helium$execute$logCommandExecution(ServerCommandSource source, String str, CallbackInfoReturnable<Integer> cbir) {
-        Helium.logger.info("{} has executed the following command: {}", source.getName(), str);
+    @Inject(method = "execute(Lcom/mojang/brigadier/ParseResults;Ljava/lang/String;)I", at = @At("HEAD"))
+    public void helium$execute$logCommandExecution(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfoReturnable<Integer> cir) {
+        Helium.logger.info("{} has executed the following command: {}", parseResults.getContext().getSource().getName(), command);
     }
 }
