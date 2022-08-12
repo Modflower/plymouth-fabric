@@ -4,7 +4,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import gay.ampflower.plymouth.common.TextHelper;
 import gay.ampflower.plymouth.common.UUIDHelper;
 import gay.ampflower.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.block.*;
@@ -301,15 +300,15 @@ public class Locking implements ModInitializer {
     }
 
     public static Text toText(Block block) {
-        return TextHelper.translatable(block.getTranslationKey()).formatted(Formatting.AQUA);
+        return Text.translatable(block.getTranslationKey()).formatted(Formatting.AQUA);
     }
 
     public static Text toText(Collection<? extends Nameable> nameables) {
         if (nameables == null || nameables.isEmpty()) {
-            return TextHelper.literal("?");
+            return Text.literal("?");
         }
         var itr = nameables.iterator();
-        var base = TextHelper.literal("");
+        var base = Text.empty();
         base.append(itr.next().getDisplayName());
         while (itr.hasNext()) {
             base.append(Texts.GRAY_DEFAULT_SEPARATOR_TEXT).append(itr.next().getDisplayName());
@@ -318,6 +317,6 @@ public class Locking implements ModInitializer {
     }
 
     public static Text toText(BlockPos pos) {
-        return TextHelper.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA);
+        return Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()).formatted(Formatting.AQUA);
     }
 }

@@ -110,7 +110,7 @@ public final class InventoryRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toText() {
-        var text = TextHelper.translatable("plymouth.tracker.record.inventory",
+        var text = Text.translatable("plymouth.tracker.record.inventory",
                 TextUtils.timeToText(time),
                 TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
                 delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack),
@@ -121,7 +121,7 @@ public final class InventoryRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toTextNoPosition() {
-        var text = TextHelper.translatable("plymouth.tracker.record.inventory.nopos",
+        var text = Text.translatable("plymouth.tracker.record.inventory.nopos",
                 TextUtils.timeToText(time),
                 TextUtils.playerToText(causeWorld, causePos, causeName, causeUserId, causeEntityId),
                 delta < 0 ? tookText : BlockAction.PLACE.niceName, Math.abs(delta), TextUtils.itemToText(stack));

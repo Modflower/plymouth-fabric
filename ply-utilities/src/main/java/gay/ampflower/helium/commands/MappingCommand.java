@@ -6,12 +6,12 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import gay.ampflower.helium.Helium;
 import gay.ampflower.helium.mixins.AccessorMapState;
-import gay.ampflower.plymouth.common.TextHelper;
 import net.minecraft.SharedConstants;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.map.MapState;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.text.Text;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 
 /**
  * @author Ampflower
@@ -41,9 +42,9 @@ public class MappingCommand {
     }
 
     private static void onMapOverwrite(ServerCommandSource source, String mapUri, int mapId) {
-        var uriLinked = TextHelper.literal(mapUri).setStyle(
+        var uriLinked = Text.literal(mapUri).setStyle(
                 Helium.LINK.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, mapUri)));
-        source.sendFeedback(TextHelper.translatable("plymouth.map.download", uriLinked, mapId), true);
+        source.sendFeedback(translatable("plymouth.map.download", uriLinked, mapId), true);
         // Asynchronous access moment
         // We need to operate on the overworld due to messing with map states.
         ForkJoinPool.commonPool().execute(() -> {
@@ -55,7 +56,7 @@ public class MappingCommand {
                     if (httpConnection.getResponseCode() / 100 != 2) {
                         Helium.logger.error("[Server Failure] Failed to download {} for map {}; following dump below.",
                                 mapUri, mapId);
-                        source.sendError(TextHelper.translatable("plymouth.map.fail.download", uriLinked,
+                        source.sendError(translatable("plymouth.map.fail.download", uriLinked,
                                 httpConnection.getResponseMessage()));
                         source.sendError(Helium.SEE_LOGS);
                         try (var body = httpConnection.getErrorStream()) {
@@ -93,10 +94,10 @@ public class MappingCommand {
                             }
                             newMapState.callMarkDirty(0, 0);
                             newMapState.callMarkDirty(127, 127);
-                            source.sendFeedback(TextHelper.translatable("plymouth.map.deploy", uriLinked, mapId), true);
+                            source.sendFeedback(translatable("plymouth.map.deploy", uriLinked, mapId), true);
                         } catch (RuntimeException | IOException ioe) {
                             Helium.logger.error("[IO Failure] Failed to parse {} for map {}", mapUri, mapId, ioe);
-                            source.sendError(TextHelper.translatable("plymouth.map.fail.parse", uriLinked,
+                            source.sendError(translatable("plymouth.map.fail.parse", uriLinked,
                                     ioe.getLocalizedMessage()));
                             source.sendError(Helium.SEE_LOGS);
                         }
@@ -104,7 +105,7 @@ public class MappingCommand {
                 }
             } catch (IOException ioe) {
                 Helium.logger.error("[IO Failure] Failed to download {} for map {}", mapUri, mapId, ioe);
-                source.sendError(TextHelper.translatable("plymouth.map.fail.download", uriLinked,
+                source.sendError(translatable("plymouth.map.fail.download", uriLinked,
                         ioe.getLocalizedMessage()));
                 source.sendError(Helium.SEE_LOGS);
             }

@@ -34,11 +34,11 @@ public final class TextUtils {
             entity = Style.EMPTY.withColor(Formatting.BLUE);
 
     public static MutableText positionToText(Vec3d pos) {
-        return TextHelper.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ());
+        return Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static MutableText positionToText(Vec3i pos) {
-        return TextHelper.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ());
+        return Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ());
     }
 
     /**
@@ -49,11 +49,11 @@ public final class TextUtils {
      */
     public static Text timeToText(Instant instant) {
         var time = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
-        return TextHelper.literal(DateTimeFormatter.ISO_LOCAL_DATE.format(time)).styled(s -> s.withFormatting(Formatting.GRAY).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextHelper.literal(DateTimeFormatter.RFC_1123_DATE_TIME.format(time)))));
+        return Text.literal(DateTimeFormatter.ISO_LOCAL_DATE.format(time)).styled(s -> s.withFormatting(Formatting.GRAY).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(DateTimeFormatter.RFC_1123_DATE_TIME.format(time)))));
     }
 
     private static <T extends Comparable<T>> Text mkPropertyText(BlockState state, Property<T> property) {
-        return TextHelper.literal(property.getName()).formatted(Formatting.BLUE).append(": ").append(TextHelper.literal(property.name(state.get(property))).formatted(Formatting.GRAY)).append("\n");
+        return Text.literal(property.getName()).formatted(Formatting.BLUE).append(": ").append(Text.literal(property.name(state.get(property))).formatted(Formatting.GRAY)).append("\n");
     }
 
     /**
@@ -83,8 +83,8 @@ public final class TextUtils {
      */
     public static MutableText blockToText(BlockState state) {
         var block = state.getBlock();
-        var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, mkBlockStateHoverCard(state, TextHelper.translatable(block.getTranslationKey())).append("\n").append(TextHelper.literal(Registry.BLOCK.getId(block).toString()).formatted(Formatting.DARK_GRAY)));
-        return TextHelper.translatable(block.getTranslationKey()).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.LIGHT_PURPLE));
+        var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, mkBlockStateHoverCard(state, Text.translatable(block.getTranslationKey())).append("\n").append(Text.literal(Registry.BLOCK.getId(block).toString()).formatted(Formatting.DARK_GRAY)));
+        return Text.translatable(block.getTranslationKey()).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.LIGHT_PURPLE));
     }
 
     /**
@@ -94,7 +94,7 @@ public final class TextUtils {
      * @return The literal text based off of the input.
      */
     public static MutableText itemToText(ItemStack stack) {
-        var text = TextHelper.literal("").append(stack.getName());
+        var text = Text.empty().append(stack.getName());
         var style = text.getStyle();
         if (stack.hasCustomName()) style = style.withFormatting(Formatting.ITALIC);
         var fmt = stack.getRarity().formatting;
@@ -141,9 +141,9 @@ public final class TextUtils {
         } else if (UUIDHelper.isDamageSource(userId) || UUIDHelper.isWorld(userId) /*The world is an undefined format currently. For now, it shall fall through. TODO: implement world schema*/) {
             // We really have nothing we can do to lookup here,
             // nor should we really need to as the damage source is saved as helium:<src>.
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextHelper.literal(userName + '\n' + userId));
+            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(userName + '\n' + userId));
             var i = userName.indexOf(':');
-            return TextHelper.literal(i == -1 ? userName : userName.substring(i + 1)).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.DARK_AQUA));
+            return Text.literal(i == -1 ? userName : userName.substring(i + 1)).styled(s -> s.withHoverEvent(onHover).withFormatting(Formatting.DARK_AQUA));
         } else {
             return playerToText(userName, userId);
         }
@@ -158,14 +158,14 @@ public final class TextUtils {
         if (optional.isPresent()) {
             // We have a valid block, we can make use of the translation key.
             var key = optional.get().getTranslationKey();
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextHelper.translatable(key).append("\n").append(TextHelper.literal(name).formatted(Formatting.DARK_GRAY)));
-            return (pos != null ? positionToText(pos) : TextHelper.translatable(key)).setStyle(atBlock.withHoverEvent(onHover));
+            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable(key).append("\n").append(Text.literal(name).formatted(Formatting.DARK_GRAY)));
+            return (pos != null ? positionToText(pos) : Text.translatable(key)).setStyle(atBlock.withHoverEvent(onHover));
         } else {
             // We don't have a valid block. Perhaps it was removed? Use the non-translatable version of the return to make a reasonable string.
             var i = name.indexOf(':');
             var str = i + 1 < name.length() ? Character.toUpperCase(name.charAt(i + 1)) + name.substring(i + 2) : name;
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, TextHelper.literal(str + '\n').append(TextHelper.literal(name).formatted(Formatting.DARK_GRAY)));
-            return (pos != null ? positionToText(pos) : TextHelper.literal(str)).setStyle(atBlock.withHoverEvent(onHover));
+            var onHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(str + '\n').append(Text.literal(name).formatted(Formatting.DARK_GRAY)));
+            return (pos != null ? positionToText(pos) : Text.literal(str)).setStyle(atBlock.withHoverEvent(onHover));
         }
     }
 
@@ -175,7 +175,7 @@ public final class TextUtils {
         if (optional.isPresent()) {
             // We have a valid entity, make it based off of the SHOW_ENTITY hover event action.
             var type = optional.get();
-            var onHover = new HoverEvent(HoverEvent.Action.SHOW_ENTITY, new HoverEvent.EntityContent(type, Objects.requireNonNullElse(entityId, userId), TextHelper.translatable(type.getTranslationKey())));
+            var onHover = new HoverEvent(HoverEvent.Action.SHOW_ENTITY, new HoverEvent.EntityContent(type, Objects.requireNonNullElse(entityId, userId), Text.translatable(type.getTranslationKey())));
             return TextHelper.translatable(type.getTranslationKey()).setStyle(entity.withHoverEvent(onHover));
         } else {
             // We don't have a valid entity, we'll have to resort to manually generating the string.

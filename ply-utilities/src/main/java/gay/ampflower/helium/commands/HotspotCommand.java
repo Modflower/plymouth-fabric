@@ -24,8 +24,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
-import static gay.ampflower.plymouth.common.TextHelper.translatable;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 
 /**
  * @author Ampflower

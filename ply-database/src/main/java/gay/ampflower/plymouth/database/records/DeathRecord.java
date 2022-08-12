@@ -90,13 +90,13 @@ public final class DeathRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toText() {
-        var text = TextHelper.translatable("plymouth.tracker.record.death", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId),
-                TextHelper.translatable("chat.coordinates", (long) targetPos.x, (long) targetPos.y, (long) targetPos.z)
+        var text = Text.translatable("plymouth.tracker.record.death", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId),
+                Text.translatable("chat.coordinates", (long) targetPos.x, (long) targetPos.y, (long) targetPos.z)
                         .setStyle(atBlock.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                TextHelper.literal("X: ")
-                                        .append(TextHelper.literal(Double.toString(targetPos.x)).formatted(Formatting.RED)).append("\nY: ")
-                                        .append(TextHelper.literal(Double.toString(targetPos.y)).formatted(Formatting.GREEN)).append("\nZ: ")
-                                        .append(TextHelper.literal(Double.toString(targetPos.z)).formatted(Formatting.BLUE))
+                                Text.literal("X: ")
+                                        .append(Text.literal(Double.toString(targetPos.x)).formatted(Formatting.RED)).append("\nY: ")
+                                        .append(Text.literal(Double.toString(targetPos.y)).formatted(Formatting.GREEN)).append("\nZ: ")
+                                        .append(Text.literal(Double.toString(targetPos.z)).formatted(Formatting.BLUE))
                         ))));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
@@ -104,7 +104,7 @@ public final class DeathRecord implements PlymouthRecord {
 
     @Override
     public @NotNull Text toTextNoPosition() {
-        var text = TextHelper.translatable("plymouth.tracker.record.death.nopos", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId));
+        var text = Text.translatable("plymouth.tracker.record.death.nopos", TextUtils.timeToText(time), TextUtils.playerToText(causeName, causeUserId, causeEntityId), TextUtils.playerToText(targetName, targetUserId, targetEntityId));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

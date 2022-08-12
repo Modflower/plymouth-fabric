@@ -16,7 +16,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":ply-common", configuration = "namedElements"))
     modImplementation("me.lucko", "fabric-permissions-api", fabric_permissions_version)
     modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
 }

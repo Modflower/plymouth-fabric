@@ -50,7 +50,7 @@ public final class DatabaseHelper {
 
     public static Plymouth database;
 
-    public static final Text tookText = TextHelper.translatable("plymouth.tracker.action.took").formatted(Formatting.RED);
+    public static final Text tookText = Text.translatable("plymouth.tracker.action.took").formatted(Formatting.RED);
 
     public static final Set<Property<?>> bannedProperties = Set.of(Properties.WATERLOGGED, Properties.POWERED);
 

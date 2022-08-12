@@ -85,7 +85,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toText() {
-        var text = TextHelper.translatable("plymouth.tracker.record.block", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block), TextUtils.positionToText(targetPos).setStyle(TextUtils.atBlock));
+        var text = Text.translatable("plymouth.tracker.record.block", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block), TextUtils.positionToText(targetPos).setStyle(TextUtils.atBlock));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }
@@ -93,7 +93,7 @@ public final class BlockRecord implements PlymouthRecord {
     @Override
     @NotNull
     public Text toTextNoPosition() {
-        var text = TextHelper.translatable("plymouth.tracker.record.block.nopos", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block));
+        var text = Text.translatable("plymouth.tracker.record.block.nopos", TextUtils.timeToText(time), TextUtils.playerToText(userName, userId, entityId), action.niceName, TextUtils.blockToText(block));
         if (isUndone) text.formatted(Formatting.STRIKETHROUGH);
         return text;
     }

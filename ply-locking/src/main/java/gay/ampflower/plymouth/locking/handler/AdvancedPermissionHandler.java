@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMap;
 import it.unimi.dsi.fastutil.objects.Object2ByteMaps;
 import it.unimi.dsi.fastutil.objects.Object2ByteOpenHashMap;
-import gay.ampflower.plymouth.common.TextHelper;
 import gay.ampflower.plymouth.common.UUIDHelper;
 import gay.ampflower.plymouth.locking.Locking;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,6 +18,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import static gay.ampflower.plymouth.locking.Locking.*;
+import static net.minecraft.text.Text.translatable;
 
 /**
  * @author Ampflower
@@ -219,12 +219,12 @@ public class AdvancedPermissionHandler extends BasicPermissionHandler implements
         var playerIterator = Object2ByteMaps.fastIterator(playerAccess);
         while (playerIterator.hasNext()) {
             var e = playerIterator.next();
-            to.sendFeedback(TextHelper.translatable("plymouth.locking.dump.advanced.player", e.getKey(), Locking.toString(e.getByteValue())), false);
+            to.sendFeedback(translatable("plymouth.locking.dump.advanced.player", e.getKey(), Locking.toString(e.getByteValue())), false);
         }
         var groupIterator = Long2ByteMaps.fastIterator(groupAccess);
         while (groupIterator.hasNext()) {
             var e = groupIterator.next();
-            to.sendFeedback(TextHelper.translatable("plymouth.locking.dump.advanced.group", e.getLongKey(), Locking.toString(e.getByteValue())), false);
+            to.sendFeedback(translatable("plymouth.locking.dump.advanced.group", e.getLongKey(), Locking.toString(e.getByteValue())), false);
         }
     }
 }

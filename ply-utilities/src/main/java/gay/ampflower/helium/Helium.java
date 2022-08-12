@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
-import static gay.ampflower.plymouth.common.TextHelper.*;
+import static net.minecraft.text.Text.*;
 import static net.minecraft.util.Formatting.*;
 
 /**
