@@ -224,7 +224,7 @@ public class LockCommand {
         // If runner == null, and by extension, uuid == anon, we're either the server, a function, or a command block, which can be assumed to be of high privilege.
         if (!handler.plymouth$isOwned()) {
             // Auto-own if the block is within reasonable distance of the player, and can be raytraced.
-            var runner = source.getPlayer();
+            var runner = source.getPlayerOrThrow();
             if (runner.world == world && Locking.canReach(runner, pos)) {
                 if (requiresAdvanced) {
                     handler.claimAdvanced(runner.getUuid());
@@ -252,7 +252,7 @@ public class LockCommand {
     }
 
     private static int addPlayers(ServerCommandSource source, Collection<ServerPlayerEntity> players, int permission) throws CommandSyntaxException {
-        var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
+        var iim = (InjectableInteractionManager) source.getPlayerOrThrow().interactionManager;
         iim.setManager(new AddPlayersInteractionManager(iim, source, players, (short) (permission & 0xFF | ((permission >>> 12) & 0xFF00))));
         source.sendFeedback(translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
@@ -265,7 +265,7 @@ public class LockCommand {
     }
 
     private static int removePlayers(ServerCommandSource source, Collection<ServerPlayerEntity> players) throws CommandSyntaxException {
-        var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
+        var iim = (InjectableInteractionManager) source.getPlayerOrThrow().interactionManager;
         iim.setManager(new RemovePlayersInteractionManager(iim, source, players));
         source.sendFeedback(translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
@@ -278,7 +278,7 @@ public class LockCommand {
     }
 
     private static int setPermissions(ServerCommandSource source, int permissions) throws CommandSyntaxException {
-        var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
+        var iim = (InjectableInteractionManager) source.getPlayerOrThrow().interactionManager;
         iim.setManager(new ModifyPermissionsInteractionManager(iim, source, permissions));
         source.sendFeedback(translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;
@@ -290,7 +290,7 @@ public class LockCommand {
     }
 
     private static int getLock(ServerCommandSource source) throws CommandSyntaxException {
-        var iim = (InjectableInteractionManager) source.getPlayer().interactionManager;
+        var iim = (InjectableInteractionManager) source.getPlayerOrThrow().interactionManager;
         iim.setManager(new GetLockInteractionManager(iim, source));
         source.sendFeedback(translatable("commands.plymouth.locking.prompt"), false);
         return Command.SINGLE_SUCCESS;

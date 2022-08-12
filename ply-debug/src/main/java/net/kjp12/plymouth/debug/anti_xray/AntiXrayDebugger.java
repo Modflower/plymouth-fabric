@@ -39,7 +39,7 @@ public class AntiXrayDebugger {
                 AntiXrayDebugger.players.add(player);
         });
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(literal("mdump").requires(AntiXrayDebugger::canSendDebugInformation).executes(ctx -> {
-            var player = ctx.getSource().getPlayer();
+            var player = ctx.getSource().getPlayerOrThrow();
             int cx = MathHelper.floor(player.getX()) >> 4, cz = MathHelper.floor(player.getZ()) >> 4;
             var mask = ((ShadowChunk) player.world.getChunk(cx, cz)).plymouth$getShadowMask();
             var packet = new PacketByteBuf(Unpooled.buffer()).writeVarInt(cx).writeVarInt(cz).writeLongArray(mask.toLongArray());

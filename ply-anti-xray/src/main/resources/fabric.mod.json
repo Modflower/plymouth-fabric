@@ -17,9 +17,6 @@
   ],
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.kjp12.plymouth.antixray.Constants::init"
-    ],
     "gud_asm": [
       "net.kjp12.plymouth.antixray.transformers.Transformers"
     ]
