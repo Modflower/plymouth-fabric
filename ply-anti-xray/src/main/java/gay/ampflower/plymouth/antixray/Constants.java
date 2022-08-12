@@ -18,11 +18,8 @@ public final class Constants {
      * @deprecated Will be replaced by a different configuration scheme later on.
      */
     @Deprecated
-    public static final TagKey<Block> HIDDEN_BLOCKS = TagKey.of(Registry.BLOCK_KEY, Identifier.tryParse("plymouth-anti-xray:hidden"));
+    public static final TagKey<Block> HIDDEN_BLOCKS = TagKey.of(Registry.BLOCK_KEY, new Identifier("plymouth-anti-xray", "hidden"));
 
     private Constants() {
-    }
-
-    public static void init() {
     }
 }

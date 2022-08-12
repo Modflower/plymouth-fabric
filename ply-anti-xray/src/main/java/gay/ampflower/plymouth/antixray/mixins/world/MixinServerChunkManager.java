@@ -41,9 +41,9 @@ public abstract class MixinServerChunkManager extends ChunkManager implements La
     private long[] chunkPosCache;
 
     @Unique
-    private long[] lazyChunkPosCache = new long[4];
+    private final long[] lazyChunkPosCache = new long[4];
     @Unique
-    private Chunk[] lazyChunkCache = new Chunk[4];
+    private final Chunk[] lazyChunkCache = new Chunk[4];
     @Unique
     private int lazyChunkIndex;
 

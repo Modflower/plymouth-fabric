@@ -33,7 +33,7 @@ public class InventoryLookupCommand {
         var e0 = argument("target", player())
                 .requires(REQUIRE_ENDSEE_PERMISSION).executes(s -> {
                     var p = getPlayer(s, "target");
-                    var sp = s.getSource().getPlayer();
+                    var sp = s.getSource().getPlayerOrThrow();
                     sp.openHandledScreen(new SimpleNamedScreenHandlerFactory((i, pi, pe) ->
                             GenericContainerScreenHandler.createGeneric9x3(i, pi, p.getEnderChestInventory()),
                             p.getDisplayName().copyContentOnly().append(" - ").append(Helium.ENDER_CHEST)));
@@ -42,7 +42,7 @@ public class InventoryLookupCommand {
 
         var p0 = argument("target", player()).requires(REQUIRE_INVSEE_PERMISSION).executes(s -> {
             var p = getPlayer(s, "target");
-            var sp = s.getSource().getPlayer();
+            var sp = s.getSource().getPlayerOrThrow();
             if (sp.equals(p)) {
                 sp.sendMessage(Helium.DID_YOU_MEAN);
             } else {

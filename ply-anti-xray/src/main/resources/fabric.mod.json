@@ -17,9 +17,6 @@
   ],
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "gay.ampflower.plymouth.antixray.Constants::init"
-    ],
     "gud_asm": [
       "gay.ampflower.plymouth.antixray.transformers.Transformers"
     ]
