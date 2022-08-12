@@ -12,9 +12,9 @@ import net.minecraft.util.Formatting;
  **/
 @Deprecated
 public enum BlockAction {
-    BREAK(TextHelper.translatable("plymouth.tracker.action.broke").formatted(Formatting.RED)),
-    PLACE(TextHelper.translatable("plymouth.tracker.action.placed").formatted(Formatting.GREEN)),
-    USE(TextHelper.translatable("plymouth.tracker.action.used").formatted(Formatting.AQUA));
+    BREAK(Text.translatable("plymouth.tracker.action.broke").formatted(Formatting.RED)),
+    PLACE(Text.translatable("plymouth.tracker.action.placed").formatted(Formatting.GREEN)),
+    USE(Text.translatable("plymouth.tracker.action.used").formatted(Formatting.AQUA));
 
     public final Text niceName;
 

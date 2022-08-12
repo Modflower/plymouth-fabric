@@ -13,8 +13,8 @@ public final class Tracker {
     public static final Logger logger = LoggerFactory.getLogger("Plymouth: Tracker");
 
     public static final Text
-            INSPECT_START = TextHelper.translatable("commands.plymouth.tracker.inspect.start"),
-            INSPECT_END = TextHelper.translatable("commands.plymouth.tracker.inspect.end");
+            INSPECT_START = Text.translatable("commands.plymouth.tracker.inspect.start"),
+            INSPECT_END = Text.translatable("commands.plymouth.tracker.inspect.end");
 
     public static void init() {
         CommandRegistrationCallback.EVENT.register(TrackerCommand::register);

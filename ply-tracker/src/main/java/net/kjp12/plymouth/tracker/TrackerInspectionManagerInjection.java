@@ -27,10 +27,10 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(TextHelper.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(Text.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             Tracker.logger.error("Exception on breakBlock", t);
-            player.sendMessage(TextHelper.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
+            player.sendMessage(Text.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
         return ActionResult.CONSUME;
@@ -45,10 +45,10 @@ public class TrackerInspectionManagerInjection implements InteractionManagerInje
             for (var r : l) {
                 player.sendMessage(r.toTextNoPosition(), false);
             }
-            player.sendMessage(TextHelper.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
+            player.sendMessage(Text.translatable("commands.plymouth.tracker.lookup", lookup.toText(), "UTC").formatted(Formatting.DARK_GRAY), false);
         }).exceptionally(t -> {
             Tracker.logger.error("Exception on interactBlock", t);
-            player.sendMessage(TextHelper.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
+            player.sendMessage(Text.literal(t.getLocalizedMessage()).formatted(Formatting.RED), false);
             return null;
         });
         return ActionResult.CONSUME;

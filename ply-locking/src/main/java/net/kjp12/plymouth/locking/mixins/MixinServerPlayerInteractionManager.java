@@ -1,6 +1,5 @@
 package net.kjp12.plymouth.locking.mixins;
 
-import net.kjp12.plymouth.common.TextHelper;
 import net.kjp12.plymouth.locking.ILockable;
 import net.kjp12.plymouth.locking.Locking;
 import net.minecraft.block.Block;
@@ -27,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static net.kjp12.plymouth.locking.Locking.*;
+import static net.minecraft.text.Text.translatable;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager {
@@ -71,18 +71,18 @@ public abstract class MixinServerPlayerInteractionManager {
                     isItemNoop(player, player.getStackInHand(Hand.MAIN_HAND))) {
                 if (lock.isOwner() || (lock.effective() & PERMISSIONS_BYPASS) != 0) {
                     lock.unclaim();
-                    player.sendMessage(TextHelper.translatable("plymouth.locking.unclaimed", toText(block), toText(pos)).formatted(Formatting.YELLOW), true);
+                    player.sendMessage(translatable("plymouth.locking.unclaimed", toText(block), toText(pos)).formatted(Formatting.YELLOW), true);
                     cbir.setReturnValue(ActionResult.SUCCESS);
                 } else if (lock.plymouth$isOwned()) {
-                    player.sendMessage(TextHelper.translatable("plymouth.locking.locked", toText(block), lock.getOwner()).formatted(Formatting.RED), true);
+                    player.sendMessage(translatable("plymouth.locking.locked", toText(block), lock.getOwner()).formatted(Formatting.RED), true);
                     cbir.setReturnValue(ActionResult.FAIL);
                 } else {
                     if (Locking.LOCKING_LOCK_PERMISSION.test(src)) {
                         lock.claim(player.getUuid());
-                        player.sendMessage(TextHelper.translatable("plymouth.locking.claimed", toText(block), toText(pos)).formatted(Formatting.GREEN), true);
+                        player.sendMessage(translatable("plymouth.locking.claimed", toText(block), toText(pos)).formatted(Formatting.GREEN), true);
                         cbir.setReturnValue(ActionResult.SUCCESS);
                     } else {
-                        player.sendMessage(TextHelper.translatable("plymouth.locking.denied").formatted(Formatting.RED), true);
+                        player.sendMessage(translatable("plymouth.locking.denied").formatted(Formatting.RED), true);
                         cbir.setReturnValue(ActionResult.FAIL);
                     }
                 }

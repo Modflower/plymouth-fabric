@@ -1,10 +1,10 @@
 package net.kjp12.plymouth.locking.mixins;// Created 2021-20-04T06:09:14
 
-import net.kjp12.plymouth.common.TextHelper;
 import net.kjp12.plymouth.locking.ILockable;
 import net.kjp12.plymouth.locking.handler.IPermissionHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,7 +33,7 @@ public abstract class MixinServerWorld implements WorldAccess {
             var be = (ILockable) getBlockEntity(pos);
             IPermissionHandler handler;
             if (be != null && be.plymouth$isOwned() && !(handler = be.plymouth$getPermissionHandler()).hasAnyPermissions(player.getCommandSource())) {
-                player.sendMessage(TextHelper.translatable("plymouth.locking.locked", toText(getBlockState(pos).getBlock()), handler.getOwner()).formatted(Formatting.RED), true);
+                player.sendMessage(Text.translatable("plymouth.locking.locked", toText(getBlockState(pos).getBlock()), handler.getOwner()).formatted(Formatting.RED), true);
                 cir.setReturnValue(Boolean.FALSE);
             }
         }

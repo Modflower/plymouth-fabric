@@ -1,6 +1,5 @@
 package net.kjp12.plymouth.locking.handler;// Created 2021-03-23T03:49:40
 
-import net.kjp12.plymouth.common.TextHelper;
 import net.kjp12.plymouth.locking.Locking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
@@ -8,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.UUID;
+
+import static net.minecraft.text.Text.translatable;
 
 /**
  * Permission handler designed for POSIX-like usage. Permission bits are Read, Write, Delete and Permissions, or RWDP.
@@ -90,6 +91,6 @@ public class BasicPermissionHandler implements IPermissionHandler {
     @Override
     public void dumpLock(ServerCommandSource to) {
         // Lock owned by, group, and permissions
-        to.sendFeedback(TextHelper.translatable("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions), Locking.toString(effectivePermissions(to))), false);
+        to.sendFeedback(translatable("plymouth.locking.dump.basic", owner, group, Locking.toString(permissions), Locking.toString(effectivePermissions(to))), false);
     }
 }
