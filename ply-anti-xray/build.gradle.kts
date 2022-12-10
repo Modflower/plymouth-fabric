@@ -1,5 +1,3 @@
-import com.modrinth.minotaur.TaskModrinthUpload
-import com.modrinth.minotaur.request.VersionType
 import net.fabricmc.mapping.tree.TinyMappingFactory
 import net.fabricmc.mapping.tree.TinyTree
 import java.util.zip.ZipFile
@@ -65,6 +63,27 @@ fun transformer(it: String): String {
     return sb.toString()
 }
 
+modrinth {
+    token.set(System.getenv("MODRINTH_TOKEN"))
+    projectId.set(modrinth_id)
+    versionNumber.set(version.toString())
+    versionType.set(
+        System.getenv("RELEASE_OVERRIDE") ?: when {
+            "alpha" in project_version -> "alpha"
+            !isRelease || '-' in project_version -> "beta"
+            else -> "release"
+        }
+    )
+    val ref = System.getenv("GITHUB_REF")
+    changelog.set(
+        System.getenv("CHANGELOG") ?: if (ref != null && ref.startsWith("refs/tags/")) "You may view the changelog at https://github.com/Modflower/plymouth-fabric/releases/tag/${com.google.common.net.UrlEscapers.urlFragmentEscaper().escape(ref.substring(10))}"
+        else "No changelog is available. Perhaps poke at https://github.com/Modflower/plymouth-fabric for a changelog?"
+    )
+    uploadFile.set(tasks.remapJar.get())
+    gameVersions.add(minecraft_version)
+    loaders.add("fabric")
+}
+
 tasks {
     val scourPackages = register<Task>("scourPackages") {
         val asmFile = projectDir.resolve("asm.properties")
@@ -121,25 +140,7 @@ tasks {
             filter(::transformer)
         }
     }
-    val publishToModrinth = register<TaskModrinthUpload>("publishToModrinth") {
-        group = "publishing"
-        dependsOn(remapJar)
-        token = System.getenv("MODRINTH_TOKEN")
-        projectId = modrinth_id
-        versionNumber = version.toString()
-        versionType = System.getenv("RELEASE_OVERRIDE")?.let(VersionType::valueOf) ?: when {
-            "alpha" in project_version -> VersionType.ALPHA
-            !isRelease || '-' in project_version -> VersionType.BETA
-            else -> VersionType.RELEASE
-        }
-        val ref = System.getenv("GITHUB_REF")
-        changelog = System.getenv("CHANGELOG") ?: if (ref != null && ref.startsWith("refs/tags/")) "You may view the changelog at https://github.com/Modflower/plymouth-fabric/releases/tag/${com.google.common.net.UrlEscapers.urlFragmentEscaper().escape(ref.substring(10))}"
-        else "No changelog is available. Perhaps poke at https://github.com/Modflower/plymouth-fabric for a changelog?"
-        uploadFile = remapJar.get()
-        addGameVersion(minecraft_version)
-        addLoader("fabric")
-    }
     publish {
-        dependsOn(publishToModrinth)
+        dependsOn(modrinth)
     }
 }
