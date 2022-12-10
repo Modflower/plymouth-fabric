@@ -4,9 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.level.ServerWorldProperties;
 
 import java.util.UUID;
@@ -81,7 +81,7 @@ public final class UUIDHelper {
         } else if (entity instanceof PlayerEntity) {
             return entity.getUuid();
         } else {
-            var id = Registry.ENTITY_TYPE.getId(entity.getType());
+            var id = Registries.ENTITY_TYPE.getId(entity.getType());
             return new UUID(ENTITY_HEADER, (long) id.getNamespace().hashCode() << 32L | ((long) id.getPath().hashCode() & LOW_BITS));
         }
     }
@@ -94,7 +94,7 @@ public final class UUIDHelper {
         if (block == null) {
             return ANONYMOUS_BLOCK_UUID;
         } else {
-            var id = Registry.BLOCK.getId(block);
+            var id = Registries.BLOCK.getId(block);
             return new UUID(BLOCK_HEADER, (long) id.getNamespace().hashCode() << 32L | ((long) id.getPath().hashCode() & LOW_BITS));
         }
     }

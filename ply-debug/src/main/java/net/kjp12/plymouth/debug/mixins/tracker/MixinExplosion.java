@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinExplosion {
     @Inject(method = "<init>(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;DDDFZLnet/minecraft/world/explosion/Explosion$DestructionType;)V", at = @At("RETURN"))
     private void plymouth$logIfMissingEntity(World world, Entity entity, double x, double y, double z, float power, boolean createFire, Explosion.DestructionType destructionType, CallbackInfo ci) {
-        if (entity == null && destructionType != Explosion.DestructionType.NONE)
+        if (entity == null && destructionType != Explosion.DestructionType.KEEP)
             Debug.logger.warn("Missing entity for given destructive explosion {world={}, x={}, y={}, z={}, p={}, fire={}, destruction={}}", world, x, y, z, power, createFire, destructionType, new Throwable("Stack trace."));
     }
 }

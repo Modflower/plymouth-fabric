@@ -2,9 +2,10 @@ package net.kjp12.plymouth.debug.misc;// Created 2022-03-12T22:53:20
 
 import com.mojang.brigadier.Command;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 
 import java.io.IOError;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class MiscDebugClient {
                                     var regpath = Path.of("registry-" + System.nanoTime());
                                     Files.createDirectories(regpath);
 
-                                    var iterableRegistries = Registry.REGISTRIES.getIndexedEntries();
+                                    var iterableRegistries = Registries.REGISTRIES.getIndexedEntries();
 
                                     System.err.print("""
                                             \s=== Plymouth: Debug - Start of CLIENT Registry Dump ===

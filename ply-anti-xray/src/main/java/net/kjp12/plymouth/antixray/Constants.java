@@ -1,9 +1,9 @@
 package net.kjp12.plymouth.antixray;// Created Mar. 02, 2021 @ 22:16
 
 import net.minecraft.block.Block;
-import net.minecraft.tag.TagKey;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public final class Constants {
      * @deprecated Will be replaced by a different configuration scheme later on.
      */
     @Deprecated
-    public static final TagKey<Block> HIDDEN_BLOCKS = TagKey.of(Registry.BLOCK_KEY, new Identifier("plymouth-anti-xray", "hidden"));
+    public static final TagKey<Block> HIDDEN_BLOCKS = TagKey.of(Registries.BLOCK.getKey(), new Identifier("plymouth-anti-xray", "hidden"));
 
     private Constants() {
     }
