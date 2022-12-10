@@ -27,18 +27,22 @@ public class Debug implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        SharedConstants.isDevelopment = true;
+        SharedConstants.isDevelopment = Fusebox.isEnabled("minecraft.development");
         var loader = FabricLoader.getInstance();
         if (loader.isModLoaded("plymouth-anti-xray")) {
             if (Fusebox.isEnabled("antiXrayDebug")) {
-                try {
-                    AntiXrayDebugger.initialise();
-                } catch (NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError error) {
-                    logger.error("AntiXray found but cannot be loaded.", error);
-                }
+                tryOrLog(AntiXrayDebugger::initialise, "AntiXray found but cannot be loaded.");
             } else {
                 logger.info("Anti-Xray debugging is disabled. Add to the config, `antiXrayDebug=true`, if you wish to debug the anti-xray engine.");
             }
+        }
+    }
+
+    public static void tryOrLog(Runnable callable, String message) {
+        try {
+            callable.run();
+        } catch (LinkageError error) {
+            logger.error(message, error);
         }
     }
 

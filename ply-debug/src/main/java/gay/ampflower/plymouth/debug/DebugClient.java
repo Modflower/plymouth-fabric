@@ -4,6 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import gay.ampflower.plymouth.debug.anti_xray.AntiXrayClientDebugger;
+import gay.ampflower.plymouth.debug.misc.MiscDebugClient;
+
+import static gay.ampflower.plymouth.debug.Debug.tryOrLog;
 
 /**
  * The primary initializer for the debug client.
@@ -16,10 +19,7 @@ public class DebugClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        try {
-            AntiXrayClientDebugger.initialise();
-        } catch (NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError error) {
-            Debug.logger.error("AntiXray debugger cannot be loaded.", error);
-        }
+        tryOrLog(AntiXrayClientDebugger::initialise, "AntiXray client debugger cannot be loaded.");
+        tryOrLog(MiscDebugClient::initialise, "Misc client debugger cannot be loaded.");
     }
 }
