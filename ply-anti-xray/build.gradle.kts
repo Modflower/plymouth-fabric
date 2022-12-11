@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
+    include(modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))!!)
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
     include(modImplementation("com.github.Modflower", "bytecode-junkie", "v0.3.0"))
     api(project(":utilities")) { include(this) }
