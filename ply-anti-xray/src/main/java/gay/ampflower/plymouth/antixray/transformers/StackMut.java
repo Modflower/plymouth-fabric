@@ -14,7 +14,11 @@ import org.objectweb.asm.tree.AbstractInsnNode;
  * @see Transformers#stack2(AbstractInsnNode)
  * @since ${version}
  **/
-public record StackMut(int pop, int push) {
+public record StackMut(int pop, int push, boolean jmp) {
+    public StackMut(int pop, int push) {
+        this(pop, push, false);
+    }
+
     static final StackMut
             // "he's being hit by a hammer, of course he's surprised" - Deximus-Maximus#0682
             T0_0 = new StackMut(0, 0),
@@ -27,7 +31,11 @@ public record StackMut(int pop, int push) {
             T2_2 = new StackMut(2, 2),
             T2_3 = new StackMut(2, 3),
             T3_0 = new StackMut(3, 0),
-            Ti_0 = new StackMut(Integer.MAX_VALUE, 0);
+            J0_0 = new StackMut(0, 0, true),
+            J0_1 = new StackMut(0, 1, true),
+            J1_0 = new StackMut(1, 0, true),
+            J2_0 = new StackMut(2, 0, true),
+            RET = new StackMut(Integer.MAX_VALUE, 0);
 
     /**
      * Returns the weight calculated by push minus pop.
@@ -35,7 +43,8 @@ public record StackMut(int pop, int push) {
      * Unsuitable for use by testing for consumers.
      */
     public int weight() {
-        return -pop + push;
+        return push - pop;
+        // return -pop + push;
     }
 
     /**

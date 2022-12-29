@@ -46,7 +46,7 @@ public class Transformers implements AsmInitializer {
     static AbstractInsnNode walkForward(AbstractInsnNode from, int[] pop) {
         while (pop[0] > 0) {
             var mut = stack2(from = from.getNext());
-            if (mut.pop(pop[0])) {
+            if (mut.jmp() || mut.pop(pop[0])) {
                 return from;
             }
             pop[0] += mut.weight();
@@ -64,7 +64,7 @@ public class Transformers implements AsmInitializer {
     static AbstractInsnNode walkBackwards(AbstractInsnNode from, int pop) {
         while (pop > 0) {
             var mut = stack2(from = from.getPrevious());
-            if (mut.push(pop)) {
+            if (mut.jmp() || mut.push(pop)) {
                 return from;
             }
             pop -= mut.weight();
@@ -103,10 +103,15 @@ public class Transformers implements AsmInitializer {
             case DUP_X1 /* Special casing rq. */ -> StackMut.T2_3;
             case IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE -> StackMut.T3_0;
             case MULTIANEWARRAY -> new StackMut(((MultiANewArrayInsnNode) node).dims, 1);
-            case INVOKEVIRTUAL, INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC -> processInvoke2((MethodInsnNode) node); // pop s ?: 1 + params, push r ?: 0
+            case INVOKEVIRTUAL, INVOKESPECIAL, INVOKEINTERFACE, INVOKESTATIC ->
+                    processInvoke2((MethodInsnNode) node); // pop s ?: 1 + params, push r ?: 0
             case INVOKEDYNAMIC -> processIndy2((InvokeDynamicInsnNode) node);
-            case IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE,
-                    IF_ACMPEQ, IF_ACMPNE -> StackMut.Ti_0;
+            case IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE,
+                    IF_ACMPEQ, IF_ACMPNE -> StackMut.J2_0;
+            case IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE, IFNULL, IFNONNULL,
+                    TABLESWITCH, LOOKUPSWITCH, RET -> StackMut.J1_0;
+            case GOTO -> StackMut.J0_0;
+            case JSR -> StackMut.J0_1;
             default -> throw new Error("Undefined Behaviour: " + node + ": " + node.getOpcode());
         };
     }
