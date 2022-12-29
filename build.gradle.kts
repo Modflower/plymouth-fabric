@@ -55,10 +55,15 @@ subprojects {
             withSourcesJar()
         }
 
+        repositories {
+            maven("https://maven.nucleoid.xyz")
+        }
+
         dependencies {
             minecraft("com.mojang", "minecraft", minecraft_version)
             mappings("net.fabricmc", "yarn", yarn_mappings, classifier = "v2")
             modImplementation("net.fabricmc", "fabric-loader", loader_version)
+            modImplementation("fr.catcore", "server-translations-api", "1.4.19+1.19.3")
         }
 
         tasks {
