@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    modImplementation("com.github.the-glitch-network", "minecraft-gudasm", "v0.3.0")
+    modImplementation("com.github.the-glitch-network", "bytecode-junkie", "v0.3.2")
     implementation(project(":utilities"))
     // implementation(project(":database"))
     implementation(project(":ply-utilities", configuration = "namedElements"))
