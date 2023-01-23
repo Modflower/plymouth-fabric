@@ -29,7 +29,7 @@ repositories {
 dependencies {
     include(modRuntimeOnly(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))!!)
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
-    include(modImplementation("com.github.the-glitch-network", "minecraft-gudasm", "v0.3.0"))
+    include(modImplementation("com.github.the-glitch-network", "bytecode-junkie", "v0.3.2"))
     api(project(":utilities")) { include(this) }
 }
 
