@@ -66,6 +66,10 @@ public class Fusebox {
     public static int viewAntiXraySetLimit, viewAntiXrayUpdateLimit, viewAntiXrayTestLimit, viewBlockDeltaLimit,
             viewBlockEventLimit, viewBlockEntityUpdateLimit, viewChunkLoadLimit, viewChunkBlockEntityLimit;
 
+    // Bounding Box
+    public static boolean viewCollision, viewCollisionWire, viewCollisionMask;
+    public static int viewCollisionRange;
+
     public static void reinit() {
         // Anti-Xray
         viewAntiXraySet = isEnabled("viewAntiXraySet");
@@ -84,5 +88,11 @@ public class Fusebox {
         viewBlockEntityUpdateLimit = getInteger("viewBlockEntityUpdateLimit", 128);
         viewChunkLoadLimit = getInteger("viewChunkLoadLimit", 128);
         viewChunkBlockEntityLimit = getInteger("viewChunkBlockEntityLimit", 128);
+
+        // Bounding Box
+        viewCollision = isEnabled("viewCollision");
+        viewCollisionWire = getBoolean("viewCollisionWire", true);
+        viewCollisionMask = getBoolean("viewCollisionMask", true);
+        viewCollisionRange = getInteger("viewCollisionRange", 16);
     }
 }
