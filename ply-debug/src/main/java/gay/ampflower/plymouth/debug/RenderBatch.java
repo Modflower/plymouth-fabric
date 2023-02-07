@@ -26,13 +26,13 @@ public class RenderBatch {
 
     private static final BufferBuilder quadBufferBuilderNonMasked = new BufferBuilder(2097152);
     private static final BufferBuilder quadBufferBuilderMasked = new BufferBuilder(2097152);
-    private static final BufferBuilder lineBufferBuilder = new BufferBuilder(2097152);
+    private static final BufferBuilder lineBufferBuilderMasked = new BufferBuilder(2097152);
     private static final BufferBuilder lineBufferBuilderNonMasked = new BufferBuilder(2097152);
 
     private static final Object mutex = new Object();
     private static final AtomicLong quadNonMaskedCount = new AtomicLong(0L);
     private static final AtomicLong quadMaskedCount = new AtomicLong(0L);
-    private static final AtomicLong lineCount = new AtomicLong(0L);
+    private static final AtomicLong lineMaskedCount = new AtomicLong(0L);
     private static final AtomicLong lineNonMaskedCount = new AtomicLong(0L);
 
     private static final AtomicLong quadNonMaskedCountLast = new AtomicLong(0L);
@@ -45,7 +45,7 @@ public class RenderBatch {
     public static void beginBatch() {
         quadBufferBuilderMasked.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         quadBufferBuilderNonMasked.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        lineBufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        lineBufferBuilderMasked.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
         lineBufferBuilderNonMasked.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
     }
 
@@ -130,8 +130,8 @@ public class RenderBatch {
                                    final float maxX, final float maxY, final float maxZ,
                                    final int red, final int green, final int blue, final int alpha,
                                    final boolean mask) {
-        final BufferBuilder bufferBuilder = mask ? RenderBatch.lineBufferBuilder : RenderBatch.lineBufferBuilderNonMasked;
-        (mask ? RenderBatch.lineCount : lineNonMaskedCount).getAndAdd(16);
+        final BufferBuilder bufferBuilder = mask ? RenderBatch.lineBufferBuilderMasked : RenderBatch.lineBufferBuilderNonMasked;
+        (mask ? RenderBatch.lineMaskedCount : lineNonMaskedCount).getAndAdd(16);
 
         // X, lY
         bufferBuilder.vertex(matrixEntry.getPositionMatrix(), minX, minY, minZ).color(red, green, blue, alpha).next();
@@ -184,11 +184,11 @@ public class RenderBatch {
      * <p>
      * Note: This method was changed from the original by expanding
      * {@link java.awt.Point Point} and {@link java.awt.Color Color}
-     * to their base components, while replacing the Camera reference with a parameter passthrough.
+     * to their base components, while replacing the Camera reference with a parameter pass through.
+     *
+     * Camera X/Z was also removed in favour of transforming on input.
      *
      * @param matrixEntry The matrix entry used as a reference.
-     * @param cameraX     Camera X position
-     * @param cameraZ     Camera Z position
      * @param startX      Starting X position
      * @param startY      Starting Y position
      * @param startZ      Starting Z position
@@ -199,29 +199,28 @@ public class RenderBatch {
      * @param green       Greenness of the line
      * @param blue        Blueness of the line
      * @param alpha       How solid is the line?
+     * @param mask        Is the depth mask used?
      */
     public static void drawLine(MatrixStack.Entry matrixEntry,
-                                final int cameraX, final int cameraZ,
                                 final float startX, final float startY, final float startZ,
                                 final float endX, final float endY, final float endZ,
-                                final int red, final int green, final int blue, final int alpha) {
-        int regionX = (cameraX >> 9) * 512;
-        int regionZ = (cameraZ >> 9) * 512;
+                                final int red, final int green, final int blue, final int alpha,
+                                final boolean mask) {
+        final var bufferBuilder = mask ? lineBufferBuilderMasked : lineBufferBuilderNonMasked;
+        (mask ? lineMaskedCount : lineNonMaskedCount).getAndIncrement();
 
-        lineCount.getAndIncrement();
-
-        lineBufferBuilder
+        bufferBuilder
                 .vertex(matrixEntry.getPositionMatrix(),
-                        startX - regionX,
+                        startX,
                         startY,
-                        startZ - regionZ)
+                        startZ)
                 .color(red, green, blue, alpha)
                 .next();
-        lineBufferBuilder
+        bufferBuilder
                 .vertex(matrixEntry.getPositionMatrix(),
-                        endX - regionX,
+                        endX,
                         endY,
-                        endZ - regionZ)
+                        endZ)
                 .color(red, green, blue, alpha)
                 .next();
     }
@@ -231,13 +230,13 @@ public class RenderBatch {
         long startTime = System.nanoTime();
         var quadBufferMasked = quadBufferBuilderMasked.end();
         var quadBufferNonMasked = quadBufferBuilderNonMasked.end();
-        var lineBuffer = lineBufferBuilder.end();
+        var lineBufferMasked = lineBufferBuilderMasked.end();
         var lineBufferNonMasked = lineBufferBuilderNonMasked.end();
 
         synchronized (mutex) {
             quadMaskedCountLast.set(quadMaskedCount.getAndSet(0L));
             quadNonMaskedCountLast.set(quadNonMaskedCount.getAndSet(0L));
-            lineCountLast.set(lineCount.getAndSet(0L));
+            lineCountLast.set(lineMaskedCount.getAndSet(0L));
             lineNonMaskedCountLast.set(lineNonMaskedCount.getAndSet(0L));
         }
 
@@ -248,12 +247,12 @@ public class RenderBatch {
         RenderSystem.enableBlend();
 
         BufferRenderer.drawWithShader(quadBufferMasked);
-        BufferRenderer.drawWithShader(quadBufferNonMasked);
+        BufferRenderer.drawWithShader(lineBufferMasked);
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        BufferRenderer.drawWithShader(lineBuffer);
+        BufferRenderer.drawWithShader(quadBufferNonMasked);
         BufferRenderer.drawWithShader(lineBufferNonMasked);
 
         lastDurationNanos.set(System.nanoTime() - startTime);
