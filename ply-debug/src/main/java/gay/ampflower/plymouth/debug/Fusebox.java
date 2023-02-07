@@ -90,7 +90,7 @@ public class Fusebox {
         // Bounding Box
         viewCollision = isEnabled("viewCollision");
         viewCollisionWire = getBoolean("viewCollisionWire", true);
-        viewCollisionMask = getBoolean("viewCollisionMask", true);
+        viewCollisionMask = viewCollisionWire && getBoolean("viewCollisionMask", true);
         viewCollisionRange = getInteger("viewCollisionRange", 16);
     }
 }
