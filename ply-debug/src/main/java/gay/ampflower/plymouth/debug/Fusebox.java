@@ -22,21 +22,31 @@ public class Fusebox {
         }
     }
 
-    private static final String defaultValue = Boolean.toString(fetchDefault());
+    private static final boolean defaultValue;
 
     static {
+        defaultValue = FabricLoader.getInstance().isDevelopmentEnvironment()
+                && getBoolean("default", true);
+
         // Actually initialises the values.
         reinit();
     }
 
-    private static boolean fetchDefault() {
-        if (!FabricLoader.getInstance().isDevelopmentEnvironment()) return false;
-        String def = properties.getProperty("default");
-        return def == null || Boolean.parseBoolean(def);
+    public static boolean isEnabled(String option) {
+        return getBoolean(option, defaultValue);
     }
 
-    public static boolean isEnabled(String option) {
-        return Boolean.parseBoolean(properties.getProperty(option, defaultValue));
+    public static boolean getBoolean(String option, boolean def) {
+        String str = properties.getProperty(option);
+        if (str != null && !str.isBlank()) {
+            if ("true".equalsIgnoreCase(str)) {
+                return true;
+            }
+            if ("false".equalsIgnoreCase(str)) {
+                return false;
+            }
+        }
+        return def;
     }
 
     public static int getInteger(String option, int def) {
@@ -50,12 +60,14 @@ public class Fusebox {
         return def;
     }
 
+    // Anti-Xray
     public static boolean viewAntiXraySet, viewAntiXrayUpdate, viewAntiXrayTest, viewBlockDelta, viewBlockEvent,
             viewBlockEntityUpdate, viewChunkLoad, viewChunkBlockEntity;
     public static int viewAntiXraySetLimit, viewAntiXrayUpdateLimit, viewAntiXrayTestLimit, viewBlockDeltaLimit,
             viewBlockEventLimit, viewBlockEntityUpdateLimit, viewChunkLoadLimit, viewChunkBlockEntityLimit;
 
     public static void reinit() {
+        // Anti-Xray
         viewAntiXraySet = isEnabled("viewAntiXraySet");
         viewAntiXrayUpdate = isEnabled("viewAntiXrayUpdate");
         viewAntiXrayTest = isEnabled("viewAntiXrayTest");
