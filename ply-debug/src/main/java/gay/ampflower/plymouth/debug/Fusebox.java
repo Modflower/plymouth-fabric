@@ -12,22 +12,9 @@ import java.util.Properties;
  **/
 public class Fusebox {
     private static final Properties properties = new Properties();
+    private static boolean defaultValue;
 
     static {
-        var fusebox = FabricLoader.getInstance().getConfigDir().resolve("pdb.fb.properties");
-        if (Files.exists(fusebox)) try (var ir = Files.newInputStream(fusebox)) {
-            properties.load(ir);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    private static final boolean defaultValue;
-
-    static {
-        defaultValue = FabricLoader.getInstance().isDevelopmentEnvironment()
-                && getBoolean("default", true);
-
         // Actually initialises the values.
         reinit();
     }
@@ -71,6 +58,17 @@ public class Fusebox {
     public static int viewCollisionRange;
 
     public static void reinit() {
+        var fusebox = FabricLoader.getInstance().getConfigDir().resolve("pdb.fb.properties");
+        if (Files.exists(fusebox)) try (var ir = Files.newInputStream(fusebox)) {
+            properties.clear();
+            properties.load(ir);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        defaultValue = FabricLoader.getInstance().isDevelopmentEnvironment()
+                && getBoolean("default", true);
+
         // Anti-Xray
         viewAntiXraySet = isEnabled("viewAntiXraySet");
         viewAntiXrayUpdate = isEnabled("viewAntiXrayUpdate");
