@@ -12,31 +12,28 @@ import java.util.Properties;
  **/
 public class Fusebox {
     private static final Properties properties = new Properties();
-
-    static {
-        var fusebox = FabricLoader.getInstance().getConfigDir().resolve("pdb.fb.properties");
-        if (Files.exists(fusebox)) try (var ir = Files.newInputStream(fusebox)) {
-            properties.load(ir);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-    private static final String defaultValue = Boolean.toString(fetchDefault());
+    private static boolean defaultValue;
 
     static {
         // Actually initialises the values.
         reinit();
     }
 
-    private static boolean fetchDefault() {
-        if (!FabricLoader.getInstance().isDevelopmentEnvironment()) return false;
-        String def = properties.getProperty("default");
-        return def == null || Boolean.parseBoolean(def);
+    public static boolean isEnabled(String option) {
+        return getBoolean(option, defaultValue);
     }
 
-    public static boolean isEnabled(String option) {
-        return Boolean.parseBoolean(properties.getProperty(option, defaultValue));
+    public static boolean getBoolean(String option, boolean def) {
+        String str = properties.getProperty(option);
+        if (str != null && !str.isBlank()) {
+            if ("true".equalsIgnoreCase(str)) {
+                return true;
+            }
+            if ("false".equalsIgnoreCase(str)) {
+                return false;
+            }
+        }
+        return def;
     }
 
     public static int getInteger(String option, int def) {
@@ -50,12 +47,30 @@ public class Fusebox {
         return def;
     }
 
+    // Anti-Xray
     public static boolean viewAntiXraySet, viewAntiXrayUpdate, viewAntiXrayTest, viewBlockDelta, viewBlockEvent,
             viewBlockEntityUpdate, viewChunkLoad, viewChunkBlockEntity;
     public static int viewAntiXraySetLimit, viewAntiXrayUpdateLimit, viewAntiXrayTestLimit, viewBlockDeltaLimit,
             viewBlockEventLimit, viewBlockEntityUpdateLimit, viewChunkLoadLimit, viewChunkBlockEntityLimit;
 
+    // Bounding Box
+    public static String viewCollisionClass;
+    public static boolean viewCollision, viewCollisionWire, viewCollisionMask;
+    public static int viewCollisionRange;
+
     public static void reinit() {
+        var fusebox = FabricLoader.getInstance().getConfigDir().resolve("pdb.fb.properties");
+        if (Files.exists(fusebox)) try (var ir = Files.newInputStream(fusebox)) {
+            properties.clear();
+            properties.load(ir);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        defaultValue = FabricLoader.getInstance().isDevelopmentEnvironment()
+                && getBoolean("default", true);
+
+        // Anti-Xray
         viewAntiXraySet = isEnabled("viewAntiXraySet");
         viewAntiXrayUpdate = isEnabled("viewAntiXrayUpdate");
         viewAntiXrayTest = isEnabled("viewAntiXrayTest");
@@ -72,5 +87,12 @@ public class Fusebox {
         viewBlockEntityUpdateLimit = getInteger("viewBlockEntityUpdateLimit", 128);
         viewChunkLoadLimit = getInteger("viewChunkLoadLimit", 128);
         viewChunkBlockEntityLimit = getInteger("viewChunkBlockEntityLimit", 128);
+
+        // Bounding Box
+        viewCollision = isEnabled("viewCollision");
+        viewCollisionWire = getBoolean("viewCollisionWire", true);
+        viewCollisionMask = viewCollisionWire && getBoolean("viewCollisionMask", true);
+        viewCollisionRange = getInteger("viewCollisionRange", 16);
+        viewCollisionClass = properties.getProperty("viewCollisionClass");
     }
 }

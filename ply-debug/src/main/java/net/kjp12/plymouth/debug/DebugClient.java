@@ -4,7 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.kjp12.plymouth.debug.anti_xray.AntiXrayClientDebugger;
+import net.kjp12.plymouth.debug.misc.BoundingBoxDebugClient;
 import net.kjp12.plymouth.debug.misc.MiscDebugClient;
+import net.kjp12.plymouth.debug.misc.ReloadDebugClient;
 
 import static net.kjp12.plymouth.debug.Debug.tryOrLog;
 
@@ -19,7 +21,9 @@ public class DebugClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        tryOrLog(ReloadDebugClient::initialise, "Couldn't load reload command.");
         tryOrLog(AntiXrayClientDebugger::initialise, "AntiXray client debugger cannot be loaded.");
         tryOrLog(MiscDebugClient::initialise, "Misc client debugger cannot be loaded.");
+        tryOrLog(BoundingBoxDebugClient::initialise, "Bounding box client debugger cannot be loaded.");
     }
 }
