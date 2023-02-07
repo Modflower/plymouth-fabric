@@ -54,6 +54,7 @@ public class Fusebox {
             viewBlockEventLimit, viewBlockEntityUpdateLimit, viewChunkLoadLimit, viewChunkBlockEntityLimit;
 
     // Bounding Box
+    public static String viewCollisionClass;
     public static boolean viewCollision, viewCollisionWire, viewCollisionMask;
     public static int viewCollisionRange;
 
@@ -92,5 +93,6 @@ public class Fusebox {
         viewCollisionWire = getBoolean("viewCollisionWire", true);
         viewCollisionMask = viewCollisionWire && getBoolean("viewCollisionMask", true);
         viewCollisionRange = getInteger("viewCollisionRange", 16);
+        viewCollisionClass = properties.getProperty("viewCollisionClass");
     }
 }
