@@ -14,11 +14,11 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockCollisionSpliterator;
 import net.minecraft.world.CollisionView;
 import org.apache.commons.lang3.function.TriFunction;
 
 import java.lang.reflect.Constructor;
+import java.util.Iterator;
 import java.util.Optional;
 
 import static gay.ampflower.plymouth.debug.Fusebox.*;
@@ -28,7 +28,7 @@ import static gay.ampflower.plymouth.debug.Fusebox.*;
  * @since ${version}
  **/
 public class BoundingBoxDebugClient {
-    private static Optional<Constructor<BlockCollisionSpliterator>> collisionSpliteratorConstructor;
+    private static Optional<Constructor<Iterator<VoxelShape>>> collisionSpliteratorConstructor;
     private static boolean collisionSpliteratorConstructorFaulted;
 
     public static void initialise() {
@@ -69,7 +69,7 @@ public class BoundingBoxDebugClient {
 
         final VoxelShapes.BoxConsumer consumer = wire ? wireEmitter(matrices, pos, mask) : boxEmitter(matrices, pos, mask);
 
-        final var itr = new BlockCollisionSpliterator(world, null, boxFromRange(player.getPos(), range));
+        final var itr = construct(world, boxFromRange(player.getPos(), range));
 
         while (itr.hasNext()) {
             final VoxelShape shape = itr.next();
@@ -155,8 +155,8 @@ public class BoundingBoxDebugClient {
             if (viewCollisionClass != null && !viewCollisionClass.isBlank()) try {
                 final var viewCollisionInst = BoundingBoxDebugClient.class.getClassLoader().loadClass(viewCollisionClass);
 
-                if (BlockCollisionSpliterator.class.isAssignableFrom(viewCollisionInst)) {
-                    collisionSpliteratorConstructor = Optional.of((Constructor<BlockCollisionSpliterator>)
+                if (Iterator.class.isAssignableFrom(viewCollisionInst)) {
+                    collisionSpliteratorConstructor = Optional.of((Constructor<Iterator<VoxelShape>>)
                             viewCollisionInst.getConstructor(CollisionView.class, Entity.class, Box.class));
                     return true;
                 }
@@ -168,7 +168,7 @@ public class BoundingBoxDebugClient {
         return collisionSpliteratorConstructor.isPresent();
     }
 
-    private static BlockCollisionSpliterator construct(CollisionView view, Box box) {
+    private static Iterator<VoxelShape> construct(CollisionView view, Box box) {
         try {
             return collisionSpliteratorConstructor.get().newInstance(view, null, box);
         } catch (ReflectiveOperationException roe) {
