@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class TextUtils {

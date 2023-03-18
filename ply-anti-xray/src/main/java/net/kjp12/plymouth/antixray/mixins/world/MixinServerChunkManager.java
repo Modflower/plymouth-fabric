@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Unique;
  * Mixins a lazy implementation of getChunk meant for environments where the
  * old engine wasn't suited for.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(ServerChunkManager.class)

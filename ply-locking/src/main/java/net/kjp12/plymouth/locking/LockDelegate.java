@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public record LockDelegate(int effective, List<ILockable> containers) implements ILockable {

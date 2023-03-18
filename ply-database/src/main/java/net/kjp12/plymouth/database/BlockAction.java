@@ -6,7 +6,7 @@ import net.minecraft.util.Formatting;
 /**
  * What actions were taken on the block?
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  * @deprecated Will be replaced with old->new when possible.
  **/

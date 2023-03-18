@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * No operation plymouth database driver. Any completable will instantly fail with an unsupported operation exception.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  */
 public class PlymouthNoOP implements Plymouth {

@@ -9,7 +9,7 @@ import net.minecraft.util.math.MathHelper;
 import java.util.Arrays;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 @Environment(EnvType.CLIENT)

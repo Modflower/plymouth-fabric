@@ -26,7 +26,7 @@ import static org.objectweb.asm.Opcodes.*;
 /**
  * Utility & early riser transformer bootstrap for {@link GudAsmTransformer} and {@link PacketTransformer}.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class Transformers implements AsmInitializer {

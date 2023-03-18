@@ -3,7 +3,7 @@ package net.kjp12.plymouth.database.records;// Created 2021-01-05T17:22:45
 /**
  * The type of record. Used for switches and casting.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public enum RecordType {

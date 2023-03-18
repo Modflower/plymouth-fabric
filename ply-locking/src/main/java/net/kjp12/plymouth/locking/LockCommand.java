@@ -44,7 +44,7 @@ import static net.minecraft.text.Text.translatable;
 /**
  * Lock management command for fetching who owns the block, setting who can access the block, and what permissions to give one.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 public class LockCommand {

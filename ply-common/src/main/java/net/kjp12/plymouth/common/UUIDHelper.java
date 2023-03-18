@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * Utility class for deriving the UUIDs from various objects.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 public final class UUIDHelper {

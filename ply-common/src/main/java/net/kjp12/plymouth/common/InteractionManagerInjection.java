@@ -14,7 +14,7 @@ import net.minecraft.util.math.Direction;
  * at the earliest it can, and if consumed, failed or successful, will block the action itself from occurring,
  * possibly replacing the blocked action with its own.
  *
- * @author KJP12
+ * @author Ampflower
  * @see InjectableInteractionManager#setManager(InteractionManagerInjection)
  * @since 0.0.0
  */

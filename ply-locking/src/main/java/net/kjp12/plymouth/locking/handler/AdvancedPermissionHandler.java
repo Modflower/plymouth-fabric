@@ -21,7 +21,7 @@ import static net.kjp12.plymouth.locking.Locking.*;
 import static net.minecraft.text.Text.translatable;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class AdvancedPermissionHandler extends BasicPermissionHandler implements IAdvancedPermissionHandler {

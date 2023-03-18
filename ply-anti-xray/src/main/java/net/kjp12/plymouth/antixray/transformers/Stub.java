@@ -18,7 +18,7 @@ import java.util.Map;
  * <p>
  * This class is to never be loaded for use.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  * @deprecated Not to be used directly. Deprecation only for warning purposes.
  **/

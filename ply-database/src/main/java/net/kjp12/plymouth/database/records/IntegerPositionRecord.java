@@ -6,7 +6,7 @@ import java.sql.SQLInput;
 import java.sql.SQLOutput;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class IntegerPositionRecord implements SQLData {

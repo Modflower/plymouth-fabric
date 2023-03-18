@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Logs if an explosion is missing an entity if it's destructive.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(Explosion.class)

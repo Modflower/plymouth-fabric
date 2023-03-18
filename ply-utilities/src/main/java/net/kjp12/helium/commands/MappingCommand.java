@@ -24,7 +24,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 public class MappingCommand {

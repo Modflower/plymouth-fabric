@@ -11,7 +11,7 @@ import java.util.UUID;
 import static net.kjp12.plymouth.locking.Locking.*;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public interface IPermissionHandler {

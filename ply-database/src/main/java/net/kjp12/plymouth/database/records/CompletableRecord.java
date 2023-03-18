@@ -5,7 +5,7 @@ import java.util.concurrent.CompletionStage;
 /**
  * A record that is a request and carries a future that can either be completed or failed.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public interface CompletableRecord<T> {

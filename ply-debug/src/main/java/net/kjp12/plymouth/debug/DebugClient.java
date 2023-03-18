@@ -13,7 +13,7 @@ import static net.kjp12.plymouth.debug.Debug.tryOrLog;
 /**
  * The primary initializer for the debug client.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 @Environment(EnvType.CLIENT)

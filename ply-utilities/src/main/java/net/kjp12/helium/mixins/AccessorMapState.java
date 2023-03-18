@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 import java.util.List;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(MapState.class)

@@ -27,7 +27,7 @@ public abstract class MixinAnvilScreenHandler extends ForgingScreenHandler {
     /**
      * Track when the anvil is broken.
      *
-     * @author KJP12
+     * @author Ampflower
      * @since 0.0.0
      */
     // [RAW ASM - MUST CHECK]

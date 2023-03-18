@@ -1,4 +1,4 @@
-/* Copyright (c) 2021 KJP12
+/* Copyright (c) 2021 Ampflower
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class HotspotCommand {

@@ -17,13 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static net.kjp12.plymouth.locking.Locking.toText;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin({ServerWorld.class, World.class})
 public abstract class MixinServerWorld implements WorldAccess {
     /**
-     * @author KJP12
+     * @author Ampflower
      * @reason Adds a second layer to ensure that locking is effective.
      */
     @SuppressWarnings("ConstantConditions") // the permission handler should be not null if owned.

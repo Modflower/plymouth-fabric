@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(BedBlock.class)

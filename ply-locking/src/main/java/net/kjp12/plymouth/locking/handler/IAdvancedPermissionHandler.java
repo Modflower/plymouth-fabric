@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public interface IAdvancedPermissionHandler extends IPermissionHandler {

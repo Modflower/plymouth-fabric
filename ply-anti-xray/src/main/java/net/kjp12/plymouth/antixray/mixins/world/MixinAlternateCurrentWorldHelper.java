@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * Provides a compatibility layer for Alternate Current's LevelHelper.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Pseudo

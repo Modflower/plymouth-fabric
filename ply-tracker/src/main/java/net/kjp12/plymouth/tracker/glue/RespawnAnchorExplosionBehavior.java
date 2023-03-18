@@ -12,7 +12,7 @@ import net.minecraft.world.explosion.ExplosionBehavior;
 import java.util.Optional;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @vanilla-copy {@link net.minecraft.block.RespawnAnchorBlock#explode(BlockState, World, BlockPos)}
  * @since ${version}
  **/

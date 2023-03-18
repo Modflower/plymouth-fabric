@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since Jan. 02, 2021 @ 15:43
  **/
 @Mixin(PlayerEntity.class)

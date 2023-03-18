@@ -5,7 +5,7 @@ import net.minecraft.world.chunk.Chunk;
 /**
  * ChunkManager interface for more lazily getting loaded chunks when possible.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public interface LazyChunkManager {

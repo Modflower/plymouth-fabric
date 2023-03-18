@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import java.util.UUID;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(DamageSource.class)

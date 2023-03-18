@@ -24,7 +24,7 @@ import java.util.UUID;
  * the time the action was done, the block that was placed or broken, the NBT if it was a block entity,
  * and what action was done on it.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class BlockRecord implements PlymouthRecord {

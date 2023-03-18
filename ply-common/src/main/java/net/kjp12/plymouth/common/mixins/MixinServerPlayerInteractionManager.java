@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * A manager injector into the interaction manager. Makes perfect sense.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 @Mixin(ServerPlayerInteractionManager.class)

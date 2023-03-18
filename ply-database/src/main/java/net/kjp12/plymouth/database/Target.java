@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * Target implementation that covers the minimum requirements to be registered within the database.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public interface Target {

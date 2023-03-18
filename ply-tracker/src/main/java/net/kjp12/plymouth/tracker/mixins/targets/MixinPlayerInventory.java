@@ -17,7 +17,7 @@ import java.util.UUID;
 /**
  * Allows tracking of player inventories through invsee and similar commands.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(PlayerInventory.class)

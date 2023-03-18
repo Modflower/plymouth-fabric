@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.util.Properties;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class Fusebox {

@@ -24,7 +24,7 @@ import static net.kjp12.plymouth.database.TextUtils.positionToText;
  * <p>
  * Note that by default, the record will lookup all block records on page 1.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public abstract class LookupRecord<T extends PlymouthRecord> implements DatabaseRecord<List<T>>, PlymouthRecord, CompletableRecord<List<T>> {

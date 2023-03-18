@@ -21,7 +21,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 /**
  * Player inventory lookup. Does not do offline players, only those that are online at the time.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 public class InventoryLookupCommand {

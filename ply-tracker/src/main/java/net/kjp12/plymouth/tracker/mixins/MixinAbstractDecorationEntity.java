@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(AbstractDecorationEntity.class)

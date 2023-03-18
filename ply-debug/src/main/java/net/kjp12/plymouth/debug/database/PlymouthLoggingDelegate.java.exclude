@@ -22,7 +22,7 @@ import java.util.UUID;
  * <p>
  * This typically delegates to the underlying implementation, which then handles it accordingly.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class PlymouthLoggingDelegate implements Plymouth {

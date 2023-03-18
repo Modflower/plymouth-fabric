@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public final class Tracker {

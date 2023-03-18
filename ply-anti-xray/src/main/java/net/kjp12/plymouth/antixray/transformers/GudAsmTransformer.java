@@ -22,7 +22,7 @@ import static net.kjp12.plymouth.antixray.transformers.Transformers.*;
 /**
  * ASM Transformer for GudASM when available.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class GudAsmTransformer implements Transformer {

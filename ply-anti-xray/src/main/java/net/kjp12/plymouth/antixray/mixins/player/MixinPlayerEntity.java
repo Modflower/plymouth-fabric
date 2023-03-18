@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * You know, I really shouldn't have to, but people seem to really like abusing composters.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 @Mixin(PlayerEntity.class)

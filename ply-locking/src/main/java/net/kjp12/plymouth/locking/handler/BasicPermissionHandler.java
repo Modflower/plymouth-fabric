@@ -13,7 +13,7 @@ import static net.minecraft.text.Text.translatable;
 /**
  * Permission handler designed for POSIX-like usage. Permission bits are Read, Write, Delete and Permissions, or RWDP.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class BasicPermissionHandler implements IPermissionHandler {

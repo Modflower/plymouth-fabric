@@ -10,7 +10,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
  *
  * @param pop  How much to pop.
  * @param push How much to push.
- * @author KJP12
+ * @author Ampflower
  * @see Transformers#stack2(AbstractInsnNode)
  * @since ${version}
  **/

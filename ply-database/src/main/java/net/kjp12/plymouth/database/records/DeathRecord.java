@@ -25,7 +25,7 @@ import static net.kjp12.plymouth.database.TextUtils.atBlock;
  * <p>
  * Holds the killer and the target, including the world, the position and whom, and the time the death occurred.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class DeathRecord implements PlymouthRecord {

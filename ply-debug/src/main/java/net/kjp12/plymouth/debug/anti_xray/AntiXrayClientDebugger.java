@@ -19,7 +19,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 import static net.kjp12.plymouth.debug.Fusebox.*;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class AntiXrayClientDebugger {

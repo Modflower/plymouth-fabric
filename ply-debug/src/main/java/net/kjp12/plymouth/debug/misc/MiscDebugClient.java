@@ -18,7 +18,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class MiscDebugClient {

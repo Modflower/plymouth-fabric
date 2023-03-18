@@ -15,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public class TrackerInspectionManagerInjection implements InteractionManagerInjection {

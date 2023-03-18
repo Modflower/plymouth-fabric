@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class InventoryLookupRecord extends LookupRecord<InventoryRecord> {

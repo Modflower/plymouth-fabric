@@ -5,11 +5,11 @@
   "name": "Plymouth: Anti-Xray",
   "description": "A cache-based anti-xray engine.",
   "authors": [
-    "KJP12"
+    "Ampflower"
   ],
   "icon": "pack.png",
   "contact": {
-    "sources": "https://github.com/KJP12/plymouth-fabric",
+    "sources": "https://github.com/the-glitch-network/plymouth-fabric",
     "discord": "https://discord.gg/EmPS9y9"
   },
   "license": [

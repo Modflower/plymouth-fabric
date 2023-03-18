@@ -17,7 +17,7 @@ import java.util.UUID;
  * <p>
  * Holds the world, position, name, user ID and entity ID.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class TargetRecord implements Target {

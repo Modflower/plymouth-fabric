@@ -5,7 +5,7 @@
   "name": "Plymouth: Common",
   "description": "Common API for the Database, Locking and Tracker modules.",
   "authors": [
-    "KJP12"
+    "Ampflower"
   ],
   "contact": {
     "sources": "https://github.com/the-glitch-network/plymouth-fabric",

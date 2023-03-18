@@ -36,7 +36,7 @@ import java.util.function.Function;
 /**
  * General utilities for the database, including where the config should be, the logger, various database variables, texts and more.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  */
 public final class DatabaseHelper {

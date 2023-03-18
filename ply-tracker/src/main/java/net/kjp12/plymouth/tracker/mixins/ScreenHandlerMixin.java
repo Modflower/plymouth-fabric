@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.IdentityHashMap;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since Jan. 02, 2021 @ 00:57
  **/
 @Mixin(ScreenHandler.class)
@@ -44,7 +44,7 @@ public abstract class ScreenHandlerMixin {
 
     /**
      * @reason To create an event bus for taking items.
-     * @author KJP12
+     * @author Ampflower
      */
     // [RAW ASM - MUST CHECK]
     @SuppressWarnings("UnresolvedMixinReference")

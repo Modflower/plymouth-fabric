@@ -18,7 +18,7 @@ import java.util.Set;
 import static net.minecraft.server.command.CommandManager.literal;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class AntiXrayDebugger {

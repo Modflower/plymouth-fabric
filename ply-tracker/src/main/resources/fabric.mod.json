@@ -5,10 +5,10 @@
   "name": "Plymouth: Tracker",
   "description": "Track your world changes.",
   "authors": [
-    "KJP12"
+    "Ampflower"
   ],
   "contact": {
-    "sources": "https://github.com/KJP12/plymouth-fabric",
+    "sources": "https://github.com/the-glitch-network/plymouth-fabric",
     "discord": "https://discord.gg/EmPS9y9"
   },
   "environment": "*",

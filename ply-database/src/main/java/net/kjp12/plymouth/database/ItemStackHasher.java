@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Custom item stack hasher that only checks the hashcode of the underlying item and NBT, and if the stacks can stack.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class ItemStackHasher implements Hash.Strategy<ItemStack> {

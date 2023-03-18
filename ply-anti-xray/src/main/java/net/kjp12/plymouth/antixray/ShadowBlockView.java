@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public interface ShadowBlockView {

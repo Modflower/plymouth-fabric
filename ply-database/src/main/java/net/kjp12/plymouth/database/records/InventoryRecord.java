@@ -25,7 +25,7 @@ import static net.kjp12.plymouth.database.DatabaseHelper.tookText;
  * Holds the mutator and target of inventories, including the world, the pos, and whom,
  * the time the action was done, the item that was placed or taken and how much.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 public final class InventoryRecord implements PlymouthRecord {

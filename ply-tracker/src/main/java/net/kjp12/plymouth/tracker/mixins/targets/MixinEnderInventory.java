@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 import java.util.UUID;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(EnderChestInventory.class)

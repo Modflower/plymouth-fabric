@@ -38,7 +38,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 /**
  * Tracker command to inspect, lookup, rollback and restore changes done to the world over time.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  **/
 public class TrackerCommand {

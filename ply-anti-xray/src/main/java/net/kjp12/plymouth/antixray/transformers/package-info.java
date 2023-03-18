@@ -8,7 +8,7 @@
  * Also avoid calling out into non-transformer-related code, for as that will cascade-load
  * classes and ruin any transformations that would otherwise take place here.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 package net.kjp12.plymouth.antixray.transformers;

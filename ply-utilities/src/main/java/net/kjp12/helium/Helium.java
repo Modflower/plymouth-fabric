@@ -24,7 +24,7 @@ import static net.minecraft.util.Formatting.*;
  * by the time that it's called, all blocks would have been
  * registered.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  */
 public class Helium {

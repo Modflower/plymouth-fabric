@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * The primary initializer for the debug server.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class Debug implements ModInitializer {

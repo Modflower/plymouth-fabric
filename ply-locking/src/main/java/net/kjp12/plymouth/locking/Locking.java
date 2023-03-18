@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.function.Predicate;
 
 /**
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class Locking implements ModInitializer {

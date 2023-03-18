@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  * Most records typically hold the cause and target, including world, pos and entity's name and UUID.
  *
- * @author KJP12
+ * @author Ampflower
  * @see BlockRecord
  * @see DeathRecord
  * @see InventoryRecord

@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * Early riser, avoid calling net.minecraft and any mod classes that may cascade-load, <em>especially the various Plymouth modules</em>.
  *
- * @author KJP12
+ * @author Ampflower
  * @since 0.0.0
  */
 public class MixinConfig implements IMixinConfigPlugin {

@@ -11,7 +11,7 @@ import java.util.Objects;
  * any following {@link SQLException} contained within the batch update exception
  * will be added as suppressed exceptions to allow examining.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  */
 public class PlymouthException extends RuntimeException {

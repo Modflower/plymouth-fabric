@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 /**
  * Forcefully implements the ShadowBlockView interface with default methods.
  *
- * @author KJP12
+ * @author Ampflower
  * @since ${version}
  **/
 @Mixin(value = BlockView.class, priority = Integer.MAX_VALUE)
