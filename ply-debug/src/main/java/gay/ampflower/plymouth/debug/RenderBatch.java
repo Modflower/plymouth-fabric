@@ -242,7 +242,6 @@ public class RenderBatch {
 
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(true);
-        RenderSystem.disableTexture();
         RenderSystem.lineWidth(2.5F);
         RenderSystem.enableBlend();
 
@@ -259,7 +258,6 @@ public class RenderBatch {
 
         RenderSystem.disableBlend();
         RenderSystem.lineWidth(1.0F);
-        RenderSystem.enableTexture();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
     }

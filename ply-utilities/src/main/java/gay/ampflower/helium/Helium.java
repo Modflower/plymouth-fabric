@@ -4,7 +4,6 @@ import com.mojang.datafixers.DataFixer;
 import net.minecraft.block.Blocks;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -55,7 +54,7 @@ public class Helium {
                 }
             }
             int i = tag.contains("DataVersion", 99) ? tag.getInt("DataVersion") : 1343;
-            return NbtHelper.update(dfu, DataFixTypes.SAVED_DATA, tag, i, dataVersion);
+            return DataFixTypes.SAVED_DATA.update(dfu, tag, i, dataVersion);
         }
     }
 

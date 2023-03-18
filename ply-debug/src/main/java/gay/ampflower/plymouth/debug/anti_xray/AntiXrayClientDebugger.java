@@ -61,8 +61,8 @@ public class AntiXrayClientDebugger {
         // However, due to which stage it's on, it does get obstructed by water and clouds.
         RenderBatch.beginBatch();
 
-        // TODO: figure out ctx.matrixStack()
-        var matrices = new MatrixStack();
+        var matrices = ctx.matrixStack();
+        matrices.push();
         var camera = ctx.camera().getPos();
         matrices.translate(-camera.x, -camera.y, -camera.z);
 
@@ -76,6 +76,7 @@ public class AntiXrayClientDebugger {
         if (viewChunkBlockEntity) onChunkBlockEntity.render(matrices);
         renderMask(matrices, ctx.world().getBottomY());
 
+        matrices.pop();
         RenderBatch.endBatch();
     }
 
