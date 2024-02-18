@@ -45,6 +45,7 @@ dependencies {
     modRuntime(fabricApi.module("fabric-resource-loader-v0", fabric_api_version))
     // Hi, yes, we're very much up to no good here. Good luck, Minecraft!
     include(modImplementation("com.github.Modflower", "bytecode-junkie", "v0.3.0"))
+    modImplementation(fabricApi.module("fabric-gametest-api-v1", fabric_api_version))
     api(project(":utilities")) { include(this) }
 }
 
@@ -55,6 +56,24 @@ java {
 
 loom {
     accessWidenerPath.set(projectDir.resolve("src/main/resources/plymouth-anti-xray.accesswidener"))
+
+    runs {
+        create("testAXClient") {
+            client()
+            ideConfigGenerated(true)
+            name("Anti-Xray Text Client")
+            source(sourceSets.test.get())
+            vmArgs("-Dfabric-api.gametest", "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml")
+        }
+
+        create("testAXServer") {
+            server()
+            ideConfigGenerated(true)
+            name("Anti-Xray Test Server")
+            source(sourceSets.test.get())
+            vmArgs("-Dfabric-api.gametest", "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml")
+        }
+    }
 }
 
 // https://discuss.gradle.org/t/get-a-path-to-dependencies-jar-file/5084
